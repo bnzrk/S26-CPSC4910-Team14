@@ -4,12 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using WebApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
-var frotendCorsPolicyName = "FrontendCors";
-var localCorsPolicyName = "LocalCors";
-var connectionString = builder.Configuration.GetConnectionString("Default");
-
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
+
+var frotendCorsPolicyName = "FrontendCors";
+var localCorsPolicyName = "LocalCors";
 builder.Services.AddCors(options =>
 {
    options.AddPolicy(frotendCorsPolicyName, policy =>
@@ -27,6 +26,9 @@ builder.Services.AddCors(options =>
       .AllowAnyMethod();
    });
 });
+
+builder.Configuration.AddEnvironmentVariables();
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
    if (builder.Environment.IsDevelopment())
