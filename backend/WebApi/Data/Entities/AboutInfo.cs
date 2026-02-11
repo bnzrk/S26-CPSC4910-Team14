@@ -1,8 +1,5 @@
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace WebApi.Data.Entities;
 
-[Table("AboutInfo")]
 public class AboutInfo
 {
     public int Id { get; set; }

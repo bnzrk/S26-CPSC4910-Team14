@@ -31,14 +31,7 @@ builder.Configuration.AddEnvironmentVariables();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-   if (builder.Environment.IsDevelopment())
-   {
-      options.UseSqlite(connectionString);
-   }
-   else
-   {
-      options.UseMySQL(connectionString);
-   }
+   options.UseMySQL(connectionString);
 });
 
 var app = builder.Build();
