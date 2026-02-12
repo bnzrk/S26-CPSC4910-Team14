@@ -1,31 +1,15 @@
-import { API_URL } from './config';
-import { useQuery } from '@tanstack/react-query';
-import './App.scss'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import AboutPage from './pages/About/AboutPage';
+import './App.scss';
 
-async function getHello()
-{
-  const result = await fetch(`${API_URL}/hello`);
-  if (!result.ok)
-  {
-    throw new Error(`HTTP ${result.status}`);
-  }
-  return result.text();
-}
-
-export default function App()
-{
-  const { data, error, isLoading, isError } = useQuery({
-    queryKey: ["hello"],
-    queryFn: getHello,
-    retry: 0
-  })
-
+export default function App() {
   return (
-    <div>
-      <h1>API Test</h1>
-      <small>Response from backend:</small>
-      {!isError && !isLoading && <p>{data}</p>}
-      {isError && <p>{error.message}</p>}
-    </div>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<AboutPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
