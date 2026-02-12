@@ -8,4 +8,8 @@ public class AboutInfo
     public DateTime ReleaseDateUtc { get; set; }
     public string ProductName { get; set; }
     public string ProductDescription { get; set; }
+
+    public ICollection<TeamMember> TeamMembers { get; set; }
+    public ICollection<Feature> Features { get; set; }
+    public ICollection<TechStackItem> TechStackItems { get; set; }
 }

@@ -1,50 +1,50 @@
-import { useQuery } from '@tanstack/react-query';
-import { fetchAboutInfo } from '../../api/about';
-import './AboutPage.scss';
-
-function formatDate(dateString) {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-}
+import { useAboutData } from './hooks/useAboutData';
+import HeroSection from './components/HeroSection';
+import MetricsBar from './components/MetricsBar';
+import FeatureCards from './components/FeatureCards';
+import HowItWorks from './components/HowItWorks';
+import TechStack from './components/TechStack';
+import TeamSection from './components/TeamSection';
+import AboutFooter from './components/AboutFooter';
+import SkeletonLoader from './components/SkeletonLoader';
+import styles from './AboutPage.module.scss';
 
 export default function AboutPage() {
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['about'],
-    queryFn: fetchAboutInfo,
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data, isLoading, isError, refetch } = useAboutData();
 
-  if (isLoading) return <div className="about-loading">Loading...</div>;
-  if (isError) return <div className="about-error">Error: {error.message}</div>;
+  if (isLoading) return <SkeletonLoader />;
+
+  if (isError) {
+    return (
+      <div className={styles.error}>
+        <p className={styles.errorMessage}>
+          Something went wrong loading the page.
+        </p>
+        <button className={styles.retryButton} onClick={() => refetch()}>
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="about">
-      <section className="about-hero">
-        <h1 className="about-hero__title">{data.productName}</h1>
-        <p className="about-hero__subtitle">{data.productDescription}</p>
-      </section>
-
-      <section className="about-cards">
-        <div className="about-card">
-          <span className="about-card__label">Team</span>
-          <span className="about-card__value">{data.team}</span>
-        </div>
-        <div className="about-card">
-          <span className="about-card__label">Version</span>
-          <span className="about-card__value">Sprint {data.version}</span>
-        </div>
-        <div className="about-card">
-          <span className="about-card__label">Release Date</span>
-          <span className="about-card__value">{formatDate(data.releaseDateUtc)}</span>
-        </div>
-      </section>
-
-      <footer className="about-footer">
-        <p>Team {data.team} &mdash; CPSC 4910/4911 Capstone</p>
-      </footer>
-    </div>
+    <main className={styles.page}>
+      <HeroSection
+        productName={data.productName}
+        productDescription={data.productDescription}
+        versionNumber={data.versionNumber}
+      />
+      <MetricsBar
+        teamNumber={data.teamNumber}
+        versionNumber={data.versionNumber}
+        releaseDate={data.releaseDate}
+        memberCount={data.teamMembers.length}
+      />
+      <FeatureCards features={data.features} />
+      <HowItWorks />
+      <TechStack techStack={data.techStack} />
+      <TeamSection teamMembers={data.teamMembers} />
+      <AboutFooter />
+    </main>
   );
 }

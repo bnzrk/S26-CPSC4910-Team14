@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApi.Data;
 
@@ -10,9 +11,11 @@ using WebApi.Data;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260212172430_AddAboutChildTables")]
+    partial class AddAboutChildTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -163,36 +166,45 @@ namespace WebApi.Migrations
                             Id = 1,
                             AboutInfoId = 1,
                             DisplayOrder = 1,
-                            FirstName = "Ben",
-                            LastName = "Nazaruk",
-                            Role = "Team Lead"
+                            FirstName = "Trey",
+                            LastName = "Larkins",
+                            Role = "Developer"
                         },
                         new
                         {
                             Id = 2,
                             AboutInfoId = 1,
                             DisplayOrder = 2,
-                            FirstName = "Stella",
-                            LastName = "Herzberg",
-                            Role = "Software Engineer"
+                            FirstName = "Member",
+                            LastName = "Two",
+                            Role = "Developer"
                         },
                         new
                         {
                             Id = 3,
                             AboutInfoId = 1,
                             DisplayOrder = 3,
-                            FirstName = "Ella",
-                            LastName = "Patel",
-                            Role = "Software Engineer"
+                            FirstName = "Member",
+                            LastName = "Three",
+                            Role = "Developer"
                         },
                         new
                         {
                             Id = 4,
                             AboutInfoId = 1,
                             DisplayOrder = 4,
-                            FirstName = "Trey",
-                            LastName = "Larkins",
-                            Role = "Software Engineer"
+                            FirstName = "Member",
+                            LastName = "Four",
+                            Role = "Developer"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            AboutInfoId = 1,
+                            DisplayOrder = 5,
+                            FirstName = "Member",
+                            LastName = "Five",
+                            Role = "Developer"
                         });
                 });
 

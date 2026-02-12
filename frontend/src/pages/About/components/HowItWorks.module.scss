@@ -1,0 +1,116 @@
+.section {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.heading {
+  text-align: center;
+  margin: 0 0 3rem;
+  font-size: 1.75rem;
+  color: var(--color-text);
+}
+
+.flow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 3rem;
+  position: relative;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+}
+
+.connector {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 2px;
+  background: var(--color-border);
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.6s ease 0.3s;
+
+  @media (max-width: 768px) {
+    width: 2px;
+    height: 70%;
+    top: 15%;
+    left: 50%;
+  }
+}
+
+.connectorVisible {
+  opacity: 1;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+
+  @media (prefers-reduced-motion: reduce) {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-accent-light);
+  border: 2px solid var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  color: var(--color-accent);
+}
+
+.number {
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  font-weight: 700;
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text);
+  text-align: center;
+}

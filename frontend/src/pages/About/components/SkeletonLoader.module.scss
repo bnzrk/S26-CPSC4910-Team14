@@ -1,0 +1,80 @@
+.skeleton {
+  min-height: 100vh;
+}
+
+.bone {
+  background: linear-gradient(
+    90deg,
+    var(--color-border) 25%,
+    #e8ecf0 50%,
+    var(--color-border) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 6px;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background: var(--color-border);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6rem 1.5rem 4rem;
+  background: #f0f2f4;
+  min-height: 70vh;
+  justify-content: center;
+}
+
+.metrics {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  padding: 2.5rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  max-width: 900px;
+  margin: 0 auto;
+
+  @media (max-width: 600px) {
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+}
+
+.metricBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cardBlock {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 2rem;
+}
