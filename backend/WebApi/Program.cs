@@ -1,5 +1,4 @@
-// This is just where we configure things for our app. You don't really need to 
-// worry about this 99% of the time once its set up.
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Data;
 
@@ -7,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 
+// Cors
 var frotendCorsPolicyName = "FrontendCors";
 var localCorsPolicyName = "LocalCors";
 builder.Services.AddCors(options =>
@@ -16,17 +16,53 @@ builder.Services.AddCors(options =>
       policy
       .WithOrigins("http://team14.cpsc4911.com")
       .AllowAnyHeader()
-      .AllowAnyMethod();
+      .AllowAnyMethod()
+      .AllowCredentials();
    });
    options.AddPolicy(localCorsPolicyName, policy =>
    {
       policy
       .WithOrigins("http://localhost:5173")
       .AllowAnyHeader()
-      .AllowAnyMethod();
+      .AllowAnyMethod()
+      .AllowCredentials();
    });
 });
 
+// Asp Identity
+builder.Services
+   .AddIdentityCore<User>(options =>
+   {
+      options.User.RequireUniqueEmail = true;
+   })
+   .AddRoles<IdentityRole>()
+   .AddEntityFrameworkStores<AppDbContext>()
+   .AddSignInManager();
+
+// Cookie auth
+builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
+    .AddCookie(IdentityConstants.ApplicationScheme, options =>
+    {
+        options.Cookie.Name = "driverpoints.auth";
+        if (builder.Environment.IsDevelopment())
+        {
+            // Dev
+            options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+            options.Cookie.SameSite = SameSiteMode.None;
+        }
+        else
+        {
+            // Release
+            options.Cookie.HttpOnly = true;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            options.Cookie.SameSite = SameSiteMode.Lax;
+            options.ExpireTimeSpan = TimeSpan.FromDays(14);
+            options.SlidingExpiration = true;
+        }
+    });
+builder.Services.AddAuthorization();
+
+// DB Connection
 builder.Configuration.AddEnvironmentVariables();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -55,6 +91,8 @@ if (app.Environment.IsDevelopment())
 }
 // Lets us recieve requests from our frotend when its deployed.
 app.UseCors(frotendCorsPolicyName);
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
