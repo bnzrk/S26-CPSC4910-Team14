@@ -29,15 +29,14 @@ public static class AppSetupExtensions
                 Email = email,
                 FirstName = firstName,
                 LastName = lastName,
-                IsActive = true,
-                EmailConfirmed = true
+                IsActive = true
             };
 
             var createResult = await userManager.CreateAsync(user, password);
             if (!createResult.Succeeded)
             {
                 throw new InvalidOperationException($"Failed to create admin user: " +
-                                                    string.Join(", ", createResult.Errors.Select(e => e.Description)));
+                                                    string.Join(", ", createResult.Errors.ToArray().Select(e => e.Description)));
             }
             else
             {
