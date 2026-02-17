@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using WebApi.Features.Auth.Models;
+using WebApi.Data.Entities;
+using WebApi.Data.Enums;
 using Microsoft.AspNetCore.Authorization;
 
 namespace WebApi.Features.Auth;
@@ -13,39 +15,17 @@ public class AuthController : ControllerBase
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
 
-    public AuthController(UserManager<User> userManager, SignInManager<User> signInManager)
+    public AuthController(UserManager<User> userManager, SignInManager<User> signInManager, IAuthorizationService authService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
-    }
-
-    [HttpPost("register")]
-    public async Task<ActionResult> Register(RegisterModel register)
-    {
-        var user = new User
-        {
-            // ASP.NET Identity requires a username by default, so we'll just use the email
-            UserName = register.Email,
-            Email = register.Email,
-            FirstName = register.FirstName,
-            LastName = register.LastName,
-            IsActive = true
-        };
-
-        var result = await _userManager.CreateAsync(user, register.Password);
-        if (!result.Succeeded)
-        {
-            return Problem(result.Errors.ToString());
-        }
-
-        return Ok();
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginModel login)
     {
         var user = await _userManager.FindByEmailAsync(login.Email);
-        if (user is null)
+        if (user is null || !user.IsActive)
             return Unauthorized();
 
         var result = await _signInManager.PasswordSignInAsync(
@@ -76,7 +56,7 @@ public class AuthController : ControllerBase
 
         return Ok(new
         {
-            username = User.FindFirstValue(ClaimTypes.Name) ?? User.Identity!.Name
+            email = User.FindFirstValue(ClaimTypes.Name) ?? User.Identity!.Name
         });
     }
 }

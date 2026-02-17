@@ -10,10 +10,14 @@ public class AppDbContext : IdentityDbContext<User>
     {
     }
 
+    // About Info
     public DbSet<AboutInfo> AboutInfos { get; set; }
     public DbSet<TeamMember> TeamMembers { get; set; }
     public DbSet<Feature> Features { get; set; }
     public DbSet<TechStackItem> TechStackItems { get; set; }
+
+    // Users
+    public DbSet<AdminUser> AdminUsers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

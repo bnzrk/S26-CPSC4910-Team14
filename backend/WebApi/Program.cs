@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication;
 using WebApi.Data;
+using WebApi.Data.Entities;
+using WebApi.Data.Enums;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
@@ -14,7 +17,7 @@ builder.Services.AddCors(options =>
    options.AddPolicy(frotendCorsPolicyName, policy =>
    {
       policy
-      .WithOrigins("http://team14.cpsc4911.com")
+      .WithOrigins("https://team14.cpsc4911.com")
       .AllowAnyHeader()
       .AllowAnyMethod()
       .AllowCredentials();
@@ -60,7 +63,28 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
             options.SlidingExpiration = true;
         }
     });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+   options.AddPolicy(PolicyNames.AdminOnly, p => p.RequireRole(UserTypeRoles.Role(UserType.Admin)));
+   options.AddPolicy(PolicyNames.AdminOrSponsor, p => p.RequireRole(UserTypeRoles.Role(UserType.Admin), UserTypeRoles.Role(UserType.Sponsor)));
+});
+// This forces a user to sign out if their account is inactive
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Events.OnValidatePrincipal = async context =>
+    {
+        var userManager = context.HttpContext.RequestServices
+            .GetRequiredService<UserManager<User>>();
+
+        var user = await userManager.GetUserAsync(context.Principal);
+
+        if (user == null || !user.IsActive)
+        {
+            context.RejectPrincipal();
+            await context.HttpContext.SignOutAsync();
+        }
+    };
+});
 
 // DB Connection
 builder.Configuration.AddEnvironmentVariables();
@@ -94,5 +118,9 @@ app.UseCors(frotendCorsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+// Create roles from user types
+await AppSetupExtensions.CreateUserRoles(app.Services);
+// Seed an admin user
+await AppSetupExtensions.SeedDefaultAdmin(app.Services, app.Configuration);
 
 app.Run();

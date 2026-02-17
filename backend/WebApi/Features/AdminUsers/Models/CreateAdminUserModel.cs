@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace WebApi.Features.Auth.Models;
 
-public class RegisterModel
+public class CreateAdminUserModel
 {
     [Required]
     public string Email { get; set; } = null!;
