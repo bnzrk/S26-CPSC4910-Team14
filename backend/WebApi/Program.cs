@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using WebApi.Data;
 using WebApi.Data.Enums;
+using WebApi.Features.Users;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
@@ -26,6 +27,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
    options.UseMySQL(connectionString);
 });
+
+// Our services
+// .NET handles injecting all other services specified in the constructor for us
+builder.Services.AddScoped<IUsersService, UserService>();
 
 var app = builder.Build();
 

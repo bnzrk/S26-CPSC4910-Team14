@@ -11,8 +11,8 @@ using WebApi.Data;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260216153517_AddAdminUsers")]
-    partial class AddAdminUsers
+    [Migration("20260217210330_AddAdminAndSponsorUsers")]
+    partial class AddAdminAndSponsorUsers
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -191,17 +191,10 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Data.Entities.AdminUser", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("varchar(255)");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
+                    b.HasKey("UserId");
 
                     b.ToTable("AdminUsers");
                 });
@@ -273,6 +266,39 @@ namespace WebApi.Migrations
                             Icon = "shield-check",
                             Title = "Security & Trust"
                         });
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.SponsorOrg", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateJoined")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("SponsorName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SponsorOrgs");
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.SponsorUser", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<int>("SponsorOrgId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId");
+
+                    b.HasIndex("SponsorOrgId");
+
+                    b.ToTable("SponsorUsers");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.TeamMember", b =>
@@ -593,8 +619,8 @@ namespace WebApi.Migrations
             modelBuilder.Entity("WebApi.Data.Entities.AdminUser", b =>
                 {
                     b.HasOne("WebApi.Data.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                        .WithOne()
+                        .HasForeignKey("WebApi.Data.Entities.AdminUser", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -610,6 +636,25 @@ namespace WebApi.Migrations
                         .IsRequired();
 
                     b.Navigation("AboutInfo");
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.SponsorUser", b =>
+                {
+                    b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
+                        .WithMany("SponsorUsers")
+                        .HasForeignKey("SponsorOrgId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WebApi.Data.Entities.User", "User")
+                        .WithOne()
+                        .HasForeignKey("WebApi.Data.Entities.SponsorUser", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SponsorOrg");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.TeamMember", b =>
@@ -641,6 +686,11 @@ namespace WebApi.Migrations
                     b.Navigation("TeamMembers");
 
                     b.Navigation("TechStackItems");
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.SponsorOrg", b =>
+                {
+                    b.Navigation("SponsorUsers");
                 });
 #pragma warning restore 612, 618
         }

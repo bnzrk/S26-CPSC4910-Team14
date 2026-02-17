@@ -1,24 +1,21 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.Data;
 using WebApi.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
 
-namespace WebApi.Features.Auth;
+namespace WebApi.Features.Users;
 
 [ApiController]
 [Route("/users")]
 public class UsersController : ControllerBase
 {
-    private readonly AppDbContext _db;
+    private readonly IUsersService _usersService;
     private readonly UserManager<User> _userManager;
-    private readonly SignInManager<User> _signInManager;
 
-    public UsersController(AppDbContext db, UserManager<User> userManager, SignInManager<User> signInManager)
+    public UsersController(UserManager<User> userManager, IUsersService usersService)
     {
-        _db = db;
+        _usersService = usersService;
         _userManager = userManager;
-        _signInManager = signInManager;
     }
 
     [HttpPost("deactivate/{userId}")]
@@ -27,15 +24,12 @@ public class UsersController : ControllerBase
     {
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
-            return NotFound();
+            return BadRequest();
 
-        user.IsActive = false;
-        _db.SaveChanges();
-
-        var currentUserId = _userManager.GetUserId(User);
-        if (currentUserId == userId)
+        var success = await _usersService.SetUserActive(user, false);
+        if (!success)
         {
-            await _signInManager.SignOutAsync();
+            return BadRequest();
         }
 
         return Ok();
@@ -47,10 +41,33 @@ public class UsersController : ControllerBase
     {
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
-            return NotFound();
+            return BadRequest();
 
-        user.IsActive = true;
-        _db.SaveChanges();
+        var success = await _usersService.SetUserActive(user, true);
+        if (!success)
+        {
+            return BadRequest();
+        }
+
+        return Ok();
+    }
+
+    [HttpDelete("{userId}")]
+    [Authorize(Policy = PolicyNames.AdminOnly)]
+    public async Task<ActionResult> DeleteUser(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+            return BadRequest();
+
+        var result = await _usersService.DeleteUser(user);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new
+            {
+                Errors = result.Errors.Select(e => e.Description).ToArray() 
+            });
+        }
 
         return Ok();
     }

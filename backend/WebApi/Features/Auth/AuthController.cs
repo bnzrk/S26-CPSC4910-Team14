@@ -39,6 +39,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("logout")]
+    [Authorize]
     public async Task<ActionResult> Logout()
     {
         await _signInManager.SignOutAsync();

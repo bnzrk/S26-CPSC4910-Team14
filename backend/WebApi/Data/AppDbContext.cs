@@ -18,11 +18,51 @@ public class AppDbContext : IdentityDbContext<User>
 
     // Users
     public DbSet<AdminUser> AdminUsers { get; set; }
+    public DbSet<SponsorUser> SponsorUsers { get; set; }
+
+    // Sponsor Orgs
+    public DbSet<SponsorOrg> SponsorOrgs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
+        // Table relationships
+        modelBuilder.Entity<AdminUser>(b =>
+        {
+            b.HasKey(a => a.UserId);
+
+            b.HasOne(a => a.User)
+                .WithOne()
+                .HasForeignKey<AdminUser>(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
+            b.Navigation("User");
+        });
+
+        modelBuilder.Entity<SponsorUser>(b =>
+        {
+            b.HasKey(a => a.UserId);
+
+            b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
+                .WithMany("SponsorUsers")
+                .HasForeignKey("SponsorOrgId")
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
+            b.HasOne(a => a.User)
+                .WithOne()
+                .HasForeignKey<SponsorUser>(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
+            b.Navigation("SponsorOrg");
+
+            b.Navigation("User");
+        });
+
+        // Seeded about info data
         modelBuilder.Entity<AboutInfo>().HasData(new AboutInfo
         {
             Id = 1,

@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace WebApi.Features.AdminUsers.Models;
+namespace WebApi.Features.SponsorUsers.Models;
 
-public class CreateAdminUserModel
+public class CreateSponsorUserModel
 {
     [Required]
     public string Email { get; set; } = null!;
@@ -12,4 +12,6 @@ public class CreateAdminUserModel
     public string FirstName { get; set; } = null!;
     [Required]
     public string LastName { get; set; } = null!;
+    [Required]
+    public int SponsorOrgId { get; set; }
 }
