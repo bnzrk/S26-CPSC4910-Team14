@@ -48,22 +48,30 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet("me")]
-    [Authorize]
+    [AllowAnonymous]
     public async Task<ActionResult> Me()
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
         {
-            return Unauthorized();
+            return Ok(new AuthCredentialsModel
+            {
+                IsAuthenticated = false,
+                User = null
+            });
         }
 
-        return Ok(new UserModel
+        return Ok(new AuthCredentialsModel
         {
-            Id = user.Id,
-            Email = user.Email,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            UserType = user.UserType.ToString()
+            IsAuthenticated = true,
+            User = new UserModel
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                UserType = user.UserType.ToString()
+            }
         });
     }
 }
