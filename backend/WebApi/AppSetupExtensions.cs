@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using WebApi.Data.Entities;
 using WebApi.Data.Enums;
-using WebApi.Data;
+using WebApi.Features.Users;
 
 public static class AppSetupExtensions
 {
@@ -19,36 +19,16 @@ public static class AppSetupExtensions
 
         using var scope = services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+        var userService = scope.ServiceProvider.GetRequiredService<IUsersService>();
 
         var user = await userManager.FindByEmailAsync(email);
         if (user is null)
         {
-            user = new User
+            var result = await userService.CreateAdminUser(email, password, firstName, lastName);
+            if (!result.Succeeded)
             {
-                UserName = email,
-                Email = email,
-                FirstName = firstName,
-                LastName = lastName,
-                IsActive = true
-            };
-
-            var createResult = await userManager.CreateAsync(user, password);
-            if (!createResult.Succeeded)
-            {
-                throw new InvalidOperationException($"Failed to create admin user: " +
-                                                    string.Join(", ", createResult.Errors.ToArray().Select(e => e.Description)));
-            }
-            else
-            {
-                var roleResult = await userManager.AddToRoleAsync(user, UserTypeRoles.Role(UserType.Admin));
-                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var admin = new AdminUser
-                {
-                    UserId = user.Id,
-                    User = user
-                };
-                db.AdminUsers.Add(admin);
-                db.SaveChanges();
+                Console.WriteLine($"Failed to create admin user: " +
+                                                    string.Join(", ", result.Errors.ToArray().Select(e => e.Description)));
             }
         }
     }
