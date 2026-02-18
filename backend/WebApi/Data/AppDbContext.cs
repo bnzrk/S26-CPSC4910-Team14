@@ -1,23 +1,82 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Data.Entities;
 
 namespace WebApi.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<User>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
 
+    // About Info
     public DbSet<AboutInfo> AboutInfos { get; set; }
     public DbSet<TeamMember> TeamMembers { get; set; }
     public DbSet<Feature> Features { get; set; }
     public DbSet<TechStackItem> TechStackItems { get; set; }
 
+    // Users
+    public DbSet<AdminUser> AdminUsers { get; set; }
+    public DbSet<SponsorUser> SponsorUsers { get; set; }
+    public DbSet<DriverUser> DriverUsers { get; set; }
+
+    // Sponsor Orgs
+    public DbSet<SponsorOrg> SponsorOrgs { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
+        // Table relationships
+        modelBuilder.Entity<AdminUser>(b =>
+        {
+            b.HasKey(a => a.UserId);
+
+            b.HasOne(a => a.User)
+                .WithOne()
+                .HasForeignKey<AdminUser>(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
+            b.Navigation("User");
+        });
+
+        modelBuilder.Entity<SponsorUser>(b =>
+        {
+            b.HasKey(a => a.UserId);
+
+            b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
+                .WithMany("SponsorUsers")
+                .HasForeignKey("SponsorOrgId")
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
+            b.HasOne(a => a.User)
+                .WithOne()
+                .HasForeignKey<SponsorUser>(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
+            b.Navigation("SponsorOrg");
+
+            b.Navigation("User");
+        });
+
+        modelBuilder.Entity<DriverUser>(b =>
+        {
+            b.HasKey(a => a.UserId);
+
+            b.HasOne(a => a.User)
+                .WithOne()
+                .HasForeignKey<DriverUser>(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
+            b.Navigation("User");
+        });
+
+        // Seeded about info data
         modelBuilder.Entity<AboutInfo>().HasData(new AboutInfo
         {
             Id = 1,
