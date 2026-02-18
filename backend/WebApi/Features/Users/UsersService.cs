@@ -103,6 +103,49 @@ public class UserService : IUsersService
         return IdentityResult.Success;
     }
 
+    public async Task<IdentityResult> CreateDriverUser(string email, string password, string firstName, string lastName)
+    {
+        // We want to abort our changes if something fails before we finish.
+        using var transaction = await _db.Database.BeginTransactionAsync();
+
+        var user = new User
+        {
+            // ASP.NET Identity requires a username by default, so we'll just use the email
+            UserName = email,
+            Email = email,
+            FirstName = firstName,
+            LastName = lastName,
+            UserType = UserType.Driver,
+            IsActive = true
+        };
+
+        // Attempt to create the base user.
+        var createResult = await _userManager.CreateAsync(user, password);
+        if (!createResult.Succeeded)
+        {
+            return createResult;
+        }
+
+        var roleResult = await _userManager.AddToRoleAsync(user, UserTypeRoles.Role(UserType.Driver));
+        if (!roleResult.Succeeded)
+        {
+            await transaction.RollbackAsync();
+            return roleResult;
+        }
+
+        var driver = new DriverUser
+        {
+            User = user
+        };
+        _db.DriverUsers.Add(driver);
+        await _db.SaveChangesAsync();
+
+        // Commit our changes if successful.
+        await transaction.CommitAsync();
+
+        return IdentityResult.Success;
+    }
+
     public async Task<bool> SetUserActive(User user, bool active)
     {
         user.IsActive = active;

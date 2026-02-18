@@ -5,6 +5,7 @@ using WebApi.Features.Auth.Models;
 using WebApi.Data.Entities;
 using WebApi.Data.Enums;
 using Microsoft.AspNetCore.Authorization;
+using WebApi.Data;
 
 namespace WebApi.Features.Auth;
 
@@ -26,7 +27,7 @@ public class AuthController : ControllerBase
     {
         var user = await _userManager.FindByEmailAsync(login.Email);
         if (user is null || !user.IsActive)
-            return Unauthorized();
+            return BadRequest("Invalid email or password.");
 
         var result = await _signInManager.PasswordSignInAsync(
             user,
@@ -35,7 +36,7 @@ public class AuthController : ControllerBase
             lockoutOnFailure: false
         );
 
-        return result.Succeeded ? Ok() : Unauthorized();
+        return result.Succeeded ? Ok() : BadRequest("Invalid email or password.");
     }
 
     [HttpPost("logout")]
@@ -48,16 +49,21 @@ public class AuthController : ControllerBase
 
     [HttpGet("me")]
     [Authorize]
-    public IActionResult Me()
+    public async Task<ActionResult> Me()
     {
-        if (!User.Identity?.IsAuthenticated ?? true)
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
         {
             return Unauthorized();
         }
 
-        return Ok(new
+        return Ok(new UserModel
         {
-            email = User.FindFirstValue(ClaimTypes.Name) ?? User.Identity!.Name
+            Id = user.Id,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            UserType = user.UserType.ToString()
         });
     }
 }

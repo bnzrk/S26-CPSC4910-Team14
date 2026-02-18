@@ -19,6 +19,7 @@ public class AppDbContext : IdentityDbContext<User>
     // Users
     public DbSet<AdminUser> AdminUsers { get; set; }
     public DbSet<SponsorUser> SponsorUsers { get; set; }
+    public DbSet<DriverUser> DriverUsers { get; set; }
 
     // Sponsor Orgs
     public DbSet<SponsorOrg> SponsorOrgs { get; set; }
@@ -53,11 +54,24 @@ public class AppDbContext : IdentityDbContext<User>
 
             b.HasOne(a => a.User)
                 .WithOne()
-                .HasForeignKey<SponsorUser>(a => a.UserId)
+                .HasForeignKey<SponsorUser>(s => s.UserId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .IsRequired();
 
             b.Navigation("SponsorOrg");
+
+            b.Navigation("User");
+        });
+
+        modelBuilder.Entity<DriverUser>(b =>
+        {
+            b.HasKey(a => a.UserId);
+
+            b.HasOne(a => a.User)
+                .WithOne()
+                .HasForeignKey<DriverUser>(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
 
             b.Navigation("User");
         });
