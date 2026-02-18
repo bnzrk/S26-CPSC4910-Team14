@@ -53,8 +53,9 @@ public static class AppBuilderExtensions
                 if (builder.Environment.IsDevelopment())
                 {
                     // Dev
+                    options.Cookie.HttpOnly = true;
                     options.Cookie.SecurePolicy = CookieSecurePolicy.None;
-                    options.Cookie.SameSite = SameSiteMode.None;
+                    options.Cookie.SameSite = SameSiteMode.Lax;
                 }
                 else
                 {

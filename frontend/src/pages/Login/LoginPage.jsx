@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import { API_URL } from '../../config';
+import { queryClient } from '../../api/queryClient';
+import { useNavigate } from "react-router-dom";
 import styles from './LoginPage.module.scss';
 
 export default function LoginPage() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -21,7 +25,7 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      if (response.status === 401) {
+      if (response.status === 400) {
         setErrorMsg('Incorrect email or password.');
         return;
       }
@@ -31,8 +35,8 @@ export default function LoginPage() {
         return;
       }
 
-      // Login successful — redirect to dashboard
-      window.location.href = '/dashboard';
+      await queryClient.invalidateQueries(["currentUser"]);
+      navigate("/about");
 
     } catch (err) {
       setErrorMsg('Unable to connect to the server. Please try again.');
