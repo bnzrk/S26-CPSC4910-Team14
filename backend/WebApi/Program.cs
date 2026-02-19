@@ -1,60 +1,53 @@
-// This is just where we configure things for our app. You don't really need to 
-// worry about this 99% of the time once its set up.
 using Microsoft.EntityFrameworkCore;
 using WebApi.Data;
+using WebApi.Data.Enums;
+using WebApi.Features.Users;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 
-var frotendCorsPolicyName = "FrontendCors";
-var localCorsPolicyName = "LocalCors";
-builder.Services.AddCors(options =>
-{
-   options.AddPolicy(frotendCorsPolicyName, policy =>
-   {
-      policy
-      .WithOrigins("http://team14.cpsc4911.com")
-      .AllowAnyHeader()
-      .AllowAnyMethod();
-   });
-   options.AddPolicy(localCorsPolicyName, policy =>
-   {
-      policy
-      .WithOrigins("http://localhost:5173")
-      .AllowAnyHeader()
-      .AllowAnyMethod();
-   });
-});
+var devCorsPolicyName = "LocalCors";
+var releaseCorsPolicyName = "ReleaseCors";
+AppBuilderExtensions.AddCors(builder, devCorsPolicyName, releaseCorsPolicyName);
 
-builder.Configuration.AddEnvironmentVariables();
+AppBuilderExtensions.AddIdentity(builder);
+AppBuilderExtensions.AddCookieAuthentication(builder);
+builder.Services.AddAuthorization(options =>
+{
+   options.AddPolicy(PolicyNames.AdminOnly, p => p.RequireRole(UserTypeRoles.Role(UserType.Admin)));
+   options.AddPolicy(PolicyNames.AdminOrSponsor, p => p.RequireRole(UserTypeRoles.Role(UserType.Admin), UserTypeRoles.Role(UserType.Sponsor)));
+});
+AppBuilderExtensions.ConfigureAppCookie(builder);
+
+// DB Connection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
    options.UseMySQL(connectionString);
 });
 
+// Our services
+// .NET handles injecting all other services specified in the constructor for us
+builder.Services.AddScoped<IUsersService, UserService>();
+
 var app = builder.Build();
 
-// Setup for development environment only.
 if (app.Environment.IsDevelopment())
 {
    // This automatically builds Api documentation from our controller endpoints.
    // You can view it at /swagger.
    app.UseSwagger();
    app.UseSwaggerUI();
-   // Lets us recieve requests from our frotnend when developing locally.
-   if (app.Environment.IsDevelopment())
-   {
-      app.UseCors(localCorsPolicyName);
-   }
-   else
-   {
-      app.UseCors(frotendCorsPolicyName);
-   }
+
+   app.UseCors(devCorsPolicyName);
 }
-// Lets us recieve requests from our frotend when its deployed.
-app.UseCors(frotendCorsPolicyName);
+app.UseCors(releaseCorsPolicyName);
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
+await AppSetupExtensions.CreateUserRoles(app.Services);
+await AppSetupExtensions.SeedDefaultAdmin(app.Services, app.Configuration);
 
 app.Run();

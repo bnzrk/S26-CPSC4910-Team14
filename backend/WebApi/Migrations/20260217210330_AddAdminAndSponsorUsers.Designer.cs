@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApi.Data;
 
@@ -10,9 +11,11 @@ using WebApi.Data;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260217210330_AddAdminAndSponsorUsers")]
+    partial class AddAdminAndSponsorUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -194,16 +197,6 @@ namespace WebApi.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("AdminUsers");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.DriverUser", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("DriverUsers");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.Feature", b =>
@@ -628,17 +621,6 @@ namespace WebApi.Migrations
                     b.HasOne("WebApi.Data.Entities.User", "User")
                         .WithOne()
                         .HasForeignKey("WebApi.Data.Entities.AdminUser", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.DriverUser", b =>
-                {
-                    b.HasOne("WebApi.Data.Entities.User", "User")
-                        .WithOne()
-                        .HasForeignKey("WebApi.Data.Entities.DriverUser", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
