@@ -77,13 +77,16 @@ jobs:
         run: |
           tar -czf webapi.tgz -C "./${OUT_DIR}" .
 
+      - name: Move artifact to repo root
+        run: mv backend/WebApi/webapi.tgz .
+
       - name: Copy artifact to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          source: "${{ env.PROJECT_DIR }}/webapi.tgz"
+          source: "webapi.tgz"
           target: "${{ env.REMOTE_DEPLOY_DIR }}/"
           overwrite: true
 
