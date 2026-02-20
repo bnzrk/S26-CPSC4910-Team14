@@ -125,7 +125,7 @@ jobs:
             sudo chmod +x "./$APP_DIR/migration-bundle"
 
             echo "== Run migrations with env loaded =="
-            sudo bash -lc "set -a; source '$ENV_FILE'; set +a; './$APP_DIR/migration-bundle'"
+            bash -lc "set -a; source '$ENV_FILE'; set +a; './$APP_DIR/migration-bundle'"
 
             echo "== Start service =="
             sudo systemctl start "$SERVICE"
