@@ -26,6 +26,7 @@ public class AppDbContext : IdentityDbContext<User>
 
     // Points
     public DbSet<PointTransaction> PointTransactions { get; set; }
+    public DbSet<PointRule> PointRules { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

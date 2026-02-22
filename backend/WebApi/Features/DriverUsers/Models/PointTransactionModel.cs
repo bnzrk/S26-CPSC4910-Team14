@@ -1,4 +1,4 @@
-namespace WebApi.Features.Points.Models;
+namespace WebApi.Features.DriverUsers.Models;
 
 public class PointTransactionModel
 {

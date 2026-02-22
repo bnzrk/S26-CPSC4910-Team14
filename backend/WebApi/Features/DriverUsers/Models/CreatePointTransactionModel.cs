@@ -1,8 +1,7 @@
-namespace WebApi.Features.Points.Models;
+namespace WebApi.Features.DriverUsers.Models;
 
 public class CreatePointTransactionModel
 {
-    public int DriverId { get; set; }
     public int BalanceChange { get; set; }
     public required string Reason { get; set; }
 }

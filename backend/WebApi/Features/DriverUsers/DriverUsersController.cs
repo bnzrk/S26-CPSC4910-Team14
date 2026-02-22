@@ -2,24 +2,24 @@ using Microsoft.AspNetCore.Mvc;
 using WebApi.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using WebApi.Data.Entities;
 using WebApi.Features.DriverUsers.Models;
-using WebApi.Features.Points.Models;
 using WebApi.Features.Users;
 using WebApi.Helpers.Pagination;
-using Microsoft.AspNetCore.Identity;
+using WebApi.Data.Enums;
 
 namespace WebApi.Features.DriverUsers;
 
 [ApiController]
 [Route("/drivers")]
-public class AdminUsersController : ControllerBase
+public class DriverUsersController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly IUsersService _usersService;
     private readonly UserManager<User> _userManager;
 
-    public AdminUsersController(AppDbContext db, IUsersService usersService, UserManager<User> userManager)
+    public DriverUsersController(AppDbContext db, IUsersService usersService, UserManager<User> userManager)
     {
         _db = db;
         _usersService = usersService;
@@ -61,7 +61,7 @@ public class AdminUsersController : ControllerBase
     [HttpGet("{driverId}/point-transactions")]
     [Authorize]
     public async Task<ActionResult> GetPointTransactions(
-        [FromQuery] int driverId,
+        int driverId,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
@@ -87,30 +87,33 @@ public class AdminUsersController : ControllerBase
     }
 
     [HttpPost("{driverId}/point-transactions")]
-    [Authorize(Policy = PolicyNames.SponsorOnly)]
-    public async Task<ActionResult> CreatePointTransaction(CreatePointTransactionModel request)
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<ActionResult> CreatePointTransaction(int driverId, [FromBody] CreatePointTransactionModel request)
     {
-        var currentUserId = _userManager.GetUserId(User);
-        var sponsor = await _db.SponsorUsers
-            .AsNoTracking()
-            .Where(s => s.UserId == currentUserId)
-            .FirstOrDefaultAsync();
-        if (sponsor is null)
-        {
-            return BadRequest();
-        }
-
-        // Ensure driver exists and is in the same org as the sponsor.
-        var driver = await _db.DriverUsers.Where(d => d.Id == request.DriverId).FirstOrDefaultAsync();
-        if (driver is null || driver.SponsorOrgId != sponsor.SponsorOrgId)
+        // Ensure driver exists and is in an org.
+        var driver = await _db.DriverUsers.Where(d => d.Id == driverId).FirstOrDefaultAsync();
+        if (driver is null || driver.SponsorOrgId is null)
         {
             return BadRequest("Invalid driver.");
         }
 
+        if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
+        {
+            var userId = _userManager.GetUserId(User);
+            var sponsor = await _db.SponsorUsers
+                .AsNoTracking()
+                .Where(s => s.UserId == userId)
+                .FirstOrDefaultAsync();
+            if (sponsor is null || sponsor.SponsorOrgId != driver.SponsorOrgId)
+            {
+                return BadRequest("Cannot modify points for an organization you are not a sponsor for.");
+            }
+        }
+
         var transaction = new PointTransaction
         {
-            SponsorOrgId = sponsor.SponsorOrgId,
-            DriverUserId = request.DriverId,
+            SponsorOrgId = driver.SponsorOrgId.Value,
+            DriverUserId = driverId,
             Reason = request.Reason,
             BalanceChange = request.BalanceChange,
             TransactionDateUtc = DateTime.UtcNow

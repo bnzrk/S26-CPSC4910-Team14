@@ -11,13 +11,13 @@ namespace WebApi.Features.SponsorUsers;
 
 [ApiController]
 [Route("/sponsors")]
-public class AdminUsersController : ControllerBase
+public class SponsorUsersController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly UserManager<User> _userManager;
     private readonly IUsersService _usersService;
 
-    public AdminUsersController(
+    public SponsorUsersController(
         AppDbContext db, 
         UserManager<User> userManager, 
         IUsersService usersService)
