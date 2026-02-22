@@ -350,6 +350,36 @@ namespace WebApi.Migrations
                 })
                 .Annotation("MySQL:Charset", "utf8mb4");
 
+            migrationBuilder.CreateTable(
+                name: "PointTransactions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                    SponsorOrgId = table.Column<int>(type: "int", nullable: false),
+                    DriverUserId = table.Column<int>(type: "int", nullable: false),
+                    BalanceChange = table.Column<int>(type: "int", nullable: false),
+                    Reason = table.Column<string>(type: "longtext", nullable: false),
+                    TransactionDateUtc = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PointTransactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PointTransactions_DriverUsers_DriverUserId",
+                        column: x => x.DriverUserId,
+                        principalTable: "DriverUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PointTransactions_SponsorOrgs_SponsorOrgId",
+                        column: x => x.SponsorOrgId,
+                        principalTable: "SponsorOrgs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySQL:Charset", "utf8mb4");
+
             migrationBuilder.InsertData(
                 table: "AboutInfos",
                 columns: new[] { "Id", "ProductDescription", "ProductName", "ReleaseDateUtc", "Team", "Version" },
@@ -455,6 +485,16 @@ namespace WebApi.Migrations
                 column: "AboutInfoId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PointTransactions_DriverUserId",
+                table: "PointTransactions",
+                column: "DriverUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PointTransactions_SponsorOrgId",
+                table: "PointTransactions",
+                column: "SponsorOrgId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SponsorUsers_SponsorOrgId",
                 table: "SponsorUsers",
                 column: "SponsorOrgId");
@@ -498,10 +538,10 @@ namespace WebApi.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "DriverUsers");
+                name: "Features");
 
             migrationBuilder.DropTable(
-                name: "Features");
+                name: "PointTransactions");
 
             migrationBuilder.DropTable(
                 name: "SponsorUsers");
@@ -516,13 +556,16 @@ namespace WebApi.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
+                name: "DriverUsers");
+
+            migrationBuilder.DropTable(
+                name: "AboutInfos");
+
+            migrationBuilder.DropTable(
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "SponsorOrgs");
-
-            migrationBuilder.DropTable(
-                name: "AboutInfos");
         }
     }
 }

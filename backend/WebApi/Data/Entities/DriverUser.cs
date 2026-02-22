@@ -7,4 +7,5 @@ public class DriverUser
     public User User { get; set; } = null!;
     public int? SponsorOrgId { get; set; }
     public SponsorOrg? SponsorOrg { get; set; }
+    public ICollection<PointTransaction> PointTransactions { get; set; } = new List<PointTransaction>();
 }

@@ -24,6 +24,9 @@ public class AppDbContext : IdentityDbContext<User>
     // Sponsor Orgs
     public DbSet<SponsorOrg> SponsorOrgs { get; set; }
 
+    // Points
+    public DbSet<PointTransaction> PointTransactions { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

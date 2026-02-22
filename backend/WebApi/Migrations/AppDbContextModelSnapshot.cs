@@ -296,6 +296,37 @@ namespace WebApi.Migrations
                         });
                 });
 
+            modelBuilder.Entity("WebApi.Data.Entities.PointTransaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("BalanceChange")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DriverUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("SponsorOrgId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("TransactionDateUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DriverUserId");
+
+                    b.HasIndex("SponsorOrgId");
+
+                    b.ToTable("PointTransactions");
+                });
+
             modelBuilder.Entity("WebApi.Data.Entities.SponsorOrg", b =>
                 {
                     b.Property<int>("Id")
@@ -691,6 +722,25 @@ namespace WebApi.Migrations
                     b.Navigation("AboutInfo");
                 });
 
+            modelBuilder.Entity("WebApi.Data.Entities.PointTransaction", b =>
+                {
+                    b.HasOne("WebApi.Data.Entities.DriverUser", "DriverUser")
+                        .WithMany("PointTransactions")
+                        .HasForeignKey("DriverUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
+                        .WithMany()
+                        .HasForeignKey("SponsorOrgId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DriverUser");
+
+                    b.Navigation("SponsorOrg");
+                });
+
             modelBuilder.Entity("WebApi.Data.Entities.SponsorUser", b =>
                 {
                     b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
@@ -739,6 +789,11 @@ namespace WebApi.Migrations
                     b.Navigation("TeamMembers");
 
                     b.Navigation("TechStackItems");
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.DriverUser", b =>
+                {
+                    b.Navigation("PointTransactions");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.SponsorOrg", b =>

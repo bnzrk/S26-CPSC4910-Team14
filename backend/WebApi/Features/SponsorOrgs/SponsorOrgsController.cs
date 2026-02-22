@@ -37,7 +37,7 @@ public class SponsorOrgsController : ControllerBase
     [Authorize(Policy = PolicyNames.AdminOnly)]
     public async Task<ActionResult> AddDriverToOrg(AddDriverToSponsorOrgModel request)
     {
-        var driver = _db.DriverUsers.Where(d => d.UserId == request.DriverId).FirstOrDefault();
+        var driver = _db.DriverUsers.Where(d => d.Id == request.DriverId).FirstOrDefault();
         if (driver is null)
         {
             return BadRequest("Driver does not exist.");
@@ -56,9 +56,9 @@ public class SponsorOrgsController : ControllerBase
 
     [HttpDelete("drivers")]
     [Authorize(Policy = PolicyNames.AdminOnly)]
-    public async Task<ActionResult> RemoveDriverFromOrg(string driverId)
+    public async Task<ActionResult> RemoveDriverFromOrg(int driverId)
     {
-        var driver = _db.DriverUsers.Where(d => d.UserId == driverId).FirstOrDefault();
+        var driver = _db.DriverUsers.Where(d => d.Id == driverId).FirstOrDefault();
         if (driver is null)
         {
             return BadRequest("Driver does not exist.");
