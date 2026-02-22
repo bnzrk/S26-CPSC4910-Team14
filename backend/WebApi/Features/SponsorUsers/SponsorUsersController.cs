@@ -10,7 +10,7 @@ using WebApi.Features.Users;
 namespace WebApi.Features.SponsorUsers;
 
 [ApiController]
-[Route("/users/sponsors")]
+[Route("/sponsors")]
 public class AdminUsersController : ControllerBase
 {
     private readonly AppDbContext _db;
