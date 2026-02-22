@@ -11,8 +11,8 @@ using WebApi.Data;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260218140951_AddDriverUsers")]
-    partial class AddDriverUsers
+    [Migration("20260222013144_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -191,20 +191,41 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Data.Entities.AdminUser", b =>
                 {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("varchar(255)");
 
-                    b.HasKey("UserId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("AdminUsers");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.DriverUser", b =>
                 {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SponsorOrgId")
+                        .HasColumnType("int");
+
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("varchar(255)");
 
-                    b.HasKey("UserId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("SponsorOrgId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("DriverUsers");
                 });
@@ -298,15 +319,23 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Data.Entities.SponsorUser", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasColumnType("varchar(255)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
                     b.Property<int>("SponsorOrgId")
                         .HasColumnType("int");
 
-                    b.HasKey("UserId");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("SponsorOrgId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("SponsorUsers");
                 });
@@ -639,11 +668,17 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Data.Entities.DriverUser", b =>
                 {
+                    b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
+                        .WithMany("DriverUsers")
+                        .HasForeignKey("SponsorOrgId");
+
                     b.HasOne("WebApi.Data.Entities.User", "User")
                         .WithOne()
                         .HasForeignKey("WebApi.Data.Entities.DriverUser", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("SponsorOrg");
 
                     b.Navigation("User");
                 });
@@ -711,6 +746,8 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Data.Entities.SponsorOrg", b =>
                 {
+                    b.Navigation("DriverUsers");
+
                     b.Navigation("SponsorUsers");
                 });
 #pragma warning restore 612, 618

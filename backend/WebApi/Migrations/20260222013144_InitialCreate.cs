@@ -4,14 +4,37 @@ using MySql.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace WebApi.Migrations
 {
     /// <inheritdoc />
-    public partial class AddAdminAndSponsorUsers : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterDatabase()
+                .Annotation("MySQL:Charset", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "AboutInfos",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                    Team = table.Column<int>(type: "int", nullable: false),
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    ReleaseDateUtc = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    ProductName = table.Column<string>(type: "longtext", nullable: false),
+                    ProductDescription = table.Column<string>(type: "longtext", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AboutInfos", x => x.Id);
+                })
+                .Annotation("MySQL:Charset", "utf8mb4");
+
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -73,6 +96,77 @@ namespace WebApi.Migrations
                 .Annotation("MySQL:Charset", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "Features",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                    AboutInfoId = table.Column<int>(type: "int", nullable: false),
+                    Title = table.Column<string>(type: "longtext", nullable: false),
+                    Description = table.Column<string>(type: "longtext", nullable: false),
+                    Icon = table.Column<string>(type: "longtext", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Features", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Features_AboutInfos_AboutInfoId",
+                        column: x => x.AboutInfoId,
+                        principalTable: "AboutInfos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySQL:Charset", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "TeamMembers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                    AboutInfoId = table.Column<int>(type: "int", nullable: false),
+                    FirstName = table.Column<string>(type: "longtext", nullable: false),
+                    LastName = table.Column<string>(type: "longtext", nullable: false),
+                    Role = table.Column<string>(type: "longtext", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TeamMembers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TeamMembers_AboutInfos_AboutInfoId",
+                        column: x => x.AboutInfoId,
+                        principalTable: "AboutInfos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySQL:Charset", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "TechStackItems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                    AboutInfoId = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "longtext", nullable: false),
+                    Category = table.Column<string>(type: "longtext", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TechStackItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TechStackItems_AboutInfos_AboutInfoId",
+                        column: x => x.AboutInfoId,
+                        principalTable: "AboutInfos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySQL:Charset", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -98,11 +192,13 @@ namespace WebApi.Migrations
                 name: "AdminUsers",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     UserId = table.Column<string>(type: "varchar(255)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AdminUsers", x => x.UserId);
+                    table.PrimaryKey("PK_AdminUsers", x => x.Id);
                     table.ForeignKey(
                         name: "FK_AdminUsers_AspNetUsers_UserId",
                         column: x => x.UserId,
@@ -202,15 +298,43 @@ namespace WebApi.Migrations
                 .Annotation("MySQL:Charset", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "DriverUsers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                    UserId = table.Column<string>(type: "varchar(255)", nullable: false),
+                    SponsorOrgId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DriverUsers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DriverUsers_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DriverUsers_SponsorOrgs_SponsorOrgId",
+                        column: x => x.SponsorOrgId,
+                        principalTable: "SponsorOrgs",
+                        principalColumn: "Id");
+                })
+                .Annotation("MySQL:Charset", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "SponsorUsers",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     UserId = table.Column<string>(type: "varchar(255)", nullable: false),
                     SponsorOrgId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SponsorUsers", x => x.UserId);
+                    table.PrimaryKey("PK_SponsorUsers", x => x.Id);
                     table.ForeignKey(
                         name: "FK_SponsorUsers_AspNetUsers_UserId",
                         column: x => x.UserId,
@@ -225,6 +349,57 @@ namespace WebApi.Migrations
                         onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySQL:Charset", "utf8mb4");
+
+            migrationBuilder.InsertData(
+                table: "AboutInfos",
+                columns: new[] { "Id", "ProductDescription", "ProductName", "ReleaseDateUtc", "Team", "Version" },
+                values: new object[] { 1, "A rewards platform where sponsor companies award points to truck drivers for good driving behavior, redeemable for products from a sponsor-managed catalog.", "DrivePoints", new DateTime(2026, 2, 11, 0, 0, 0, 0, DateTimeKind.Utc), 14, 2 });
+
+            migrationBuilder.InsertData(
+                table: "Features",
+                columns: new[] { "Id", "AboutInfoId", "Description", "DisplayOrder", "Icon", "Title" },
+                values: new object[,]
+                {
+                    { 1, 1, "Drivers earn points for safe driving behavior, redeemable for real products from sponsor catalogs.", 1, "trophy", "Points & Rewards" },
+                    { 2, 1, "Each sponsor manages a curated product catalog with real-time pricing from external APIs.", 2, "store", "Sponsor Catalogs" },
+                    { 3, 1, "Comprehensive reports for sponsors and admins — track points, sales, and driver activity.", 3, "bar-chart-3", "Reporting & Analytics" },
+                    { 4, 1, "Enterprise-grade security with encrypted data, audit logging, and role-based access control.", 4, "shield-check", "Security & Trust" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "TeamMembers",
+                columns: new[] { "Id", "AboutInfoId", "DisplayOrder", "FirstName", "LastName", "Role" },
+                values: new object[,]
+                {
+                    { 1, 1, 1, "Ben", "Nazaruk", "Team Lead" },
+                    { 2, 1, 2, "Stella", "Herzberg", "Software Engineer" },
+                    { 3, 1, 3, "Ella", "Patel", "Software Engineer" },
+                    { 4, 1, 4, "Trey", "Larkins", "Software Engineer" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "TechStackItems",
+                columns: new[] { "Id", "AboutInfoId", "Category", "DisplayOrder", "Name" },
+                values: new object[,]
+                {
+                    { 1, 1, "Frontend", 1, "React 19" },
+                    { 2, 1, "Frontend", 2, "React Router 7" },
+                    { 3, 1, "Frontend", 3, "React Query" },
+                    { 4, 1, "Frontend", 4, "Vite 7" },
+                    { 5, 1, "Frontend", 5, "SCSS Modules" },
+                    { 6, 1, "Backend", 1, "ASP.NET Core 10" },
+                    { 7, 1, "Backend", 2, "EF Core 10" },
+                    { 8, 1, "Backend", 3, "C# 14" },
+                    { 9, 1, "Database", 1, "MySQL 8" },
+                    { 10, 1, "Cloud", 1, "AWS EC2" },
+                    { 11, 1, "CI/CD", 1, "GitHub Actions" }
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AdminUsers_UserId",
+                table: "AdminUsers",
+                column: "UserId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -264,9 +439,41 @@ namespace WebApi.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_DriverUsers_SponsorOrgId",
+                table: "DriverUsers",
+                column: "SponsorOrgId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DriverUsers_UserId",
+                table: "DriverUsers",
+                column: "UserId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Features_AboutInfoId",
+                table: "Features",
+                column: "AboutInfoId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SponsorUsers_SponsorOrgId",
                 table: "SponsorUsers",
                 column: "SponsorOrgId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SponsorUsers_UserId",
+                table: "SponsorUsers",
+                column: "UserId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TeamMembers_AboutInfoId",
+                table: "TeamMembers",
+                column: "AboutInfoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TechStackItems_AboutInfoId",
+                table: "TechStackItems",
+                column: "AboutInfoId");
         }
 
         /// <inheritdoc />
@@ -291,7 +498,19 @@ namespace WebApi.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "DriverUsers");
+
+            migrationBuilder.DropTable(
+                name: "Features");
+
+            migrationBuilder.DropTable(
                 name: "SponsorUsers");
+
+            migrationBuilder.DropTable(
+                name: "TeamMembers");
+
+            migrationBuilder.DropTable(
+                name: "TechStackItems");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
@@ -301,6 +520,9 @@ namespace WebApi.Migrations
 
             migrationBuilder.DropTable(
                 name: "SponsorOrgs");
+
+            migrationBuilder.DropTable(
+                name: "AboutInfos");
         }
     }
 }
