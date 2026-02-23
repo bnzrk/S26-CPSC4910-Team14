@@ -38,6 +38,30 @@ public class SponsorOrgsController : ControllerBase
     }
 
     #region Drivers
+    [HttpGet("{orgId}/drivers")]
+    [HttpGet("drivers")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<ActionResult> GetOrgDrivers(int? orgId)
+    {
+        var resolvedOrgId = orgId ?? await GetCurrentSponsorOrgId();
+        if (resolvedOrgId is null) return BadRequest("Could not resolve sponor organization.");
+
+        var driverModels = await _db.DriverUsers
+            .AsNoTracking()
+            .Where(d => d.SponsorOrgId == resolvedOrgId)
+            .Include(d => d.User)
+            .Select(d => new DriverModel
+            {
+               Id = d.Id,
+               Email = d.User.Email,
+               FirstName = d.User.FirstName,
+               LastName = d.User.LastName
+            })
+            .ToListAsync();
+
+        return Ok(driverModels);
+    }
+
     // Drivers will be added to sponsor orgs through applications later.
     [HttpPost("{orgId}/drivers/{driverId}")]
     [Authorize(Policy = PolicyNames.AdminOnly)]
@@ -79,11 +103,15 @@ public class SponsorOrgsController : ControllerBase
 
     #region Points
     [HttpGet("{orgId}/point-rules")]
+    [HttpGet("point-rules")]
     [Authorize]
-    public async Task<IActionResult> GetPointRules(int orgId)
+    public async Task<IActionResult> GetPointRules(int? orgId)
     {
+        var resolvedOrgId = orgId ?? await GetCurrentSponsorOrgId();
+        if (resolvedOrgId is null) return BadRequest("Could not resolve sponor organization.");
+
         var rules = await _db.PointRules
-            .Where(p => p.SponsorOrgId == orgId)
+            .Where(p => p.SponsorOrgId == resolvedOrgId)
             .Select(p => new PointRuleModel
             {
                 Id = p.Id,
@@ -97,14 +125,18 @@ public class SponsorOrgsController : ControllerBase
     }
 
     [HttpPost("{orgId}/point-rules")]
+    [HttpPost("point-rules")]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
-    public async Task<IActionResult> CreatePointRule(int orgId, [FromBody] CreatePointRulesModel request)
+    public async Task<IActionResult> CreatePointRule(int? orgId, [FromBody] CreatePointRulesModel request)
     {
+        // Try to resolve an org id for the currently logged in user.
+        var resolvedOrgId = orgId ?? await GetCurrentSponsorOrgId();
+        if (resolvedOrgId is null) return BadRequest("Could not resolve sponor organization.");
+
+        // Ensure sponsor aren't trying to edit rules for another org.
         if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
         {
-            var userId = _userManager.GetUserId(User);
-            var sponsor = await _db.SponsorUsers.Where(s => s.UserId == userId).FirstOrDefaultAsync();
-            if (sponsor is null || sponsor.SponsorOrgId != orgId)
+            if (resolvedOrgId != orgId)
             {
                 return BadRequest("Cannot modify rules for an organization you are not a sponsor for.");
             }
@@ -112,7 +144,7 @@ public class SponsorOrgsController : ControllerBase
 
         var rule = new PointRule
         {
-            SponsorOrgId = orgId,
+            SponsorOrgId = resolvedOrgId.Value,
             Reason = request.Reason,
             BalanceChange = request.BalanceChange
         };
@@ -123,20 +155,24 @@ public class SponsorOrgsController : ControllerBase
     }
 
     [HttpDelete("{orgId}/point-rules/{ruleId}")]
+    [HttpDelete("point-rules/{ruleId}")]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
-    public async Task<IActionResult> DeletePointRule(int orgId, int ruleId)
+    public async Task<IActionResult> DeletePointRule(int? orgId, int ruleId)
     {
+        // Try to resolve an org id for the currently logged in user.
+        var resolvedOrgId = orgId ?? await GetCurrentSponsorOrgId();
+        if (resolvedOrgId is null) return BadRequest("Could not resolve sponor organization.");
+
+        // Ensure sponsor aren't trying to edit rules for another org.
         if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
         {
-            var userId = _userManager.GetUserId(User);
-            var sponsor = await _db.SponsorUsers.Where(s => s.UserId == userId).FirstOrDefaultAsync();
-            if (sponsor is null || sponsor.SponsorOrgId != orgId)
+            if (resolvedOrgId != orgId)
             {
                 return BadRequest("Cannot modify rules for an organization you are not a sponsor for.");
             }
         }
 
-        var result = await _db.PointRules.Where(p => p.Id == ruleId && p.SponsorOrgId == orgId).ExecuteDeleteAsync();
+        var result = await _db.PointRules.Where(p => p.Id == ruleId && p.SponsorOrgId == resolvedOrgId).ExecuteDeleteAsync();
         if (result < 1)
         {
             return BadRequest();
@@ -146,4 +182,27 @@ public class SponsorOrgsController : ControllerBase
         return Ok();
     }
     #endregion
+
+    private async Task<int?> GetCurrentSponsorOrgId()
+    {
+        var userId = _userManager.GetUserId(User);
+        if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
+        {
+            return await _db.SponsorUsers
+                .AsNoTracking()
+                .Where(s => s.UserId == userId)
+                .Select(s => (int?)s.SponsorOrgId)
+                .FirstOrDefaultAsync();
+        }
+        else if (User.IsInRole(UserTypeRoles.Role(UserType.Driver)))
+        {
+            return await _db.SponsorUsers
+                .AsNoTracking()
+                .Where(s => s.UserId == userId)
+                .Select(s => (int?)s.SponsorOrgId)
+                .FirstOrDefaultAsync();   
+        }
+
+        return null;
+    }
 }
