@@ -80,7 +80,7 @@ public class SponsorOrgsController : ControllerBase
     #region Points
     [HttpGet("{orgId}/point-rules")]
     [Authorize]
-    public async Task<IActionResult> CreatePointRule(int orgId)
+    public async Task<IActionResult> GetPointRules(int orgId)
     {
         var rules = await _db.PointRules
             .Where(p => p.SponsorOrgId == orgId)

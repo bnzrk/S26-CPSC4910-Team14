@@ -46,12 +46,16 @@ public class DriverUsersController : ControllerBase
 
     #region Points
     [HttpGet("{driverId}/points")]
+    [HttpGet("me/points")]
     [Authorize]
-    public async Task<ActionResult> GetPoints(int driverId)
+    public async Task<ActionResult> GetPoints(int? driverId)
     {
+        var resolvedDriverId = driverId ?? await GetCurrentDriverId();
+        if (resolvedDriverId is null) return BadRequest();
+
         var points = await _db.PointTransactions
             .AsNoTracking()
-            .Where(p => p.DriverUserId == driverId)
+            .Where(p => p.DriverUserId == resolvedDriverId)
             .OrderByDescending(p => p.TransactionDateUtc)
             .Select(p => p.BalanceChange)
             .SumAsync();
@@ -59,16 +63,20 @@ public class DriverUsersController : ControllerBase
     }
 
     [HttpGet("{driverId}/point-transactions")]
+    [HttpGet("me/point-transactions")]
     [Authorize]
     public async Task<ActionResult> GetPointTransactions(
-        int driverId,
+        int? driverId,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
+        var resolvedDriverId = driverId ?? await GetCurrentDriverId();
+        if (resolvedDriverId is null) return BadRequest();
+
         // Normal EF query but don't await it.
         var query = _db.PointTransactions
             .AsNoTracking()
-            .Where(p => p.DriverUserId == driverId)
+            .Where(p => p.DriverUserId == resolvedDriverId)
             .OrderByDescending(p => p.TransactionDateUtc)
             .Select(p => new PointTransactionModel
             {
@@ -124,4 +132,14 @@ public class DriverUsersController : ControllerBase
         return Ok();
     }
     #endregion
+
+    private async Task<int?> GetCurrentDriverId()
+    {
+        var userId = _userManager.GetUserId(User);
+        return await _db.DriverUsers
+            .AsNoTracking()
+            .Where(d => d.UserId == userId)
+            .Select(d => (int?)d.Id)
+            .FirstOrDefaultAsync();
+    }
 }

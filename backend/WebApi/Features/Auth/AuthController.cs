@@ -1,11 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using WebApi.Features.Auth.Models;
 using WebApi.Data.Entities;
-using WebApi.Data.Enums;
 using Microsoft.AspNetCore.Authorization;
-using WebApi.Data;
 
 namespace WebApi.Features.Auth;
 
@@ -54,14 +51,14 @@ public class AuthController : ControllerBase
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
         {
-            return Ok(new AuthCredentialsModel
+            return Ok(new ProfileModel
             {
                 IsAuthenticated = false,
                 User = null
             });
         }
 
-        return Ok(new AuthCredentialsModel
+        return Ok(new ProfileModel
         {
             IsAuthenticated = true,
             User = new UserModel
