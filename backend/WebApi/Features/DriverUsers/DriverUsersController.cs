@@ -46,7 +46,7 @@ public class DriverUsersController : ControllerBase
 
     #region Points
     [HttpGet("{driverId}/points")]
-    [HttpGet("/points")]
+    [HttpGet("points")]
     [Authorize]
     public async Task<ActionResult> GetPoints(int? driverId)
     {
@@ -63,7 +63,7 @@ public class DriverUsersController : ControllerBase
     }
 
     [HttpGet("{driverId}/point-transactions")]
-    [HttpGet("/point-transactions")]
+    [HttpGet("point-transactions")]
     [Authorize]
     public async Task<ActionResult> GetPointTransactions(
         int? driverId,
