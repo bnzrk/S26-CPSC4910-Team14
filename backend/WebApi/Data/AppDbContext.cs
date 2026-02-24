@@ -24,6 +24,10 @@ public class AppDbContext : IdentityDbContext<User>
     // Sponsor Orgs
     public DbSet<SponsorOrg> SponsorOrgs { get; set; }
 
+    // Points
+    public DbSet<PointTransaction> PointTransactions { get; set; }
+    public DbSet<PointRule> PointRules { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -31,7 +35,7 @@ public class AppDbContext : IdentityDbContext<User>
         // Table relationships
         modelBuilder.Entity<AdminUser>(b =>
         {
-            b.HasKey(a => a.UserId);
+            b.HasKey(a => a.Id);
 
             b.HasOne(a => a.User)
                 .WithOne()
@@ -44,7 +48,7 @@ public class AppDbContext : IdentityDbContext<User>
 
         modelBuilder.Entity<SponsorUser>(b =>
         {
-            b.HasKey(a => a.UserId);
+            b.HasKey(a => a.Id);
 
             b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
                 .WithMany("SponsorUsers")
@@ -65,7 +69,7 @@ public class AppDbContext : IdentityDbContext<User>
 
         modelBuilder.Entity<DriverUser>(b =>
         {
-            b.HasKey(a => a.UserId);
+            b.HasKey(a => a.Id);
 
             b.HasOne(a => a.User)
                 .WithOne()

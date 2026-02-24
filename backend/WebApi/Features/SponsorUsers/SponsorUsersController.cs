@@ -10,14 +10,14 @@ using WebApi.Features.Users;
 namespace WebApi.Features.SponsorUsers;
 
 [ApiController]
-[Route("/users/sponsors")]
-public class AdminUsersController : ControllerBase
+[Route("/sponsors")]
+public class SponsorUsersController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly UserManager<User> _userManager;
     private readonly IUsersService _usersService;
 
-    public AdminUsersController(
+    public SponsorUsersController(
         AppDbContext db, 
         UserManager<User> userManager, 
         IUsersService usersService)
