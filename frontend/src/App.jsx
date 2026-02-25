@@ -7,7 +7,7 @@ import GuestRoute from './routes/GuestRoute';
 import ProtectedRoute from './routes/ProtectedRoute';
 import AboutPage from './pages/About/AboutPage';
 import LoginPage from './pages/Login/LoginPage';
-import PointRulesPage from './pages/PointRules/PointRulesPage';
+import PointRulesPage from './pages/PointsRules/PointRulesPage';
 import './App.scss';
 
 export default function App() {
