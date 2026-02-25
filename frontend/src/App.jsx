@@ -1,12 +1,14 @@
-import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { Routes, Route, Navigate, Link } from 'react-router-dom';
 import { queryClient } from './api/queryClient';
 import { useNavigate } from "react-router-dom";
 import { useCurrentUser } from "./api/currentUser";
 import { apiFetch } from "./api/apiFetch";
+import { USER_TYPES } from './constants/userTypes';
 import GuestRoute from './routes/GuestRoute';
 import ProtectedRoute from './routes/ProtectedRoute';
 import AboutPage from './pages/About/AboutPage';
 import LoginPage from './pages/Login/LoginPage';
+import PointsPage from './pages/Points/PointsPage'
 import './App.scss';
 
 export default function App() {
@@ -57,6 +59,11 @@ export default function App() {
           </GuestRoute>
           } />
         <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/points" element={
+          <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+            <PointsPage />
+          </ProtectedRoute>
+        } />
       </Routes>
     </>
   );
