@@ -9,17 +9,6 @@ export default function Navbar() {
 
   const isLoggedIn = !!currentUser;
   const isDriver = currentUser?.userType === 'Driver'; 
-  const isSponsor = currentUser?.userType === 'Sponsor';
-  const isAdmin = currentUser?.userType === 'Admin';
-
-  function getRoleLabel() {
-    if (isDriver) return { label: 'Driver', color: '#4caf50' };
-    if (isSponsor) return { label: 'Sponsor', color: '#2196f3' };
-    if (isAdmin) return { label: 'Admin', color: '#f44336' };
-    return null;
-  }
-
-  const roleLabel = getRoleLabel();
 
   async function handleLogout() {
     try {
@@ -44,21 +33,11 @@ export default function Navbar() {
           isLoggedIn ? (
             <>
               <span style={{ fontSize:'0.9rem', opacity:0.8 }}>{currentUser.email}</span>
-
-              {/* Adding in labels for roles */}
-              {roleLabel && (
-                <span style={{ fontSize:'0.75rem', fontWeight:'600', padding:'0.2rem 0.6rem', borderRadius:'999px', backgroundColor: roleLabel.color, color:'white' }}>
-                  {roleLabel.label}
-                </span>
-              )}
-
-              {/* Only drivers will see the points */}
               {isDriver && (
                 <span style={{ color:'#f5c518', fontWeight:'600' }}>
                   🏆 {currentUser.totalPoints ?? 0} pts
                 </span>
               )}
-
               <button onClick={handleLogout} style={{ padding:'0.4rem 1rem', border:'2px solid white', borderRadius:'6px', background:'transparent', color:'white', cursor:'pointer' }}>
                 Log Out
               </button>

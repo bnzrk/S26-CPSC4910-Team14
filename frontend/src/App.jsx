@@ -39,22 +39,7 @@ export default function App() {
 
   return (
     <>
-      <nav style={{ padding: '1rem', textAlign: 'right' }}>
-        {!isLoading && (
-          user ? (
-            <>
-              <span style={{ marginRight: "1rem" }}>
-                {user?.email}
-              </span>
-              <button onClick={handleLogout}>
-                Logout
-              </button>
-            </>
-          ) : (
-            <Link to="/login">Sign In</Link>
-          )
-        )}
-      </nav>
+      <Navbar />
       <Routes>
         <Route path="/" element={<AboutPage />} />
         <Route path="/about" element={<AboutPage />} />
