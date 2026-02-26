@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useCurrentUser } from "./currentUser";
 import { apiFetch } from "./apiFetch";
 import { USER_TYPES } from "../constants/userTypes";
@@ -20,6 +20,6 @@ export function usePointHistory(page, pageSize) {
     queryKey: ['driverPointTransactions', page, pageSize],
     queryFn: async () =>
       apiFetch(`/drivers/point-transactions?page=${page}&pageSize=${pageSize}`).then(r => r.json()),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 }

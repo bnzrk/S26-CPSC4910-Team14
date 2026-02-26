@@ -26,7 +26,7 @@
 
   &:disabled {
     opacity: 0.6;
-    cursor: not-allowed;
+    cursor: default;
   }
 }
 
@@ -43,12 +43,12 @@
 
   &:hover:not(:disabled) {
     border-color: var(--color-accent);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    color: var(--color-accent); 
   }
 
   &:disabled {
     opacity: 0.6;
-    cursor: not-allowed;
+    cursor: default;
   }
 }
 

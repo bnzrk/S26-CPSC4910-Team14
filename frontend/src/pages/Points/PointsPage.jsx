@@ -22,7 +22,7 @@ function formatDMY(dateLike)
 export default function PointsPage()
 {
   const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const pageSize = 5;
 
   const {
     data: totalPoints,
@@ -58,7 +58,7 @@ export default function PointsPage()
 
   return (
     <main className={styles.page}>
-      <CardHost>
+      <CardHost title={'Points'} subtitle={'Point balance and history'}>
         <PointCard points={totalPoints}></PointCard>
         {hasError && (
           <Error message={'Something went wrong loading your points.'}></Error>
@@ -66,6 +66,7 @@ export default function PointsPage()
         <Card title="Point History" headerRight={
           <div className={styles.pager}>
             <button
+              type="button"
               className={styles.buttonSecondary}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={!canPrev || historyLoading}
@@ -76,6 +77,7 @@ export default function PointsPage()
               Page {page} of {totalPages}
             </span>
             <button
+              type="button"
               className={styles.buttonSecondary}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={!canNext || historyLoading}
