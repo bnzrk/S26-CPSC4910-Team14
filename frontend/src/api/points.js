@@ -11,5 +11,15 @@ export function usePoints() {
         queryKey: ["points", user?.id],
         queryFn: async () => apiFetch('/drivers/points').then(r => r.json()),
         enabled: !!user && isDriver,
+        retry: 1
     });
+}
+
+export function usePointHistory(page, pageSize) {
+  return useQuery({
+    queryKey: ['driverPointTransactions', page, pageSize],
+    queryFn: async () =>
+      apiFetch(`/drivers/point-transactions?page=${page}&pageSize=${pageSize}`).then(r => r.json()),
+    keepPreviousData: true,
+  });
 }
