@@ -136,7 +136,7 @@ public class SponsorOrgsController : ControllerBase
         // Ensure sponsor aren't trying to edit rules for another org.
         if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
         {
-            if (resolvedOrgId != orgId)
+            if (orgId is not null && resolvedOrgId != orgId)
             {
                 return BadRequest("Cannot modify rules for an organization you are not a sponsor for.");
             }
@@ -154,6 +154,35 @@ public class SponsorOrgsController : ControllerBase
         return Ok();
     }
 
+    [HttpPatch("{orgId}/point-rules/{ruleId}")]
+    [HttpPatch("point-rules/{ruleId}")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<IActionResult> UpdatePointRule(int? orgId, int ruleId, [FromBody] UpdatePointRulesModel request)
+    {
+        // Try to resolve an org id for the currently logged in user.
+        var resolvedOrgId = orgId ?? await GetCurrentSponsorOrgId();
+        if (resolvedOrgId is null) return BadRequest("Could not resolve sponor organization.");
+
+        // Ensure sponsor aren't trying to edit rules for another org.
+        if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
+        {
+            if (orgId is not null && resolvedOrgId != orgId)
+            {
+                return BadRequest("Cannot modify rules for an organization you are not a sponsor for.");
+            }
+        }
+
+        var rule = _db.PointRules.Where(r => r.Id == ruleId && r.SponsorOrgId == resolvedOrgId).FirstOrDefault();
+        if (rule is null)
+        {
+            return NotFound();
+        }
+        rule.BalanceChange = request.BalanceChange;
+        _db.SaveChanges();
+
+        return Ok();
+    }
+
     [HttpDelete("{orgId}/point-rules/{ruleId}")]
     [HttpDelete("point-rules/{ruleId}")]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
@@ -166,7 +195,7 @@ public class SponsorOrgsController : ControllerBase
         // Ensure sponsor aren't trying to edit rules for another org.
         if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
         {
-            if (resolvedOrgId != orgId)
+            if (orgId is not null && resolvedOrgId != orgId)
             {
                 return BadRequest("Cannot modify rules for an organization you are not a sponsor for.");
             }

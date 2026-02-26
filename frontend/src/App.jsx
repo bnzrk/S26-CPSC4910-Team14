@@ -7,6 +7,7 @@ import GuestRoute from './routes/GuestRoute';
 import ProtectedRoute from './routes/ProtectedRoute';
 import AboutPage from './pages/About/AboutPage';
 import LoginPage from './pages/Login/LoginPage';
+import PointRulesPage from './pages/PointsRules/PointRulesPage';
 import './App.scss';
 
 export default function App() {
@@ -52,10 +53,12 @@ export default function App() {
         <Route path="/" element={<AboutPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/login" element={
+  
           <GuestRoute>
             <LoginPage />
           </GuestRoute>
           } />
+        <Route path="/point-rules" element={<PointRulesPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
