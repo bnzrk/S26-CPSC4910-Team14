@@ -1,58 +1,53 @@
+import { useCurrentUser } from "../../../api/currentUser";
+import { apiFetch } from "../../../api/apiFetch";
+import { queryClient } from "../../../api/queryClient";
 import { useNavigate, Link } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { API_URL } from '../../config';
-import styles from './Navbar.module.scss';
 
-// Navigation bar component
 export default function Navbar() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
-  const { data: currentUser } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: async () => {
-      const res = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
-      if (!res.ok) return null;
-      return res.json();
-    },
-    retry: false,
-  });
+  const { data: currentUser, isLoading } = useCurrentUser();
 
   const isLoggedIn = !!currentUser;
-  const isDriver = currentUser?.role === 'Driver'; 
+  const isDriver = currentUser?.userType === 'Driver'; 
 
   async function handleLogout() {
-    await fetch(`${API_URL}/auth/logout`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-    queryClient.clear();
-    navigate('/login');
+    try {
+      await apiFetch("/auth/logout", { method: "POST" });
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+    queryClient.setQueryData(["currentUser"], null);
+    navigate("/login");
   }
 
   return (
-    <nav className={styles.navbar}>
-      <div className={styles.brand}>
-        <Link to="/">Good Driver Incentive</Link>
+    <nav style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 2rem', height:'60px', backgroundColor:'#3d3d3d', color:'white' }}>
+      <div>
+        <Link to="/" style={{ color:'white', textDecoration:'none', fontWeight:'700', fontSize:'1.2rem' }}>
+          Good Driver Incentive
+        </Link>
       </div>
 
-      <div className={styles.actions}>
-        {isLoggedIn ? (
-          <>
-            {isDriver && (
-              <span className={styles.points}>
-                🏆 {currentUser.totalPoints ?? 0} pts
-              </span>
-            )}
-            <button onClick={handleLogout} className={styles.btnOutline}>
-              Log Out
-            </button>
-          </>
-        ) : (
-          <>
-            <Link to="/login" className={styles.btnOutline}>Log In</Link>
-            <Link to="/register" className={styles.btnPrimary}>Register</Link>
-          </>
+      <div style={{ display:'flex', alignItems:'center', gap:'1rem' }}>
+        {!isLoading && (
+          isLoggedIn ? (
+            <>
+              <span style={{ fontSize:'0.9rem', opacity:0.8 }}>{currentUser.email}</span>
+              {isDriver && (
+                <span style={{ color:'#f5c518', fontWeight:'600' }}>
+                  🏆 {currentUser.totalPoints ?? 0} pts
+                </span>
+              )}
+              <button onClick={handleLogout} style={{ padding:'0.4rem 1rem', border:'2px solid white', borderRadius:'6px', background:'transparent', color:'white', cursor:'pointer' }}>
+                Log Out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" style={{ padding:'0.4rem 1rem', border:'2px solid white', borderRadius:'6px', color:'white', textDecoration:'none' }}>Log In</Link>
+              <Link to="/register" style={{ padding:'0.4rem 1rem', borderRadius:'6px', background:'white', color:'#2d2d2d', textDecoration:'none' }}>Register</Link>
+            </>
+          )
         )}
       </div>
     </nav>

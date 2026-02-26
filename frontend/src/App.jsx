@@ -7,39 +7,9 @@ import GuestRoute from './routes/GuestRoute';
 import ProtectedRoute from './routes/ProtectedRoute';
 import AboutPage from './pages/About/AboutPage';
 import LoginPage from './pages/Login/LoginPage';
+import Navbar from './pages/About/components/NavBar';
 import './App.scss';
 
-// Navigation bar component
-function Navbar({ user, isLoading, onLogout }) {
-  const isDriver = user?.role === 'Driver';
-
-  return (
-    <nav className="navbar">
-      <div className="navbar-brand">
-        <Link to="/">Good Driver Incentive</Link>
-      </div>
-
-      <div className="navbar-actions">
-        {!isLoading && (
-          user ? (
-            <>
-              <span className="navbar-email">{user.email}</span>
-              {isDriver && (
-                <span className="navbar-points">🏆 {user.totalPoints ?? 0} pts</span>
-              )}
-              <button onClick={onLogout} className="btn-outline">Log Out</button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="btn-outline">Log In</Link>
-              <Link to="/register" className="btn-primary">Register</Link>
-            </>
-          )
-        )}
-      </div>
-    </nav>
-  );
-}
 
 // Main application component
 export default function App() {
@@ -65,22 +35,7 @@ export default function App() {
 
   return (
     <>
-      <nav style={{ padding: '1rem', textAlign: 'right' }}>
-        {!isLoading && (
-          user ? (
-            <>
-              <span style={{ marginRight: "1rem" }}>
-                {user?.email}
-              </span>
-              <button onClick={handleLogout}>
-                Logout
-              </button>
-            </>
-          ) : (
-            <Link to="/login">Sign In</Link>
-          )
-        )}
-      </nav>
+      <Navbar />
       <Routes>
         <Route path="/" element={<AboutPage />} />
         <Route path="/about" element={<AboutPage />} />
