@@ -59,7 +59,7 @@ export default function LoginPage() {
               type="email"
               className={styles.input}
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); setErrorMsg(''); }}
               required
               autoComplete="email"
             />
@@ -72,7 +72,7 @@ export default function LoginPage() {
               type="password"
               className={styles.input}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => { setPassword(e.target.value); setErrorMsg(''); }}
               required
               autoComplete="current-password"
             />
