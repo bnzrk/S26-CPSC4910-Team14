@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { API_URL } from '../../config';
+import CardHost from '@/components/CardHost/CardHost';
+import Card from '@/components/Card/Card';
 import styles from './PointRulesPage.module.scss';
 
 async function fetchPointRules() {
@@ -89,16 +91,9 @@ export default function PointRulesPage() {
   }
 
   return (
-    <div className={styles.page}>
-      <div className={styles.container}>
-        <h1 className={styles.title}>Point Rules</h1>
-        <p className={styles.subtitle}>
-          Manage the rules that award or deduct points from drivers.
-        </p>
-
+    <CardHost title={'Point Rules'} subtitle={'Manage the rules that award or deduct points from drivers.'}>
         {/* Create Rule Form */}
-        <div className={styles.card}>
-          <h2 className={styles.cardTitle}>Add New Rule</h2>
+        <Card title={'Add New Rule'}>
           <form onSubmit={handleCreate} className={styles.form}>
             <div className={styles.formRow}>
               <div className={styles.field}>
@@ -133,12 +128,10 @@ export default function PointRulesPage() {
             </div>
             {errorMsg && <p className={styles.error}>{errorMsg}</p>}
           </form>
-        </div>
+        </Card>
 
         {/* Rules List */}
-        <div className={styles.card}>
-          <h2 className={styles.cardTitle}>Existing Rules</h2>
-
+        <Card title={'Existing Rules'}>
           {isLoading && <p className={styles.muted}>Loading rules...</p>}
           {isError && <p className={styles.error}>Failed to load rules.</p>}
 
@@ -216,8 +209,7 @@ export default function PointRulesPage() {
               </tbody>
             </table>
           )}
-        </div>
-      </div>
-    </div>
+        </Card>
+    </CardHost>
   );
 }
