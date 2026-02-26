@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Data;
+using WebApi.Data.Entities;
 using WebApi.Features.About.Models;
 
 namespace WebApi.Features.About;
@@ -54,5 +56,35 @@ public class AboutController : ControllerBase
             .FirstOrDefaultAsync();
 
         return (aboutInfo is null) ? NotFound() : aboutInfo;
+    }
+
+    [HttpPost("new")]
+    [Authorize(Policy = PolicyNames.AdminOnly)]
+    public async Task<ActionResult> UpdateAboutInfo()
+    {
+        var sprintStart = new DateTime(2026, 2, 5, 0, 0, 0, DateTimeKind.Utc);
+        var now = DateTime.UtcNow;
+        int sprintWeek = 1 + (int)(now - sprintStart).TotalDays / 7;
+
+        var aboutInfo = await _db.AboutInfos.OrderByDescending(a => a.ReleaseDateUtc).FirstOrDefaultAsync();
+        if (aboutInfo is null)
+        {
+            var newAboutInfo = new AboutInfo
+            {
+                Team = 14,
+                Version = sprintWeek,
+                ReleaseDateUtc = now,
+                ProductName = "DrivePoints",
+                ProductDescription = "A rewards platform where sponsor companies award points to truck drivers for good driving behavior, redeemable for products from a sponsor-managed catalog."
+            };
+            _db.SaveChanges();
+            return Ok();
+        }
+
+        aboutInfo.Version = sprintWeek;
+        aboutInfo.ReleaseDateUtc = now;
+        _db.SaveChanges();
+
+        return Ok();
     }
 }
