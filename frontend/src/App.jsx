@@ -9,6 +9,39 @@ import AboutPage from './pages/About/AboutPage';
 import LoginPage from './pages/Login/LoginPage';
 import './App.scss';
 
+// Navigation bar component
+function Navbar({ user, isLoading, onLogout }) {
+  const isDriver = user?.role === 'Driver';
+
+  return (
+    <nav className="navbar">
+      <div className="navbar-brand">
+        <Link to="/">Good Driver Incentive</Link>
+      </div>
+
+      <div className="navbar-actions">
+        {!isLoading && (
+          user ? (
+            <>
+              <span className="navbar-email">{user.email}</span>
+              {isDriver && (
+                <span className="navbar-points">🏆 {user.totalPoints ?? 0} pts</span>
+              )}
+              <button onClick={onLogout} className="btn-outline">Log Out</button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="btn-outline">Log In</Link>
+              <Link to="/register" className="btn-primary">Register</Link>
+            </>
+          )
+        )}
+      </div>
+    </nav>
+  );
+}
+
+// Main application component
 export default function App() {
   const navigate = useNavigate();
 
