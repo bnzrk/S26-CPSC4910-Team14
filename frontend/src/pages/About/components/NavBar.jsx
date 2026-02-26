@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { API_URL } from '../../config';
 import styles from './Navbar.module.scss';
 
+// Navigation bar component
 export default function Navbar() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -18,7 +19,7 @@ export default function Navbar() {
   });
 
   const isLoggedIn = !!currentUser;
-  const isDriver = currentUser?.role === 'driver'; // adjust to match your role field
+  const isDriver = currentUser?.role === 'Driver'; 
 
   async function handleLogout() {
     await fetch(`${API_URL}/auth/logout`, {
