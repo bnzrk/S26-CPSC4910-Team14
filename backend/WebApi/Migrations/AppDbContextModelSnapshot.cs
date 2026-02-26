@@ -188,20 +188,41 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Data.Entities.AdminUser", b =>
                 {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("varchar(255)");
 
-                    b.HasKey("UserId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("AdminUsers");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.DriverUser", b =>
                 {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SponsorOrgId")
+                        .HasColumnType("int");
+
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("varchar(255)");
 
-                    b.HasKey("UserId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("SponsorOrgId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("DriverUsers");
                 });
@@ -275,6 +296,60 @@ namespace WebApi.Migrations
                         });
                 });
 
+            modelBuilder.Entity("WebApi.Data.Entities.PointRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("BalanceChange")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("SponsorOrgId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SponsorOrgId");
+
+                    b.ToTable("PointRules");
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.PointTransaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("BalanceChange")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DriverUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("SponsorOrgId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("TransactionDateUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DriverUserId");
+
+                    b.HasIndex("SponsorOrgId");
+
+                    b.ToTable("PointTransactions");
+                });
+
             modelBuilder.Entity("WebApi.Data.Entities.SponsorOrg", b =>
                 {
                     b.Property<int>("Id")
@@ -295,15 +370,23 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Data.Entities.SponsorUser", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasColumnType("varchar(255)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
                     b.Property<int>("SponsorOrgId")
                         .HasColumnType("int");
 
-                    b.HasKey("UserId");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("SponsorOrgId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("SponsorUsers");
                 });
@@ -636,11 +719,17 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Data.Entities.DriverUser", b =>
                 {
+                    b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
+                        .WithMany("DriverUsers")
+                        .HasForeignKey("SponsorOrgId");
+
                     b.HasOne("WebApi.Data.Entities.User", "User")
                         .WithOne()
                         .HasForeignKey("WebApi.Data.Entities.DriverUser", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("SponsorOrg");
 
                     b.Navigation("User");
                 });
@@ -654,6 +743,36 @@ namespace WebApi.Migrations
                         .IsRequired();
 
                     b.Navigation("AboutInfo");
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.PointRule", b =>
+                {
+                    b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
+                        .WithMany("PointRules")
+                        .HasForeignKey("SponsorOrgId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SponsorOrg");
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.PointTransaction", b =>
+                {
+                    b.HasOne("WebApi.Data.Entities.DriverUser", "DriverUser")
+                        .WithMany("PointTransactions")
+                        .HasForeignKey("DriverUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
+                        .WithMany()
+                        .HasForeignKey("SponsorOrgId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DriverUser");
+
+                    b.Navigation("SponsorOrg");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.SponsorUser", b =>
@@ -706,8 +825,17 @@ namespace WebApi.Migrations
                     b.Navigation("TechStackItems");
                 });
 
+            modelBuilder.Entity("WebApi.Data.Entities.DriverUser", b =>
+                {
+                    b.Navigation("PointTransactions");
+                });
+
             modelBuilder.Entity("WebApi.Data.Entities.SponsorOrg", b =>
                 {
+                    b.Navigation("DriverUsers");
+
+                    b.Navigation("PointRules");
+
                     b.Navigation("SponsorUsers");
                 });
 #pragma warning restore 612, 618

@@ -7,6 +7,7 @@ export const queryClient = new QueryClient({
             {
                 if (error?.status === 401)
                 {   
+                    queryClient.clear();
                     queryClient.setQueryData(["currentUser"], null);
                     window.location.href = "/login";
                 }
@@ -17,6 +18,7 @@ export const queryClient = new QueryClient({
             {
                 if (error?.status === 401)
                 {
+                    queryClient.clear();
                     queryClient.setQueryData(["currentUser"], null);
                     window.location.href = "/login";
                 }

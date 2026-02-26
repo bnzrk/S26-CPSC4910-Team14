@@ -24,6 +24,10 @@ public class AppDbContext : IdentityDbContext<User>
     // Sponsor Orgs
     public DbSet<SponsorOrg> SponsorOrgs { get; set; }
 
+    // Points
+    public DbSet<PointTransaction> PointTransactions { get; set; }
+    public DbSet<PointRule> PointRules { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -31,7 +35,7 @@ public class AppDbContext : IdentityDbContext<User>
         // Table relationships
         modelBuilder.Entity<AdminUser>(b =>
         {
-            b.HasKey(a => a.UserId);
+            b.HasKey(a => a.Id);
 
             b.HasOne(a => a.User)
                 .WithOne()
@@ -44,7 +48,7 @@ public class AppDbContext : IdentityDbContext<User>
 
         modelBuilder.Entity<SponsorUser>(b =>
         {
-            b.HasKey(a => a.UserId);
+            b.HasKey(a => a.Id);
 
             b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
                 .WithMany("SponsorUsers")
@@ -65,7 +69,7 @@ public class AppDbContext : IdentityDbContext<User>
 
         modelBuilder.Entity<DriverUser>(b =>
         {
-            b.HasKey(a => a.UserId);
+            b.HasKey(a => a.Id);
 
             b.HasOne(a => a.User)
                 .WithOne()
@@ -81,8 +85,8 @@ public class AppDbContext : IdentityDbContext<User>
         {
             Id = 1,
             Team = 14,
-            Version = 2,
-            ReleaseDateUtc = new DateTime(2026, 2, 11, 0, 0, 0, DateTimeKind.Utc),
+            Version = 4,
+            ReleaseDateUtc = new DateTime(2026, 2, 26, 0, 0, 0, DateTimeKind.Utc),
             ProductName = "DrivePoints",
             ProductDescription = "A rewards platform where sponsor companies award points to truck drivers for good driving behavior, redeemable for products from a sponsor-managed catalog."
         });

@@ -6,7 +6,7 @@ using WebApi.Features.Users;
 namespace WebApi.Features.AdminUsers;
 
 [ApiController]
-[Route("/users/admins")]
+[Route("/admins")]
 public class AdminUsersController : ControllerBase
 {
     private readonly IUsersService _userService;
