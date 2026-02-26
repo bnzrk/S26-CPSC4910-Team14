@@ -136,7 +136,7 @@ public class SponsorOrgsController : ControllerBase
         // Ensure sponsor aren't trying to edit rules for another org.
         if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
         {
-            if (resolvedOrgId != orgId)
+            if (orgId is not null && resolvedOrgId != orgId)
             {
                 return BadRequest("Cannot modify rules for an organization you are not a sponsor for.");
             }
@@ -166,7 +166,7 @@ public class SponsorOrgsController : ControllerBase
         // Ensure sponsor aren't trying to edit rules for another org.
         if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
         {
-            if (resolvedOrgId != orgId)
+            if (orgId is not null && resolvedOrgId != orgId)
             {
                 return BadRequest("Cannot modify rules for an organization you are not a sponsor for.");
             }
