@@ -34,7 +34,7 @@ async function updatePointRule(id, balanceChange) {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ balanceChange }),
+    body: JSON.stringify({ balanceChange: balanceChange }),
   });
   if (!response.ok) throw new Error('Failed to update point rule');
 }
