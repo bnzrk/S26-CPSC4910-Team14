@@ -85,8 +85,8 @@ public class AppDbContext : IdentityDbContext<User>
         {
             Id = 1,
             Team = 14,
-            Version = 2,
-            ReleaseDateUtc = new DateTime(2026, 2, 11, 0, 0, 0, DateTimeKind.Utc),
+            Version = 4,
+            ReleaseDateUtc = new DateTime(2026, 2, 26, 0, 0, 0, DateTimeKind.Utc),
             ProductName = "DrivePoints",
             ProductDescription = "A rewards platform where sponsor companies award points to truck drivers for good driving behavior, redeemable for products from a sponsor-managed catalog."
         });
