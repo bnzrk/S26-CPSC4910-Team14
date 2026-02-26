@@ -8,6 +8,7 @@ import GuestRoute from './routes/GuestRoute';
 import ProtectedRoute from './routes/ProtectedRoute';
 import AboutPage from './pages/About/AboutPage';
 import LoginPage from './pages/Login/LoginPage';
+import PointRulesPage from './pages/PointsRules/PointRulesPage';
 import PointsPage from './pages/Points/PointsPage'
 import './App.scss';
 
@@ -54,10 +55,12 @@ export default function App() {
         <Route path="/" element={<AboutPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/login" element={
+  
           <GuestRoute>
             <LoginPage />
           </GuestRoute>
           } />
+        <Route path="/point-rules" element={<PointRulesPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
         <Route path="/points" element={
           <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
