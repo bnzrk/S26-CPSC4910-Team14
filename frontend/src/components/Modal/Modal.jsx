@@ -31,7 +31,7 @@ const Header = ({ children, title, ...other }) =>
             {children}
             {closeButton &&
                 <button className={styles.close} onClick={onClose}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x-icon lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x-icon lucide-x"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
                 </button>}
         </div>
     );
@@ -57,16 +57,22 @@ Modal.Footer = Footer;
 
 export default function Modal({ isOpen, onClose, closeButton, children })
 {
-    if (!isOpen)
-        return null
-
     // Scroll lock when open
     useEffect(() =>
     {
+        if (!isOpen) return;
+
         const prev = document.body.style.overflow;
         document.body.style.overflow = "hidden";
-        return () => (document.body.style.overflow = prev);
-    }, []);
+
+        return () =>
+        {
+            document.body.style.overflow = prev;
+        };
+    }, [isOpen]);
+
+    if (!isOpen)
+        return null
 
     const root = document.getElementById("modal-root");
     if (!root)
