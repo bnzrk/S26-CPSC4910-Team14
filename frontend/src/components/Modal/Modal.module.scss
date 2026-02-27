@@ -39,3 +39,24 @@
 .footer {
   padding: 0.75rem 1.5rem;
 }
+
+.close {
+    background: none;
+    outline: none;
+    border: none;
+    margin: 0;
+    margin-right: -8px;
+    cursor: pointer;
+}
+
+@media only screen 
+and (max-width : 380px) {
+  .modal {
+    width: 100%; 
+    border-radius: $grid-1x $grid-1x 0 0;
+  }
+
+  .overlay {
+    place-items: end;
+  }
+}

@@ -1,4 +1,4 @@
-import { useEffect, createContext, useContext, Children} from 'react';
+import { useEffect, createContext, useContext, Children } from 'react';
 import { createPortal } from 'react-dom';
 import Card from '../Card/Card';
 import styles from './Modal.module.scss';
@@ -21,15 +21,18 @@ const getChildrenFromDisplayName = (children, displayName) =>
     });
 }
 
-const Header = ({ children, title, closeButton, ...other }) =>
+const Header = ({ children, title, ...other }) =>
 {
-    const { onClose } = useModal();
+    const { onClose, closeButton } = useModal();
 
     return (
         <div className={styles.header}>
             {title && <h2 className={styles.title}>{title}</h2>}
             {children}
-            <button onClick={onClose}>X</button>
+            {closeButton &&
+                <button className={styles.close} onClick={onClose}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x-icon lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>}
         </div>
     );
 }
@@ -52,7 +55,7 @@ const Footer = ({ children, title, ...other }) => (
 Footer.displayName = "Footer";
 Modal.Footer = Footer;
 
-export default function Modal({ title, subtitle, isOpen, onClose, children })
+export default function Modal({ isOpen, onClose, closeButton, children })
 {
     if (!isOpen)
         return null
@@ -72,7 +75,7 @@ export default function Modal({ title, subtitle, isOpen, onClose, children })
     const header = getChildrenFromDisplayName(children, "Header");
 
     return createPortal(
-        <ModalContext.Provider value={{ onClose }}>
+        <ModalContext.Provider value={{ onClose, closeButton }}>
             <div className={styles.overlay}>
                 <div className={styles.modal}>
                     {children}
