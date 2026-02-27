@@ -1,6 +1,5 @@
 import { useEffect, createContext, useContext, Children } from 'react';
 import { createPortal } from 'react-dom';
-import Card from '../Card/Card';
 import styles from './Modal.module.scss';
 import clsx from 'clsx';
 
@@ -39,7 +38,7 @@ const Header = ({ children, title, ...other }) =>
 Header.displayName = "Header";
 Modal.Header = Header;
 
-const Body = ({ children, title, ...other }) => (
+const Body = ({ children, ...other }) => (
     <div className={styles.body}>
         {children}
     </div>
@@ -47,13 +46,40 @@ const Body = ({ children, title, ...other }) => (
 Body.displayName = "Body";
 Modal.Body = Body;
 
-const Footer = ({ children, title, ...other }) => (
+const Footer = ({ children, ...other }) => (
     <div className={styles.footer}>
         {children}
     </div>
 )
 Footer.displayName = "Footer";
 Modal.Footer = Footer;
+
+const Buttons = ({
+    children,
+    position,
+    ...other }) =>
+{
+    var positionStyle;
+    switch (position) {
+        case 'right':
+            positionStyle = styles.right;
+            break;
+        case 'left':
+            positionStyle = styles.left;
+            break;
+        default:
+            positionStyle = '';
+            break;
+    }
+
+    return (
+        <div className={clsx(styles.buttons, positionStyle)}>
+            {children}
+        </div>
+    );
+}
+Buttons.displayName = "Buttons";
+Modal.Buttons = Buttons;
 
 export default function Modal({ isOpen, onClose, closeButton, children })
 {
@@ -77,8 +103,6 @@ export default function Modal({ isOpen, onClose, closeButton, children })
     const root = document.getElementById("modal-root");
     if (!root)
         return null;
-
-    const header = getChildrenFromDisplayName(children, "Header");
 
     return createPortal(
         <ModalContext.Provider value={{ onClose, closeButton }}>
