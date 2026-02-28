@@ -86,7 +86,6 @@
     margin: 0;
     width: 100%;
     flex-direction: column;
-    --btn-pad-y: #{$grid-2x};
-    --btn-pad-x: #{$grid-1x}; 
+    --btn-height: #{$grid-6x};
   }
 }

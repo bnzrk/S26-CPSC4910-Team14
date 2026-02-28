@@ -16,7 +16,7 @@ export default function Button({ text = '', color, disabled = false, onClick})
       break;
   }
 
-  return <button type="submit" className={clsx(styles.buttonSimple, colorClass)} disabled={disabled} onClick={onClick}>
+  return <button type="button" className={clsx(styles.buttonSimple, colorClass)} disabled={disabled} onClick={onClick}>
     {text}
   </button>
 }
