@@ -12,6 +12,7 @@ import PointRulesPage from './pages/SponsorOrg/PointsRules/PointRulesPage';
 import PointsPage from './pages/Points/PointsPage'
 import SponsorOrgLayout from './pages/SponsorOrg/SponsorOrgLayout';
 import SponsorOrgPage from '@/pages/SponsorOrg/Index/SponsorOrgPage';
+import SponsorUsersPage from './pages/SponsorOrg/Users/SponsorUsersPage';
 import RegisterPage from './pages/Register/RegisterPage';
 import './App.scss';
 
@@ -58,7 +59,7 @@ export default function App()
             user ? (
               <>
                 {user.userType === 'Sponsor' && (
-                  <Link to="/point-rules" style={{
+                  <Link to="/org/point-rules" style={{
                     border: '1px solid var(--color-border)',
                     borderRadius: '4px',
                     padding: '0.4rem 1rem',
@@ -123,6 +124,7 @@ export default function App()
         }>
           <Route index element={<SponsorOrgPage />} />
           <Route path="point-rules" element={<PointRulesPage />} />
+          <Route path="users" element={<SponsorUsersPage />} />
         </Route>
       </Routes>
     </>

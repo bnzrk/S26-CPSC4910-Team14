@@ -1,0 +1,32 @@
+@use '@/styles/globals' as *;
+
+.userEmail {
+    margin: 0 $grid-1x;
+}
+
+.userModal {
+    .userHeader {
+        display: flex;
+        flex-direction: row;
+        gap: $grid-1x;
+        align-items: center;
+
+        .userName {
+            font-weight: bold;
+        }
+
+        p {
+            margin: 0;
+        }
+    }
+
+    .body {
+        display: flex;
+        padding-bottom: $grid-3x;
+    }
+
+    .userDetails {
+        margin-top: $grid-half;
+        font-size: 14px;
+    }
+}

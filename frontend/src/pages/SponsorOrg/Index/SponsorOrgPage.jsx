@@ -6,7 +6,7 @@ import CardHost from '@/components/CardHost/CardHost';
 import Modal from '@/components/Modal/Modal';
 import Button from '@/components/Button/Button';
 import ListItem from '@/components/ListItem/ListItem';
-import UsersIcon from '@/assets/icons/users.svg?react';
+import UsersIcon from '@/assets/icons/users.svg?react';     
 import ListChecksIcon from '@/assets/icons/list-checks.svg?react';
 import HandbagIcon from '@/assets/icons/handbag.svg?react';
 import TruckIcon from '@/assets/icons/truck.svg?react';
@@ -84,7 +84,7 @@ export default function SponsorOrgPage()
                     }
                 </Card>
                 <Card title='Manage Organization'>
-                    <ListItem icon={UsersIcon} label='Users' showChevron={true}></ListItem>
+                    <ListItem icon={UsersIcon} label='Users' showChevron={true} onClick={() => navigate("users")}></ListItem>
                     <ListItem icon={HandbagIcon} label='Catalog' showChevron={true}></ListItem>
                     <ListItem icon={ListChecksIcon} label='Point Rules' showChevron={true} onClick={() => navigate("point-rules")}></ListItem>
                     <ListItem icon={TruckIcon} label='Drivers' showChevron={true}></ListItem>

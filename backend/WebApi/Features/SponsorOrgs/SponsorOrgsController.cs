@@ -6,6 +6,7 @@ using WebApi.Features.SponsorOrgs.Models;
 using WebApi.Data.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using WebApi.Helpers.Pagination;
 
 namespace WebApi.Features.SponsorOrgs;
 
@@ -277,6 +278,49 @@ public class SponsorOrgsController : ControllerBase
         _db.SaveChanges();
 
         return Ok();
+    }
+    #endregion
+
+    #region Users
+    [HttpGet("{orgId}/users")]
+    [HttpGet("users")]
+    public async Task<IActionResult> GetOrgUsers(
+        int? orgId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        var resolvedOrgId = await GetCurrentSponsorOrgId();
+
+        // Ensure sponsor aren't trying to edit rules for another org.
+        if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
+        {
+            if (orgId is not null && resolvedOrgId != orgId)
+            {
+                return BadRequest("Cannot edit an organization you are not a sponsor for.");
+            }
+        }
+
+        resolvedOrgId = resolvedOrgId ?? orgId;
+        if (resolvedOrgId is null)
+            return BadRequest("Could not resolve sponor organization.");
+
+        var query = _db.SponsorUsers
+            .AsNoTracking()
+            .Include(s => s.User)
+            .Where(s => s.SponsorOrgId == resolvedOrgId && s.User.IsActive)
+            .Select(s => new SponsorUserModel
+            {
+                Id = s.Id,
+                Email = s.User.Email,
+                FirstName = s.User.FirstName,
+                LastName = s.User.LastName,
+                DateCreatedUtc = DateTime.UtcNow,
+                LastLoginUtc = DateTime.UtcNow
+            });
+
+        var pageResult = await PagedResult.ToPagedResultAsync(query, page, pageSize);
+
+        return Ok(pageResult);
     }
     #endregion
 

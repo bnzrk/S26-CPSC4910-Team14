@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation, keepPreviousData } from "@tanstack/react-query";
 import { useCurrentUser } from "./currentUser";
 import { apiFetch } from "./apiFetch";
 import { USER_TYPES } from "../constants/userTypes";
@@ -13,6 +13,18 @@ export function useSponsorOrg()
         queryFn: async () => apiFetch('/sponsor-orgs').then(r => r.json()),
         enabled: !!user && isSponsor,
         retry: 1
+    });
+}
+
+export function useSponsorOrgUsers() {
+    const { data: user } = useCurrentUser();
+    const isSponsor = user?.userType === USER_TYPES.SPONSOR;
+
+    return useQuery({
+        queryKey: ["sponsorOrgUsers", user?.id],
+        queryFn: async () => apiFetch('/sponsor-orgs/users').then(r => r.json()),
+        enabled: !!user && isSponsor,
+        placeholderData: keepPreviousData,
     });
 }
 
