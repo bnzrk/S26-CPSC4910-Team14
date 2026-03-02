@@ -1,6 +1,6 @@
 import { useSponsorOrg, useRenameSponsorOrg } from '@/api/sponsorOrg';
 import { useState, useEffect } from 'react';
-import { useNavigate, Outlet } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Card from '@/components/Card/Card';
 import CardHost from '@/components/CardHost/CardHost';
 import Modal from '@/components/Modal/Modal';
@@ -13,7 +13,6 @@ import TruckIcon from '@/assets/icons/truck.svg?react';
 import FileIcon from '@/assets/icons/file-pen-line.svg?react';
 import EditIcon from '@/assets/icons/square-pen.svg?react';
 import styles from './SponsorOrgPage.module.scss';
-import { apiFetch } from '@/api/apiFetch';
 
 function formatDate(dateString)
 {
@@ -46,7 +45,6 @@ export default function SponsorOrgPage()
 
     return (
         <main className={styles.org}>
-            <Outlet />
             <Modal isOpen={showRenameModal} closeButton={true} onClose={() => setShowRenameModal(false)}>
                 <Modal.Header title='Rename Organization'></Modal.Header>
                 <Modal.Body>
@@ -80,7 +78,7 @@ export default function SponsorOrgPage()
                             </div>
                             <div className={styles.orgInfoStats}>
                                 <div className={styles.stat}><UsersIcon /> <span>{org.sponsorCount} User{org.sponsorCount == 1 ? '' : 's'}</span></div>
-                                <div className={styles.stat}><TruckIcon /> <span>{org.driverCount} Driver{org.drivercount == 1 ? '' : 's'}</span></div>
+                                <div className={styles.stat}><TruckIcon /> <span>{org.driverCount} Driver{org.driverCount == 1 ? '' : 's'}</span></div>
                             </div>
                         </div>
                     }
@@ -88,7 +86,7 @@ export default function SponsorOrgPage()
                 <Card title='Manage Organization'>
                     <ListItem icon={UsersIcon} label='Users' showChevron={true}></ListItem>
                     <ListItem icon={HandbagIcon} label='Catalog' showChevron={true}></ListItem>
-                    <ListItem icon={ListChecksIcon} label='Point Rules' showChevron={true} onClick={() => navigate("/org/point-rules")}></ListItem>
+                    <ListItem icon={ListChecksIcon} label='Point Rules' showChevron={true} onClick={() => navigate("point-rules")}></ListItem>
                     <ListItem icon={TruckIcon} label='Drivers' showChevron={true}></ListItem>
                     <ListItem icon={FileIcon} label='Driver Applications' showChevron={true}></ListItem>
                 </Card>

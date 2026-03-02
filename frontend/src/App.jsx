@@ -8,24 +8,29 @@ import GuestRoute from './routes/GuestRoute';
 import ProtectedRoute from './routes/ProtectedRoute';
 import AboutPage from './pages/About/AboutPage';
 import LoginPage from './pages/Login/LoginPage';
-import PointRulesPage from './pages/PointsRules/PointRulesPage';
+import PointRulesPage from './pages/SponsorOrg/PointsRules/PointRulesPage';
 import PointsPage from './pages/Points/PointsPage'
-import SponsorOrgPage from '@/pages/SponsorOrg/SponsorOrgPage';
+import SponsorOrgLayout from './pages/SponsorOrg/SponsorOrgLayout';
+import SponsorOrgPage from '@/pages/SponsorOrg/Index/SponsorOrgPage';
 import RegisterPage from './pages/Register/RegisterPage';
 import './App.scss';
 
-export default function App() {
+export default function App()
+{
   const navigate = useNavigate();
 
   const { data: user, isLoading } = useCurrentUser();
 
   if (!isLoading)
-    console.log(`Current user: ${JSON.stringify(user)}`);  
+    console.log(`Current user: ${JSON.stringify(user)}`);
 
-  async function handleLogout() {
-    try {
+  async function handleLogout()
+  {
+    try
+    {
       await apiFetch("/auth/logout", { method: "POST" });
-    } catch (err) {
+    } catch (err)
+    {
       console.error("Logout failed:", err);
     }
 
@@ -105,22 +110,19 @@ export default function App() {
             <RegisterPage />
           </GuestRoute>
         } />
-        <Route path="/org/point-rules" element={
-          <ProtectedRoute allowedUserTypes={[USER_TYPES.SPONSOR]}>
-            <PointRulesPage />
-          </ProtectedRoute>
-        } />
         <Route path="*" element={<Navigate to="/" replace />} />
         <Route path="/points" element={
           <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
             <PointsPage />
           </ProtectedRoute>
         } />
-        <Route path="/org" element={
+        <Route path='/org' element={
           <ProtectedRoute allowedUserTypes={[USER_TYPES.SPONSOR]}>
-            <SponsorOrgPage />
+            <SponsorOrgLayout />
           </ProtectedRoute>
-        }>  
+        }>
+          <Route index element={<SponsorOrgPage />} />
+          <Route path="point-rules" element={<PointRulesPage />} />
         </Route>
       </Routes>
     </>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { API_URL } from '../../config';
+import { API_URL } from '../../../config';
 import CardHost from '@/components/CardHost/CardHost';
 import Card from '@/components/Card/Card';
 import styles from './PointRulesPage.module.scss';
