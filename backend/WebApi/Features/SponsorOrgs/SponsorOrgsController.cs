@@ -22,6 +22,43 @@ public class SponsorOrgsController : ControllerBase
         _userManager = userManager;
     }
 
+    [HttpGet("{orgId}")]
+    [HttpGet]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<ActionResult> GetSponsorOrgInfo(int? orgId)
+    {
+        var resolvedOrgId = await GetCurrentSponsorOrgId();
+
+        // Ensure sponsor aren't trying to edit rules for another org.
+        if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
+        {
+            if (orgId is not null && resolvedOrgId != orgId)
+            {
+                return BadRequest("Cannot access organization you are not a sponsor for.");
+            }
+        }
+
+        resolvedOrgId = resolvedOrgId ?? orgId;
+        // Try to resolve an org id for the currently logged in user.
+        if (resolvedOrgId is null)
+            return BadRequest("Could not resolve sponor organization.");
+
+        var orgModel = await _db.SponsorOrgs
+            .AsNoTracking()
+            .Where(o => o.Id == resolvedOrgId)
+            .Select(o => new SponsorOrgInfoModel
+            {
+                Id = o.Id,
+                DateJoined = o.DateJoined,
+                SponsorName = o.SponsorName,
+                SponsorCount = o.SponsorUsers.Count(),
+                DriverCount = o.DriverUsers.Count()
+            })
+            .FirstOrDefaultAsync();
+
+        return Ok(orgModel);
+    }
+
     [HttpPost]
     [Authorize(Policy = PolicyNames.AdminOnly)]
     public async Task<ActionResult> CreateSponsorOrg(CreateSponsorOrgModel request)
@@ -33,6 +70,37 @@ public class SponsorOrgsController : ControllerBase
         };
         _db.SponsorOrgs.Add(org);
         _db.SaveChanges();
+
+        return Ok();
+    }
+
+    [HttpPatch("{orgId}/rename")]
+    [HttpPatch("rename")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<ActionResult> RenameOrg(int? orgId, [FromBody] RenameSponsorOrgModel request)
+    {
+        var resolvedOrgId = await GetCurrentSponsorOrgId();
+
+        // Ensure sponsor aren't trying to edit rules for another org.
+        if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
+        {
+            if (orgId is not null && resolvedOrgId != orgId)
+            {
+                return BadRequest("Cannot edit an organization you are not a sponsor for.");
+            }
+        }
+
+        resolvedOrgId = resolvedOrgId ?? orgId;
+        // Try to resolve an org id for the currently logged in user.
+        if (resolvedOrgId is null)
+            return BadRequest("Could not resolve sponor organization.");
+
+        var org = await _db.SponsorOrgs.Where(o => o.Id == resolvedOrgId).FirstOrDefaultAsync();
+        if (org is null)
+            return BadRequest("Invalid organization.");
+
+        org.SponsorName = request.SponsorName;
+        await _db.SaveChangesAsync();
 
         return Ok();
     }
@@ -52,10 +120,10 @@ public class SponsorOrgsController : ControllerBase
             .Include(d => d.User)
             .Select(d => new DriverModel
             {
-               Id = d.Id,
-               Email = d.User.Email,
-               FirstName = d.User.FirstName,
-               LastName = d.User.LastName
+                Id = d.Id,
+                Email = d.User.Email,
+                FirstName = d.User.FirstName,
+                LastName = d.User.LastName
             })
             .ToListAsync();
 
@@ -229,7 +297,7 @@ public class SponsorOrgsController : ControllerBase
                 .AsNoTracking()
                 .Where(s => s.UserId == userId)
                 .Select(s => (int?)s.SponsorOrgId)
-                .FirstOrDefaultAsync();   
+                .FirstOrDefaultAsync();
         }
 
         return null;

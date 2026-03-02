@@ -4,12 +4,13 @@ export default function ListItem({
     children,
     showChevron = false,
     label = '',
-    icon,
+    icon: Icon,
     item,
     onClick,
 }) {
     return (<div className={styles.listItem} onClick={onClick}>
         <div className={styles.left}>
+            {Icon && <Icon className={styles.icon}/>}
             <span className={styles.label}>{label && label}</span>
         </div>
         <div className={styles.right}>

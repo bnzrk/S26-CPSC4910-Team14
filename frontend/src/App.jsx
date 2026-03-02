@@ -10,6 +10,7 @@ import AboutPage from './pages/About/AboutPage';
 import LoginPage from './pages/Login/LoginPage';
 import PointRulesPage from './pages/PointsRules/PointRulesPage';
 import PointsPage from './pages/Points/PointsPage'
+import SponsorOrgPage from '@/pages/SponsorOrg/SponsorOrgPage';
 import RegisterPage from './pages/Register/RegisterPage';
 import './App.scss';
 
@@ -104,7 +105,7 @@ export default function App() {
             <RegisterPage />
           </GuestRoute>
         } />
-        <Route path="/point-rules" element={
+        <Route path="/org/point-rules" element={
           <ProtectedRoute allowedUserTypes={[USER_TYPES.SPONSOR]}>
             <PointRulesPage />
           </ProtectedRoute>
@@ -115,6 +116,12 @@ export default function App() {
             <PointsPage />
           </ProtectedRoute>
         } />
+        <Route path="/org" element={
+          <ProtectedRoute allowedUserTypes={[USER_TYPES.SPONSOR]}>
+            <SponsorOrgPage />
+          </ProtectedRoute>
+        }>  
+        </Route>
       </Routes>
     </>
   );
