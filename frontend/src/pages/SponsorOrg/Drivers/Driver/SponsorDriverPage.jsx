@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Navigate } from "react-router-dom";
 import { useSponsorOrgDriver } from "@/api/sponsorOrg";
+import Loader from "@/components/Loader/Loader";
 import CardHost from "@/components/CardHost/CardHost";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
@@ -29,7 +30,11 @@ export default function SponsorDriverPage()
     const [currentModal, setCurrentModal] = useState(null);
 
     const { driverId } = useParams();
-    const { data: driver, isLoading: driverLoading, isError: driverError } = useSponsorOrgDriver(driverId);
+    const { data: driver, isLoading: driverLoading, isError: driverError, error } = useSponsorOrgDriver(driverId);
+    if (driverError && error?.status === 404)
+    {
+        return <Navigate to="/org/drivers" replace />;
+    }
 
     return (
         <main className={styles.sponsorDriver}>

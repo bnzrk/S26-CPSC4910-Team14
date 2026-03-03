@@ -26,6 +26,9 @@ export default function SponsorDriversPage()
                             <p className={styles.driverEmail}>{driver.email}</p>
                         </ListItem>
                     ))}
+                    {(!drivers || drivers.items.length == 0) &&
+                        <p>You organization currently has no drivers.</p>
+                    }
                 </Card>
             </CardHost>
         </main>

@@ -188,6 +188,9 @@ public class SponsorOrgsController : ControllerBase
                 LastLoginUtc = DateTime.UtcNow
             })
             .FirstOrDefaultAsync();
+        
+        if (driverModel is null)
+            return NotFound("Driver not found.");
 
         return Ok(driverModel);
     }

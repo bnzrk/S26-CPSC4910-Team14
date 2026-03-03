@@ -49,8 +49,28 @@ export function useSponsorOrgDriver(driverId)
 
     return useQuery({
         queryKey: ["sponsorOrgDriver", user?.id, driverId],
-        queryFn: async () => apiFetch(`/sponsor-orgs/drivers/${driverId}`).then(r => r.json()),
-        enabled: !!user && isSponsor && driverId != null
+        queryFn: async () =>
+        {
+            const res = await apiFetch(`/sponsor-orgs/drivers/${driverId}`);
+
+            if (!res.ok)
+            {
+                const err = new Error(res.status === 404 ? "Driver not found" : "Could not fetch driver");
+                err.status = res.status;
+                throw err;
+            }
+
+            return res.json();
+        },
+        enabled: !!user && isSponsor && driverId != null,
+        retry: (failureCount, error) =>
+        {
+            if (error?.status === 404 || error?.status === 401 || error?.status === 403)
+            {
+                return false;
+            }
+            return failureCount < 2;
+        },
     });
 }
 
