@@ -13,6 +13,8 @@ import PointsPage from './pages/Points/PointsPage'
 import SponsorOrgLayout from './pages/SponsorOrg/SponsorOrgLayout';
 import SponsorOrgPage from '@/pages/SponsorOrg/Index/SponsorOrgPage';
 import SponsorUsersPage from './pages/SponsorOrg/Users/SponsorUsersPage';
+import SponsorDriversPage from './pages/SponsorOrg/Drivers/Index/SponsorDriversPage';
+import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPage';
 import RegisterPage from './pages/Register/RegisterPage';
 import './App.scss';
 
@@ -125,6 +127,8 @@ export default function App()
           <Route index element={<SponsorOrgPage />} />
           <Route path="point-rules" element={<PointRulesPage />} />
           <Route path="users" element={<SponsorUsersPage />} />
+          <Route path="drivers" element={<SponsorDriversPage />} />
+          <Route path="drivers/:driverId" element={<SponsorDriverPage />} />
         </Route>
       </Routes>
     </>

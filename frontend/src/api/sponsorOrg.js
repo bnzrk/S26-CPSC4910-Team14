@@ -29,6 +29,31 @@ export function useSponsorOrgUsers()
     });
 }
 
+export function useSponsorOrgDrivers()
+{
+    const { data: user } = useCurrentUser();
+    const isSponsor = user?.userType === USER_TYPES.SPONSOR;
+
+    return useQuery({
+        queryKey: ["sponsorOrgDrivers", user?.id],
+        queryFn: async () => apiFetch('/sponsor-orgs/drivers').then(r => r.json()),
+        enabled: !!user && isSponsor,
+        placeholderData: keepPreviousData,
+    });
+}
+
+export function useSponsorOrgDriver(driverId)
+{
+    const { data: user } = useCurrentUser();
+    const isSponsor = user?.userType === USER_TYPES.SPONSOR;
+
+    return useQuery({
+        queryKey: ["sponsorOrgDriver", user?.id, driverId],
+        queryFn: async () => apiFetch(`/sponsor-orgs/drivers/${driverId}`).then(r => r.json()),
+        enabled: !!user && isSponsor && driverId != null
+    });
+}
+
 export function useCreateSponsorOrgUser()
 {
     const { data: user } = useCurrentUser();

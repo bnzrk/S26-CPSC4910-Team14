@@ -133,6 +133,70 @@ public class DriverUsersController : ControllerBase
     }
     #endregion
 
+    #region Profile
+    [HttpPatch("{driverId}/profile")]
+    [HttpPatch("profile")]
+    [Authorize]
+    public async Task<ActionResult> EditProfile(int? driverId, [FromBody] EditDriverProfileModel request)
+    {
+        var currentDriverId = await GetCurrentDriverId();
+        var isDriver = User.IsInRole(UserTypeRoles.Role(UserType.Driver));
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        var isAdmin = User.IsInRole(UserTypeRoles.Role(UserType.Admin));
+
+        // Get driver id from logged in driver or request if admin/sponsor
+        int? targetDriverId = isDriver ? currentDriverId : driverId;
+        if (targetDriverId is null)
+            return BadRequest("Driver id is required.");
+
+        // Ensure driver can't edit someone else
+        if (isDriver && driverId is not null && driverId != currentDriverId)
+            return BadRequest("Cannot edit profile for another driver.");
+
+        var driver = await _db.DriverUsers.Where(d => d.Id == targetDriverId).Include(d => d.User).FirstOrDefaultAsync();
+        if (driver is null)
+            return BadRequest("Driver not found.");
+
+        // Sponsors can only edit drivers in their org
+        if (isSponsor)
+        {
+            var sponsorOrgId = await GetCurrentSponsorOrgId();
+            if (sponsorOrgId != driver.SponsorOrgId)
+                return BadRequest("Cannot edit profile for driver of another organization.");
+        }
+
+        if (!isDriver && !isSponsor && !isAdmin)
+            return Forbid();
+
+        // Begin a transaction for the changes
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+
+        if (request.Email is not null)
+        {
+            var result = await _userManager.SetEmailAsync(driver.User, request.Email);
+            if (!result.Succeeded)
+            {
+                return BadRequest(new
+                {
+                    Errors = result.Errors.Select(e => e.Description).ToArray()
+                });
+            }
+        }
+
+        if (request.FirstName is not null)
+            driver.User.FirstName = request.FirstName;
+
+        if (request.LastName is not null)
+            driver.User.LastName = request.LastName;
+
+        // Finalize the transaction if everything went okay
+        await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+        return Ok();
+    }
+    #endregion
+
     private async Task<int?> GetCurrentDriverId()
     {
         var userId = _userManager.GetUserId(User);
@@ -140,6 +204,16 @@ public class DriverUsersController : ControllerBase
             .AsNoTracking()
             .Where(d => d.UserId == userId)
             .Select(d => (int?)d.Id)
+            .FirstOrDefaultAsync();
+    }
+
+    private async Task<int?> GetCurrentSponsorOrgId()
+    {
+        var userId = _userManager.GetUserId(User);
+        return await _db.SponsorUsers
+            .AsNoTracking()
+            .Where(s => s.UserId == userId)
+            .Select(s => (int?)s.SponsorOrgId)
             .FirstOrDefaultAsync();
     }
 }

@@ -23,6 +23,7 @@ public class SponsorOrgsController : ControllerBase
         _userManager = userManager;
     }
 
+    #region Org
     [HttpGet("{orgId}")]
     [HttpGet]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
@@ -105,30 +106,90 @@ public class SponsorOrgsController : ControllerBase
 
         return Ok();
     }
+    #endregion
 
     #region Drivers
     [HttpGet("{orgId}/drivers")]
     [HttpGet("drivers")]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
-    public async Task<ActionResult> GetOrgDrivers(int? orgId)
+    public async Task<ActionResult> GetOrgDrivers(int? orgId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
-        var resolvedOrgId = orgId ?? await GetCurrentSponsorOrgId();
-        if (resolvedOrgId is null) return BadRequest("Could not resolve sponor organization.");
+        var resolvedOrgId = await GetCurrentSponsorOrgId();
 
-        var driverModels = await _db.DriverUsers
+        // Ensure sponsor aren't trying to edit rules for another org.
+        if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
+        {
+            if (orgId is not null && resolvedOrgId != orgId)
+            {
+                return BadRequest("Cannot view drivers from an organization you are not a sponsor for.");
+            }
+        }
+
+        resolvedOrgId = resolvedOrgId ?? orgId;
+        if (resolvedOrgId is null)
+            return BadRequest("Could not resolve sponor organization.");
+
+        var query = _db.DriverUsers
             .AsNoTracking()
             .Where(d => d.SponsorOrgId == resolvedOrgId)
-            .Include(d => d.User)
             .Select(d => new DriverModel
             {
                 Id = d.Id,
                 Email = d.User.Email,
                 FirstName = d.User.FirstName,
-                LastName = d.User.LastName
-            })
-            .ToListAsync();
+                LastName = d.User.LastName,
+                Points = d.PointTransactions
+                    .Where(p => p.SponsorOrgId == resolvedOrgId)
+                    .OrderByDescending(p => p.TransactionDateUtc)
+                    .Sum(p => p.BalanceChange),
+                DateCreatedUtc = DateTime.UtcNow,
+                LastLoginUtc = DateTime.UtcNow
+            });
 
-        return Ok(driverModels);
+        var pageResult = await PagedResult.ToPagedResultAsync(query, page, pageSize);
+
+        return Ok(pageResult);
+    }
+
+    [HttpGet("{orgId}/drivers/{driverId}")]
+    [HttpGet("drivers/{driverId}")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<ActionResult> GetOrgDriver(int? orgId, int driverId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    {
+        var resolvedOrgId = await GetCurrentSponsorOrgId();
+
+        // Ensure sponsor aren't trying to edit rules for another org.
+        if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
+        {
+            if (orgId is not null && resolvedOrgId != orgId)
+            {
+                return BadRequest("Cannot view drivers from an organization you are not a sponsor for.");
+            }
+        }
+
+        resolvedOrgId = resolvedOrgId ?? orgId;
+        if (resolvedOrgId is null)
+            return BadRequest("Could not resolve sponor organization.");
+
+        var driverModel = await _db.DriverUsers
+            .AsNoTracking()
+            .Where(d => d.SponsorOrgId == resolvedOrgId && d.Id == driverId)
+            .Select(d => new DriverModel
+            {
+                Id = d.Id,
+                Email = d.User.Email,
+                FirstName = d.User.FirstName,
+                LastName = d.User.LastName,
+                Points = d.PointTransactions
+                    .Where(p => p.SponsorOrgId == resolvedOrgId)
+                    .OrderByDescending(p => p.TransactionDateUtc)
+                    .Sum(p => p.BalanceChange),
+                DateCreatedUtc = DateTime.UtcNow,
+                LastLoginUtc = DateTime.UtcNow
+            })
+            .FirstOrDefaultAsync();
+
+        return Ok(driverModel);
     }
 
     // Drivers will be added to sponsor orgs through applications later.
