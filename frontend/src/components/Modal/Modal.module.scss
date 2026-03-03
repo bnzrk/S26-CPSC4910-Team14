@@ -6,6 +6,9 @@
   border-radius: $grid-1x;
   color: var(--color-text);
   min-width: $small-width;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 2rem);
 }
 
 .header {
@@ -35,7 +38,8 @@
 
 .body {
   padding: 0 1.5rem 1.25rem 1.5rem;
-  color: var(--color-text-secondary)
+  color: var(--color-text-secondary);
+  overflow-y: scroll;
 }
 
 .footer {
@@ -62,12 +66,12 @@
 
   &.right {
     margin-left: auto;
-    width: 50%;
+    width: fit-content;
   }
 
   &.left {
     margin-right: auto;
-    width: 50%;
+    width: fit-content;
   }
 }
 

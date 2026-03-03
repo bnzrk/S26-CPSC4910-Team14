@@ -2,7 +2,7 @@ import React, { createContext, useContext, useMemo, useRef, useState, useEffect 
 
 const ToastContext = createContext(null);
 
-export function ToastProvider({ children, maxToasts = 5, defaultDurationMs = 50000 })
+export function ToastProvider({ children, maxToasts = 5, defaultDurationMs = 2000 })
 {
     const [toasts, setToasts] = useState([]);
     const timersRef = useRef(new Map());

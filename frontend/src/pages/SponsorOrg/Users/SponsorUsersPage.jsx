@@ -5,6 +5,7 @@ import Card from "@/components/Card/Card";
 import ListItem from "@/components/ListItem/ListItem";
 import Modal from "@/components/Modal/Modal";
 import Button from "@/components/Button/Button";
+import CreateUserModal from "./components/CreateUserModal";
 import UserIcon from "@/assets/icons/user.svg?react";
 import AddUserIcon from "@/assets/icons/user-round-plus.svg?react";
 import styles from './SponsorUsersPage.module.scss';
@@ -17,20 +18,31 @@ function formatDate(dateString, includeTime = false)
 
 export default function SponsorUsersPage()
 {
+    const modals = {
+        createUser: 'createUser',
+        userInfo: 'userInfo',
+    }
+
     const { data: users, usersLoading, usersError } = useSponsorOrgUsers();
 
-    const [showUserModal, setShowUserModal] = useState(false);
+    const [currentModal, setCurrentModal] = useState(null);
+
     const [modalUser, setModalUser] = useState(null);
 
     function openUserModal(user)
     {
         setModalUser(user);
-        setShowUserModal(true);
+        setCurrentModal(modals.userInfo);
     }
 
     return (
         <main className={styles.sponsorUsers}>
-            <Modal isOpen={showUserModal} onClose={() => setShowUserModal(false)} className={styles.userModal}>
+            <CreateUserModal
+                isOpen={currentModal == modals.createUser}
+                onClose={() => setCurrentModal(null)}
+                onSuccess={() => setCurrentModal(null)}
+            />
+            <Modal isOpen={currentModal == modals.userInfo} onClose={() => setCurrentModal(null)} className={styles.userModal}>
                 <Modal.Header title='User Account' />
                 <Modal.Body className={styles.body}>
                     <div className={styles.userInfo}>
@@ -47,7 +59,7 @@ export default function SponsorUsersPage()
             </Modal>
             <CardHost title='Users' subtitle="Manage your organization's users">
                 <Card title='Accounts' headerRight={
-                    <Button text='New' size='small' icon={AddUserIcon}></Button>
+                    <Button text='New' size='small' icon={AddUserIcon} onClick={() => setCurrentModal(modals.createUser)}></Button>
                 }>
                     {users && users.items.map((user) => (
                         <ListItem key={user.id} icon={UserIcon} label={`${user.firstName} ${user.lastName}`} onClick={() => openUserModal(user)}>

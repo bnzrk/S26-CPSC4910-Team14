@@ -16,7 +16,8 @@ export function useSponsorOrg()
     });
 }
 
-export function useSponsorOrgUsers() {
+export function useSponsorOrgUsers()
+{
     const { data: user } = useCurrentUser();
     const isSponsor = user?.userType === USER_TYPES.SPONSOR;
 
@@ -25,6 +26,34 @@ export function useSponsorOrgUsers() {
         queryFn: async () => apiFetch('/sponsor-orgs/users').then(r => r.json()),
         enabled: !!user && isSponsor,
         placeholderData: keepPreviousData,
+    });
+}
+
+export function useCreateSponsorOrgUser()
+{
+    const { data: user } = useCurrentUser();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ email, username, firstName, lastName, password }) =>
+        {
+            const res = await apiFetch("/sponsor-orgs/sponsors", {
+                method: "POST",
+                body: JSON.stringify({ email, username, firstName, lastName, password }),
+            });
+
+            if (!res.ok)
+            {
+                throw await res.json();
+            }
+
+            return null;
+        },
+        onSuccess: () =>
+        {
+            queryClient.invalidateQueries({ queryKey: ["sponsorOrgUsers", user?.id] });
+        },
+        retry: 0
     });
 }
 
