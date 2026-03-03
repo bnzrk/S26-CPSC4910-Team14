@@ -1,0 +1,113 @@
+@use '@/styles/globals' as *;
+
+.toastViewport {
+    width: 100%;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    pointer-events: none;
+}
+
+.toast {
+    pointer-events: auto;
+    max-width: $small-width;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: $grid-1x;
+
+    padding: $grid-1x;
+    border-radius: $grid-half;
+
+    background: var(--color-surface);
+
+    animation: toastIn 120ms ease-out;
+
+    svg {
+        width: calc($grid-2x + $grid-half);
+        height: calc($grid-2x + $grid-half);
+    }
+
+    &__content {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: $grid-2x;
+        padding: 0 $grid-half;
+    }
+
+    &__message {
+        word-wrap: break-word;
+    }
+
+    &__close {
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        padding: 0 $grid-half;
+        margin-left: $grid-2x;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    &--info {
+        color: var(--color-accent);
+
+        .toast__close {
+            color: var(--color-accent);
+        }
+    }
+
+    &--success {
+        background-color: var(--color-success);
+        color: var(--color-surface);
+
+        .toast__close {
+            color: var(--color-surface);
+        }
+    }
+
+    &--warning {
+        background-color: #f3b231;
+        color: var(--color-surface);
+
+        .toast__close {
+            color: var(--color-surface);
+        }
+    }
+
+    &--error {
+        background-color: var(--color-warn);
+
+        color: var(--color-surface);
+
+        .toast__close {
+            color: var(--color-surface);
+        }
+    }
+}
+
+@keyframes toastIn {
+    from {
+        transform: translateY(-6px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
