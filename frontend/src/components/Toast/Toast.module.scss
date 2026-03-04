@@ -81,7 +81,7 @@
     }
 
     &--warning {
-        background-color: #f3b231;
+        background-color: var(--color-caution);
         color: var(--color-surface);
 
         .toast__close {
