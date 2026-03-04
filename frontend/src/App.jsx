@@ -11,7 +11,7 @@ import LoginPage from './pages/Login/LoginPage';
 import PointRulesPage from './pages/PointsRules/PointRulesPage';
 import PointsPage from './pages/Points/PointsPage'
 import RegisterPage from './pages/Register/RegisterPage';
-import Navbar from './pages/About/components/NavBar';
+import Navbar from './components/Navbar/NavBar';
 import './App.scss';
 
 
