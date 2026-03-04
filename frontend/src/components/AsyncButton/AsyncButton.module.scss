@@ -3,7 +3,6 @@
 .buttonAsync {
     position: relative;
     width: 100%;
-    min-width: calc($grid-5x + $grid-5x);
     border: none;
     border-radius: 4px;
     height: var(--btn-height, $grid-5x);

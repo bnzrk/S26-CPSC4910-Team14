@@ -105,22 +105,23 @@ public class DriverUsersController : ControllerBase
             return BadRequest("Invalid driver.");
         }
 
+        var targetOrgId = driver.SponsorOrgId;
         if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
         {
-            var userId = _userManager.GetUserId(User);
-            var sponsor = await _db.SponsorUsers
-                .AsNoTracking()
-                .Where(s => s.UserId == userId)
-                .FirstOrDefaultAsync();
-            if (sponsor is null || sponsor.SponsorOrgId != driver.SponsorOrgId)
-            {
+            var resolvedOrgId = await GetCurrentSponsorOrgId();
+            if (driver.SponsorOrgId != resolvedOrgId)
                 return BadRequest("Cannot modify points for an organization you are not a sponsor for.");
-            }
+
+            // Later when driver's can have multiple sponsors, we'll use the logged in sponsor org
+            targetOrgId = resolvedOrgId.Value;
         }
+
+        if (targetOrgId is null)
+            return BadRequest("Could not resolve organization.");
 
         var transaction = new PointTransaction
         {
-            SponsorOrgId = driver.SponsorOrgId.Value,
+            SponsorOrgId = targetOrgId.Value,
             DriverUserId = driverId,
             Reason = request.Reason,
             BalanceChange = request.BalanceChange,

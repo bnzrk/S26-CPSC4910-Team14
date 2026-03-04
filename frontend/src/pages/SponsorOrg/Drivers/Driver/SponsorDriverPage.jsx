@@ -7,6 +7,7 @@ import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
 import PointCard from "@/components/PointCard/PointCard";
 import EditDriverProfileModal from "./components/EditDriverProfileModal";
+import ManageDriverPointsModal from "./components/ManageDriverPointsModal";
 import StarIcon from "@/assets/icons/star.svg?react";
 import UserStarIcon from "@/assets/icons/user-star.svg?react";
 import UserEditIcon from "@/assets/icons/user-pen.svg?react";
@@ -39,10 +40,17 @@ export default function SponsorDriverPage()
     return (
         <main className={styles.sponsorDriver}>
             <EditDriverProfileModal
-                key={driver?.id}
+                key={`edit_${driver?.id}`}
                 isOpen={currentModal == modals.editProfile}
                 onClose={() => setCurrentModal(null)}
                 onSuccess={() => setCurrentModal(null)}
+                driver={driver}
+            />
+            <ManageDriverPointsModal
+                key={`points_${driver?.id}`}
+                isOpen={currentModal == modals.managePoints}
+                onClose={() => setCurrentModal(null)}
+                onSuccess={() => null}
                 driver={driver}
             />
             <CardHost
@@ -80,7 +88,12 @@ export default function SponsorDriverPage()
                         </div>
                     </div>
                     <div className={styles.buttonGroup}>
-                        <Button className={clsx(styles.editButton, styles.button)} color='primary' icon={UserStarIcon} text='Manage Points' />
+                        <Button
+                            className={clsx(styles.editButton, styles.button)}
+                            color='primary' icon={UserStarIcon}
+                            text='Manage Points'
+                            onClick={() => setCurrentModal(modals.managePoints)}
+                        />
                     </div>
                 </Card>
             </CardHost>

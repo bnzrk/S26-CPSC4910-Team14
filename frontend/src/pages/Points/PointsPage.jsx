@@ -16,7 +16,7 @@ function formatDMY(dateLike)
   const day = String(d.getDate());
   const month = String(d.getMonth() + 1);
   const year = String(d.getFullYear()).slice(-2);
-  return `${day}/${month}/${year}`;
+  return `${month}/${day}/${year}`;
 }
 
 export default function PointsPage()
@@ -41,9 +41,6 @@ export default function PointsPage()
   const items = history?.items ?? [];
   const totalCount =
     history?.totalCount ?? 0;
-
-  if (!historyLoading)
-    console.log(history);
 
   const totalPages = useMemo(() =>
   {
