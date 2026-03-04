@@ -16,10 +16,10 @@ import SponsorUsersPage from './pages/SponsorOrg/Users/SponsorUsersPage';
 import SponsorDriversPage from './pages/SponsorOrg/Drivers/Index/SponsorDriversPage';
 import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPage';
 import RegisterPage from './pages/Register/RegisterPage';
+import Navbar from './components/Navbar/NavBar';
 import './App.scss';
 
-export default function App()
-{
+export default function App() {
   const navigate = useNavigate();
 
   const { data: user, isLoading } = useCurrentUser();
@@ -45,61 +45,7 @@ export default function App()
 
   return (
     <>
-      <nav style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Link to="/about" style={{
-          border: '1px solid var(--color-border)',
-          borderRadius: '4px',
-          padding: '0.4rem 1rem',
-          textDecoration: 'none',
-          color: 'var(--color-text)'
-        }}>
-          Home
-        </Link>
-
-        <div>
-          {!isLoading && (
-            user ? (
-              <>
-                {user.userType === 'Sponsor' && (
-                  <Link to="/org/point-rules" style={{
-                    border: '1px solid var(--color-border)',
-                    borderRadius: '4px',
-                    padding: '0.4rem 1rem',
-                    marginRight: '1rem',
-                    textDecoration: 'none',
-                    color: 'var(--color-text)'
-                  }}>
-                    Point Rules
-                  </Link>
-                )}
-                <span style={{ marginRight: "1rem" }}>
-                  {user?.email}
-                </span>
-                <button onClick={handleLogout} style={{
-                  border: '1px solid var(--color-border)',
-                  borderRadius: '4px',
-                  padding: '0.4rem 1rem',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  color: 'var(--color-text)'
-                }}>
-                  Logout
-                </button>
-              </>
-            ) : (
-              <Link to="/login" style={{
-                border: '1px solid var(--color-border)',
-                borderRadius: '4px',
-                padding: '0.4rem 1rem',
-                textDecoration: 'none',
-                color: 'var(--color-text)'
-              }}>
-                Sign In
-              </Link>
-            )
-          )}
-        </div>
-      </nav>
+      <Navbar />
       <Routes>
         <Route path="/" element={<AboutPage />} />
         <Route path="/about" element={<AboutPage />} />
