@@ -41,7 +41,7 @@ public class SponsorUsersController : ControllerBase
         var currentUser = await _userManager.GetUserAsync(User);
         if (currentUser is null)
         {
-            return Unauthorized();
+            return Unauthorized("Current user not found.");
         }
 
         // If the user making the request is a sponsor, only allow if they are creating another

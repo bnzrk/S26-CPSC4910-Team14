@@ -45,16 +45,18 @@ export default function SponsorUsersPage()
             <Modal isOpen={currentModal == modals.userInfo} onClose={() => setCurrentModal(null)} className={styles.userModal}>
                 <Modal.Header title='User Account' />
                 <Modal.Body className={styles.body}>
-                    <div className={styles.userInfo}>
-                        <div className={styles.userHeader}>
-                            <p className={styles.userName}>{modalUser?.firstName} {modalUser?.lastName}</p>
-                            <p className={styles.userEmail}>({modalUser?.email})</p>
+                    {modalUser &&
+                        <div className={styles.userInfo}>
+                            <div className={styles.userHeader}>
+                                <p className={styles.userName}>{modalUser?.firstName} {modalUser?.lastName}</p>
+                                <p className={styles.userEmail}>({modalUser?.email})</p>
+                            </div>
+                            <div className={styles.userDetails}>
+                                <div>Date Created: {formatDate(modalUser?.dateCreatedUtc)}</div>
+                                <div>Last Login: {(modalUser.lastLoginUtc) ? formatDate(modalUser?.lastLoginUtc, true) : 'Never'}</div>
+                            </div>
                         </div>
-                        <div className={styles.userDetails}>
-                            <div>Date Created: {formatDate(modalUser?.dateCreatedUtc)}</div>
-                            <div>Last Login: {formatDate(modalUser?.lastLoginUtc, true)}</div>
-                        </div>
-                    </div>
+                    }
                 </Modal.Body>
             </Modal>
             <CardHost title='Users' subtitle="Manage your organization's users">

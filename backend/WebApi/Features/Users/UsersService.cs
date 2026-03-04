@@ -29,7 +29,8 @@ public class UsersService : IUsersService
             FirstName = firstName,
             LastName = lastName,
             UserType = UserType.Admin,
-            IsActive = true
+            IsActive = true,
+            CreatedDateUtc = DateTime.UtcNow
         };
 
         // Attempt to create the base user.
@@ -72,7 +73,8 @@ public class UsersService : IUsersService
             FirstName = firstName,
             LastName = lastName,
             UserType = UserType.Sponsor,
-            IsActive = true
+            IsActive = true,
+            CreatedDateUtc = DateTime.UtcNow
         };
 
         // Attempt to create the base user.
@@ -116,7 +118,8 @@ public class UsersService : IUsersService
             FirstName = firstName,
             LastName = lastName,
             UserType = UserType.Sponsor,
-            IsActive = true
+            IsActive = true,
+            CreatedDateUtc = DateTime.UtcNow
         };
 
         // Attempt to create the base user.
@@ -160,7 +163,8 @@ public class UsersService : IUsersService
             FirstName = firstName,
             LastName = lastName,
             UserType = UserType.Driver,
-            IsActive = true
+            IsActive = true,
+            CreatedDateUtc = DateTime.UtcNow
         };
 
         // Attempt to create the base user.

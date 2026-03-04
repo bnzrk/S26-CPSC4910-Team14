@@ -8,5 +8,5 @@ public class DriverModel
     public required string LastName { get; set; }
     public required int Points { get; set; }
     public required DateTime DateCreatedUtc { get; set; }
-    public required DateTime LastLoginUtc { get; set; }
+    public required DateTime? LastLoginUtc { get; set; }
 }

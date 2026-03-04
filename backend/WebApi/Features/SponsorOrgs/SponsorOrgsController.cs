@@ -7,6 +7,7 @@ using WebApi.Data.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Helpers.Pagination;
+using WebApi.Features.Users;
 
 namespace WebApi.Features.SponsorOrgs;
 
@@ -16,11 +17,13 @@ public class SponsorOrgsController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly UserManager<User> _userManager;
+    private readonly IUsersService _usersService;
 
-    public SponsorOrgsController(AppDbContext db, UserManager<User> userManager)
+    public SponsorOrgsController(AppDbContext db, UserManager<User> userManager, IUsersService usersService)
     {
         _db = db;
         _userManager = userManager;
+        _usersService = usersService;
     }
 
     #region Org
@@ -142,8 +145,8 @@ public class SponsorOrgsController : ControllerBase
                     .Where(p => p.SponsorOrgId == resolvedOrgId)
                     .OrderByDescending(p => p.TransactionDateUtc)
                     .Sum(p => p.BalanceChange),
-                DateCreatedUtc = DateTime.UtcNow,
-                LastLoginUtc = DateTime.UtcNow
+                DateCreatedUtc = d.User.CreatedDateUtc,
+                LastLoginUtc = d.User.LastLoginUtc
             });
 
         var pageResult = await PagedResult.ToPagedResultAsync(query, page, pageSize);
@@ -184,11 +187,11 @@ public class SponsorOrgsController : ControllerBase
                     .Where(p => p.SponsorOrgId == resolvedOrgId)
                     .OrderByDescending(p => p.TransactionDateUtc)
                     .Sum(p => p.BalanceChange),
-                DateCreatedUtc = DateTime.UtcNow,
-                LastLoginUtc = DateTime.UtcNow
+                DateCreatedUtc = d.User.CreatedDateUtc,
+                LastLoginUtc = d.User.LastLoginUtc
             })
             .FirstOrDefaultAsync();
-        
+
         if (driverModel is null)
             return NotFound("Driver not found.");
 
@@ -378,13 +381,58 @@ public class SponsorOrgsController : ControllerBase
                 Email = s.User.Email,
                 FirstName = s.User.FirstName,
                 LastName = s.User.LastName,
-                DateCreatedUtc = DateTime.UtcNow,
-                LastLoginUtc = DateTime.UtcNow
+                DateCreatedUtc = s.User.CreatedDateUtc,
+                LastLoginUtc = s.User.LastLoginUtc
             });
 
         var pageResult = await PagedResult.ToPagedResultAsync(query, page, pageSize);
 
         return Ok(pageResult);
+    }
+
+    [HttpPost("users")]
+    [HttpPost("{orgId}/users")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<ActionResult> CreateOrgUser(int? orgId, CreateSponsorUserModel request)
+    {
+        var resolvedOrgId = await GetCurrentSponsorOrgId();
+
+        // Ensure sponsor aren't trying to edit rules for another org.
+        if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
+        {
+            if (orgId is not null && resolvedOrgId != orgId)
+            {
+                return BadRequest("Cannot create user for an organization you are not a sponsor for.");
+            }
+        }
+
+        resolvedOrgId = resolvedOrgId ?? orgId;
+        if (resolvedOrgId is null)
+            return BadRequest("Could not resolve sponor organization.");
+
+        // Ensure the request sponsor organization exists.
+        var requestOrg = _db.SponsorOrgs.Where(s => s.Id == resolvedOrgId).FirstOrDefault();
+        if (requestOrg is null)
+        {
+            return BadRequest("Sponsor organization does not exist.");
+        }
+
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser is null)
+        {
+            return Unauthorized("Current user not found.");
+        }
+
+        var result = await _usersService.CreateSponsorUser(request.Email, request.Password, request.FirstName, request.LastName, requestOrg);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new
+            {
+                Errors = result.Errors.Select(e => e.Description).ToArray()
+            });
+        }
+
+        return Created();
     }
     #endregion
 

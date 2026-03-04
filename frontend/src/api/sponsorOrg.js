@@ -82,7 +82,7 @@ export function useCreateSponsorOrgUser()
     return useMutation({
         mutationFn: async ({ email, username, firstName, lastName, password }) =>
         {
-            const res = await apiFetch("/sponsor-orgs/sponsors", {
+            const res = await apiFetch("/sponsor-orgs/users", {
                 method: "POST",
                 body: JSON.stringify({ email, username, firstName, lastName, password }),
             });

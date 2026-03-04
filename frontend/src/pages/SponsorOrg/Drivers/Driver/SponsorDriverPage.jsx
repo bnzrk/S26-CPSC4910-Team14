@@ -58,43 +58,48 @@ export default function SponsorDriverPage()
                 subtitle="Manage driver profile and points"
             >
                 <Card title='Profile'>
-                    <div className={styles.profile}>
-                        <div className={styles.identity}>
-                            <p className={styles.name}>{driver?.firstName} {driver?.lastName}</p>
-                            <p className={styles.email}>({driver?.email})</p>
+                    {driver &&
+                        <div className={styles.profile}>
+                            <div className={styles.identity}>
+                                <p className={styles.name}>{driver?.firstName} {driver?.lastName}</p>
+                                <p className={styles.email}>({driver?.email})</p>
+                            </div>
+                            <div className={styles.dates}>
+                                <div>Date Created: {formatDate(driver?.dateCreatedUtc)}</div>
+                                <div>Last Login: {(driver.DateCreatedUtc) ? formatDate(driver?.lastLoginUtc, true) : 'Never'}</div>
+                            </div>
+                            <div className={styles.buttonGroup}>
+                                <Button
+                                    className={clsx(styles.editButton, styles.button)}
+                                    icon={UserEditIcon}
+                                    text='Edit Profile'
+                                    onClick={() => setCurrentModal(modals.editProfile)}
+                                />
+                                <Button className={clsx(styles.editButton, styles.button)} color='warn' icon={UserRemoveIcon} text='Remove Driver' />
+                            </div>
                         </div>
-                        <div className={styles.dates}>
-                            <div>Date Created: {formatDate(driver?.dateCreatedUtc)}</div>
-                            <div>Last Login: {formatDate(driver?.lastLoginUtc, true)}</div>
-                        </div>
-                        <div className={styles.buttonGroup}>
-                            <Button
-                                className={clsx(styles.editButton, styles.button)}
-                                icon={UserEditIcon}
-                                text='Edit Profile'
-                                onClick={() => setCurrentModal(modals.editProfile)}
-                            />
-                            <Button className={clsx(styles.editButton, styles.button)} color='warn' icon={UserRemoveIcon} text='Remove Driver' />
-                        </div>
-                    </div>
+                    }
                 </Card>
                 <Card title='Points'>
-                    {/* <PointCard points={driver ? driver?.points : 0} size='small' /> */}
-                    <div className={styles.points}>
-                        <div className={styles.label}>Current Points</div>
-                        <div className={styles.value}>
-                            {driver ? driver?.points : 0}
-                            <StarIcon />
+                    {driver &&
+                        <div>
+                            <div className={styles.points}>
+                                <div className={styles.label}>Current Points</div>
+                                <div className={styles.value}>
+                                    {driver ? driver?.points : 0}
+                                    <StarIcon />
+                                </div>
+                            </div>
+                            <div className={styles.buttonGroup}>
+                                <Button
+                                    className={clsx(styles.editButton, styles.button)}
+                                    color='primary' icon={UserStarIcon}
+                                    text='Manage Points'
+                                    onClick={() => setCurrentModal(modals.managePoints)}
+                                />
+                            </div>
                         </div>
-                    </div>
-                    <div className={styles.buttonGroup}>
-                        <Button
-                            className={clsx(styles.editButton, styles.button)}
-                            color='primary' icon={UserStarIcon}
-                            text='Manage Points'
-                            onClick={() => setCurrentModal(modals.managePoints)}
-                        />
-                    </div>
+                    }
                 </Card>
             </CardHost>
         </main>
