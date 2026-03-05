@@ -1,0 +1,47 @@
+@use '@/styles/globals' as *;
+
+.buttonAsync {
+    width: 100%;
+    border: none;
+    border-radius: 4px;
+    height: var(--btn-height, $grid-5x);
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+
+    &:disabled:not(.failed) {
+        opacity: 0.6;
+        cursor: default;
+    }
+
+    &.primary {
+        background-color: var(--color-accent);
+        color: var(--color-surface);
+
+        &:hover:not(:disabled) {
+            background-color: #075338;
+        }
+    }
+
+    &.secondary {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: $grid-half;
+
+        &:hover:not(:disabled) {
+            border-color: var(--color-text);
+        }
+    }
+
+    &.failed {
+        background: var(--color-warn);
+        color: var(--color-surface);
+
+        &:hover:not(:disabled) {
+            background: var(--color-warn);
+        }
+    }
+}
