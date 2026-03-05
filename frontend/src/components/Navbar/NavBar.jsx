@@ -7,7 +7,7 @@ import Button from "../Button/Button";
 import BuildingIcon from "@/assets/icons/building-2.svg?react";
 import StarIcon from "@/assets/icons/star.svg?react";
 import ToolsIcon from "@/assets/icons/wrench.svg?react";
-import styles from './Navbar.module.scss';
+import styles from './NavBar.module.scss';
 import clsx from "clsx";
 
 export default function Navbar()
