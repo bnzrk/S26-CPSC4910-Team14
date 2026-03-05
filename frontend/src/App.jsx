@@ -12,6 +12,7 @@ import PointRulesPage from './pages/PointsRules/PointRulesPage';
 import PointsPage from './pages/Points/PointsPage'
 import RegisterPage from './pages/Register/RegisterPage';
 import Navbar from './components/Navbar/NavBar';
+import ProfilePage from './pages/Profile/ProfilePage';
 import './App.scss';
 
 
@@ -64,6 +65,7 @@ export default function App() {
             <PointsPage />
           </ProtectedRoute>
         } />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </>
   );
