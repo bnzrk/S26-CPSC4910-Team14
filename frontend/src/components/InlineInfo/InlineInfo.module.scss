@@ -13,6 +13,8 @@
     svg {
         width: $grid-2x;
         height: $grid-2x;
+        min-width: $grid-2x;
+        min-height: $grid-2x;
     }
 
     ul {

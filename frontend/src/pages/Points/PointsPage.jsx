@@ -64,7 +64,7 @@ export default function PointsPage()
         {hasError && (
           <InlineErrors errors={['Something went wrong loading your points.']}></InlineErrors>
         )}
-        {org && <InlineInfo type='info' messages={[`Points can be exchange at a rate of 1 to $${org?.pointRatio} USD for this sponsor.`]} />}
+        {org && <InlineInfo type='info' messages={[`Points are equivalent to $${org?.pointRatio} USD when purchasing from this sponsor's catalog.`]} />}
         <Card title="Point History" headerRight={
           <div className={styles.pager}>
             <button
