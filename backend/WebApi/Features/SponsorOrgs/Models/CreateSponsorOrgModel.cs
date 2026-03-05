@@ -6,4 +6,5 @@ public class CreateSponsorOrgModel
 {
     [Required]
     public string SponsorName { get; set; } = null!;
+    public decimal? PointRatio { get; set; }
 }
