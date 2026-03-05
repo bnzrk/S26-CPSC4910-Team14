@@ -8,11 +8,13 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: $grid-2x;
+    gap: $grid-1x;
 
     svg {
         width: $grid-2x;
         height: $grid-2x;
+        min-width: $grid-2x;
+        min-height: $grid-2x;
     }
 
     ul {

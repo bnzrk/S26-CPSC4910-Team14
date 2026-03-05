@@ -19,6 +19,7 @@ builder.Services.AddAuthorization(options =>
    options.AddPolicy(PolicyNames.AdminOnly, p => p.RequireRole(UserTypeRoles.Role(UserType.Admin)));
    options.AddPolicy(PolicyNames.AdminOrSponsor, p => p.RequireRole(UserTypeRoles.Role(UserType.Admin), UserTypeRoles.Role(UserType.Sponsor)));
    options.AddPolicy(PolicyNames.SponsorOnly, p => p.RequireRole(UserTypeRoles.Role(UserType.Sponsor)));
+   options.AddPolicy(PolicyNames.DriverOnly, p => p.RequireRole(UserTypeRoles.Role(UserType.Driver)));
 });
 AppBuilderExtensions.ConfigureAppCookie(builder);
 
