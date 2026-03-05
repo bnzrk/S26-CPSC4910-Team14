@@ -44,6 +44,33 @@ public class DriverUsersController : ControllerBase
     }
     #endregion
 
+    // TODO: Allow specifying driverId
+    [HttpGet("sponsor-org")]
+    [Authorize(Policy = PolicyNames.DriverOnly)]
+    public async Task<ActionResult> GetDriverSponsorOrg()
+    {
+        var resolvedOrgId = await GetCurrentSponsorOrgId();
+        if (resolvedOrgId is null)
+            return BadRequest("Could not resolve sponor organization.");
+
+        var orgModel = await _db.SponsorOrgs
+            .AsNoTracking()
+            .Where(o => o.Id == resolvedOrgId)
+            .Select(o => new SponsorOrgModel
+            {
+                Id = o.Id,
+                SponsorName = o.SponsorName,
+                PointRatio = o.PointRatio
+            })
+            .FirstOrDefaultAsync();
+
+        if (orgModel is null)
+            return NotFound();
+
+        return Ok(orgModel);
+    }
+
+
     #region Points
     [HttpGet("{driverId}/points")]
     [HttpGet("points")]
@@ -237,10 +264,23 @@ public class DriverUsersController : ControllerBase
     private async Task<int?> GetCurrentSponsorOrgId()
     {
         var userId = _userManager.GetUserId(User);
-        return await _db.SponsorUsers
-            .AsNoTracking()
-            .Where(s => s.UserId == userId)
-            .Select(s => (int?)s.SponsorOrgId)
-            .FirstOrDefaultAsync();
+        if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
+        {
+            return await _db.SponsorUsers
+                .AsNoTracking()
+                .Where(s => s.UserId == userId)
+                .Select(s => (int?)s.SponsorOrgId)
+                .FirstOrDefaultAsync();
+        }
+        else if (User.IsInRole(UserTypeRoles.Role(UserType.Driver)))
+        {
+            return await _db.DriverUsers
+                .AsNoTracking()
+                .Where(d => d.UserId == userId)
+                .Select(d => (int?)d.SponsorOrgId)
+                .FirstOrDefaultAsync();
+        }
+
+        return null;
     }
 }
