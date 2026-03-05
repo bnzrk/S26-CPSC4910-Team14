@@ -7,4 +7,5 @@ public class SponsorOrgInfoModel
     public required DateTime DateJoined { get; set; }
     public required int SponsorCount { get; set; }
     public required int DriverCount { get; set; }
+    public required decimal PointRatio { get; set; }
 }
