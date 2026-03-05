@@ -29,9 +29,7 @@
   }
   
   @media (prefers-reduced-motion: reduce) {
-    .hero {
-      animation: none;
-    }
+    .hero { animation: none; }
   }
   
   .heroTitle {
@@ -47,7 +45,7 @@
   }
   
   .container {
-    max-width: 900px;
+    max-width: 700px;
     margin: 0 auto;
     padding: 2rem 1rem;
   }
@@ -64,19 +62,18 @@
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--color-text);
-    margin: 0 0 1rem;
+    margin: 0 0 1.25rem;
   }
   
   .form {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 1rem;
   }
   
-  .formRow {
+  .row {
     display: flex;
     gap: 1rem;
-    align-items: flex-end;
     flex-wrap: wrap;
   }
   
@@ -106,18 +103,10 @@
       outline: none;
       border-color: var(--color-accent);
     }
-  }
   
-  .inputSmall {
-    padding: 0.4rem 0.5rem;
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    font-size: 0.9rem;
-    width: 90px;
-  
-    &:focus {
-      outline: none;
-      border-color: var(--color-accent);
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
   }
   
@@ -126,11 +115,11 @@
     color: white;
     border: none;
     border-radius: 4px;
-    padding: 0.6rem 1.25rem;
-    font-size: 0.95rem;
+    padding: 0.65rem 1.25rem;
+    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    white-space: nowrap;
+    align-self: flex-start;
   
     &:hover:not(:disabled) {
       background-color: #085c3d;
@@ -140,6 +129,16 @@
       opacity: 0.6;
       cursor: not-allowed;
     }
+  }
+  
+  .success {
+    background: #e6f4ed;
+    border: 1px solid #0a6847;
+    color: #0a6847;
+    border-radius: 4px;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.9rem;
+    margin: 0;
   }
   
   .error {
@@ -154,101 +153,5 @@
   
   .muted {
     color: var(--color-text-secondary);
-    font-size: 0.95rem;
-  }
-  
-  .table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.95rem;
-  
-    th {
-      text-align: left;
-      padding: 0.6rem 0.75rem;
-      border-bottom: 2px solid var(--color-border);
-      color: var(--color-text-secondary);
-      font-weight: 600;
-    }
-  
-    td {
-      padding: 0.75rem;
-      border-bottom: 1px solid var(--color-border);
-      color: var(--color-text);
-    }
-  
-    tr:last-child td {
-      border-bottom: none;
-    }
-  }
-  
-  .positive {
-    color: #0A6847;
-    font-weight: 600;
-  }
-  
-  .negative {
-    color: #d32f2f;
-    font-weight: 600;
-  }
-  
-  .actions {
-    display: flex;
-    gap: 0.5rem;
-  }
-  
-  .buttonEdit {
-    background: var(--color-accent-light);
-    color: var(--color-accent);
-    border: 1px solid var(--color-accent);
-    border-radius: 4px;
-    padding: 0.35rem 0.75rem;
-    font-size: 0.85rem;
-    cursor: pointer;
-  
-    &:hover {
-      background: var(--color-accent);
-      color: white;
-    }
-  }
-  
-  .buttonSave {
-    background: var(--color-accent);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 0.35rem 0.75rem;
-    font-size: 0.85rem;
-    cursor: pointer;
-  
-    &:hover:not(:disabled) {
-      background: #085c3d;
-    }
-  }
-  
-  .buttonCancel {
-    background: transparent;
-    color: var(--color-text-secondary);
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    padding: 0.35rem 0.75rem;
-    font-size: 0.85rem;
-    cursor: pointer;
-  
-    &:hover {
-      background: var(--color-bg);
-    }
-  }
-  
-  .buttonDelete {
-    background: transparent;
-    color: #d32f2f;
-    border: 1px solid #f5c6cb;
-    border-radius: 4px;
-    padding: 0.35rem 0.75rem;
-    font-size: 0.85rem;
-    cursor: pointer;
-  
-    &:hover:not(:disabled) {
-      background: #fdecea;
-    }
+    padding: 2rem;
   }

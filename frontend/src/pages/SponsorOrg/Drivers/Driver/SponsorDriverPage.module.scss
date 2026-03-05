@@ -1,0 +1,65 @@
+@use '@/styles/globals' as *;
+
+.profile {
+    .identity {
+        display: flex;
+        flex-direction: row;
+        gap: $grid-1x;
+        align-items: center;
+
+        .name {
+            font-weight: bold;
+        }
+
+        p {
+            margin: 0;
+        }
+    }
+
+    .body {
+        display: flex;
+        padding-bottom: $grid-3x;
+    }
+
+    .dates {
+        margin-top: $grid-half;
+        font-size: 14px;
+    }
+}
+
+.points {
+    color: var(--color-accent);
+
+    .label {
+        opacity: 0.9;
+        font-weight: 600;
+        font-size: calc($grid-1x + $grid-half);
+    }
+
+    .value {
+        font-size: $grid-3x;
+        font-weight: 800;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: $grid-fourth;
+    }
+
+    svg {
+        width: $grid-2x;
+        height: $grid-2x;
+    }
+}
+
+.buttonGroup {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: $grid-1x;
+    justify-content: flex-start;
+    margin-top: $grid-2x;
+}
+
+.button {
+    width: fit-content;
+}

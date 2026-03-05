@@ -5,12 +5,12 @@ using WebApi.Data;
 
 namespace WebApi.Features.Users;
 
-public class UserService : IUsersService
+public class UsersService : IUsersService
 {
     private readonly AppDbContext _db;
     private readonly UserManager<User> _userManager;
 
-    public UserService(AppDbContext db, UserManager<User> userManager)
+    public UsersService(AppDbContext db, UserManager<User> userManager)
     {
         _db = db;
         _userManager = userManager;
@@ -29,7 +29,8 @@ public class UserService : IUsersService
             FirstName = firstName,
             LastName = lastName,
             UserType = UserType.Admin,
-            IsActive = true
+            IsActive = true,
+            CreatedDateUtc = DateTime.UtcNow
         };
 
         // Attempt to create the base user.
@@ -72,7 +73,8 @@ public class UserService : IUsersService
             FirstName = firstName,
             LastName = lastName,
             UserType = UserType.Sponsor,
-            IsActive = true
+            IsActive = true,
+            CreatedDateUtc = DateTime.UtcNow
         };
 
         // Attempt to create the base user.
@@ -103,6 +105,51 @@ public class UserService : IUsersService
         return IdentityResult.Success;
     }
 
+    public async Task<IdentityResult> CreateSponsorUser(string email, string password, string firstName, string lastName, int orgId)
+    {
+        // We want to abort our changes if something fails before we finish.
+        using var transaction = await _db.Database.BeginTransactionAsync();
+
+        var user = new User
+        {
+            // ASP.NET Identity requires a username by default, so we'll just use the email
+            UserName = email,
+            Email = email,
+            FirstName = firstName,
+            LastName = lastName,
+            UserType = UserType.Sponsor,
+            IsActive = true,
+            CreatedDateUtc = DateTime.UtcNow
+        };
+
+        // Attempt to create the base user.
+        var createResult = await _userManager.CreateAsync(user, password);
+        if (!createResult.Succeeded)
+        {
+            return createResult;
+        }
+
+        var roleResult = await _userManager.AddToRoleAsync(user, UserTypeRoles.Role(UserType.Sponsor));
+        if (!roleResult.Succeeded)
+        {
+            await transaction.RollbackAsync();
+            return roleResult;
+        }
+
+        var sponsor = new SponsorUser
+        {
+            User = user,
+            SponsorOrgId = orgId
+        };
+        _db.SponsorUsers.Add(sponsor);
+        await _db.SaveChangesAsync();
+
+        // Commit our changes if successful.
+        await transaction.CommitAsync();
+
+        return IdentityResult.Success;
+    }
+
     public async Task<IdentityResult> CreateDriverUser(string email, string password, string firstName, string lastName)
     {
         // We want to abort our changes if something fails before we finish.
@@ -116,7 +163,8 @@ public class UserService : IUsersService
             FirstName = firstName,
             LastName = lastName,
             UserType = UserType.Driver,
-            IsActive = true
+            IsActive = true,
+            CreatedDateUtc = DateTime.UtcNow
         };
 
         // Attempt to create the base user.

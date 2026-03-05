@@ -31,7 +31,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Our services
 // .NET handles injecting all other services specified in the constructor for us
-builder.Services.AddScoped<IUsersService, UserService>();
+builder.Services.AddScoped<IUsersService, UsersService>();
 
 var app = builder.Build();
 

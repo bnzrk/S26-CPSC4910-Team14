@@ -8,26 +8,34 @@ import GuestRoute from './routes/GuestRoute';
 import ProtectedRoute from './routes/ProtectedRoute';
 import AboutPage from './pages/About/AboutPage';
 import LoginPage from './pages/Login/LoginPage';
-import PointRulesPage from './pages/PointsRules/PointRulesPage';
+import PointRulesPage from './pages/SponsorOrg/PointsRules/PointRulesPage';
 import PointsPage from './pages/Points/PointsPage'
+import SponsorOrgLayout from './pages/SponsorOrg/SponsorOrgLayout';
+import SponsorOrgPage from '@/pages/SponsorOrg/Index/SponsorOrgPage';
+import SponsorUsersPage from './pages/SponsorOrg/Users/SponsorUsersPage';
+import SponsorDriversPage from './pages/SponsorOrg/Drivers/Index/SponsorDriversPage';
+import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPage';
 import RegisterPage from './pages/Register/RegisterPage';
+import AdminToolsPage from './pages/Admin/Tools/AdminToolsPage';
 import Navbar from './components/Navbar/NavBar';
+import ProfilePage from './pages/Profile/ProfilePage';
 import './App.scss';
 
-
-// Main application component
 export default function App() {
   const navigate = useNavigate();
 
   const { data: user, isLoading } = useCurrentUser();
 
   if (!isLoading)
-    console.log(`Current user: ${JSON.stringify(user)}`);  
+    console.log(`Current user: ${JSON.stringify(user)}`);
 
-  async function handleLogout() {
-    try {
+  async function handleLogout()
+  {
+    try
+    {
       await apiFetch("/auth/logout", { method: "POST" });
-    } catch (err) {
+    } catch (err)
+    {
       console.error("Logout failed:", err);
     }
 
@@ -53,15 +61,31 @@ export default function App() {
             <RegisterPage />
           </GuestRoute>
         } />
-        <Route path="/point-rules" element={
-          <ProtectedRoute allowedUserTypes={[USER_TYPES.SPONSOR]}>
-            <PointRulesPage />
-          </ProtectedRoute>
-        } />
         <Route path="*" element={<Navigate to="/" replace />} />
         <Route path="/points" element={
           <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
             <PointsPage />
+          </ProtectedRoute>
+        } />
+        <Route path='/org' element={
+          <ProtectedRoute allowedUserTypes={[USER_TYPES.SPONSOR]}>
+            <SponsorOrgLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<SponsorOrgPage />} />
+          <Route path="point-rules" element={<PointRulesPage />} />
+          <Route path="users" element={<SponsorUsersPage />} />
+          <Route path="drivers" element={<SponsorDriversPage />} />
+          <Route path="drivers/:driverId" element={<SponsorDriverPage />} />
+        </Route>
+        <Route path="/admin" element={
+          <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
+            <AdminToolsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/profile" element={
+          <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER, USER_TYPES.SPONSOR, USER_TYPES.ADMIN]}>
+            <ProfilePage />
           </ProtectedRoute>
         } />
       </Routes>
