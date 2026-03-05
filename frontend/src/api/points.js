@@ -16,12 +16,24 @@ export function usePoints()
   });
 }
 
-export function usePointHistory(page, pageSize)
+export function usePointHistory(page, pageSize, { sign, from, to } = {})
 {
   return useQuery({
-    queryKey: ['driverPointTransactions', page, pageSize],
+    queryKey: ['driverPointTransactions', page, pageSize, sign, from, to],
     queryFn: async () =>
-      apiFetch(`/drivers/point-transactions?page=${page}&pageSize=${pageSize}`).then(r => r.json()),
+    {
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(pageSize),
+      });
+
+      if (sign) params.append('sign', sign);
+      if (from) params.append('from', from);
+      if (to) params.append('to', to);
+
+      const res = await apiFetch(`/drivers/point-transactions?${params.toString()}`);
+      return res.json();
+    },
     placeholderData: keepPreviousData,
   });
 }

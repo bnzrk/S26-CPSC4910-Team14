@@ -43,7 +43,7 @@
 
   &:hover:not(:disabled) {
     border-color: var(--color-accent);
-    color: var(--color-accent); 
+    color: var(--color-accent);
   }
 
   &:disabled {
@@ -113,4 +113,88 @@ table {
   margin-top: 0.75rem;
   display: flex;
   justify-content: flex-end;
+}
+
+.filtersRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin: 0.25rem 0 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: transparent;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 140px;
+}
+
+.filterLabel {
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.filterControl {
+  appearance: none;
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.9rem;
+  line-height: 1.2;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-accent);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: default;
+  }
+}
+
+.filterClear {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.45rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    color: var(--color-accent);
+    border-color: var(--color-border);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+  
+@media (max-width: 640px) {
+  .filtersRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filterGroup {
+    min-width: 0;
+  }
+
+  .filterClear {
+    margin-left: 0;
+    align-self: flex-end;
+  }
 }
