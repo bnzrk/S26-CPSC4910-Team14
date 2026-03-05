@@ -17,9 +17,11 @@ import SponsorDriversPage from './pages/SponsorOrg/Drivers/Index/SponsorDriversP
 import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPage';
 import RegisterPage from './pages/Register/RegisterPage';
 import Navbar from './components/Navbar/NavBar';
+import ProfilePage from './pages/Profile/ProfilePage';
 import './App.scss';
 
-export default function App() {
+export default function App()
+{
   const navigate = useNavigate();
 
   const { data: user, isLoading } = useCurrentUser();
@@ -76,6 +78,11 @@ export default function App() {
           <Route path="drivers" element={<SponsorDriversPage />} />
           <Route path="drivers/:driverId" element={<SponsorDriverPage />} />
         </Route>
+        <Route path="/profile" element={
+          <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER, USER_TYPES.SPONSOR, USER_TYPES.ADMIN]}>
+            <ProfilePage />
+          </ProtectedRoute>
+        } />
       </Routes>
     </>
   );

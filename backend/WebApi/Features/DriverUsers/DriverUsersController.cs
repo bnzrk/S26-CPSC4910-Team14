@@ -68,28 +68,54 @@ public class DriverUsersController : ControllerBase
     public async Task<ActionResult> GetPointTransactions(
         int? driverId,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? sign = null,
+        [FromQuery] DateTime? from = null,
+        [FromQuery] DateTime? to = null)
     {
+        Console.WriteLine(from);
+        Console.WriteLine(to);
+
         var resolvedDriverId = driverId ?? await GetCurrentDriverId();
-        if (resolvedDriverId is null) return BadRequest();
+        if (resolvedDriverId is null)
+            return BadRequest();
+
+        if (from is not null && to is not null && from > to)
+            return BadRequest("Invalid date range.");
 
         // Normal EF query but don't await it.
-        var query = _db.PointTransactions
+        var entityQuery = _db.PointTransactions
             .AsNoTracking()
-            .Where(p => p.DriverUserId == resolvedDriverId)
-            .OrderByDescending(p => p.TransactionDateUtc)
-            .Select(p => new PointTransactionModel
-            {
-                Id = p.Id,
-                DriverId = p.DriverUserId,
-                SponsorOrgId = p.SponsorOrgId,
-                BalanceChange = p.BalanceChange,
-                Reason = p.Reason,
-                TransactionDateUtc = p.TransactionDateUtc
-            });
+            .Where(p => p.DriverUserId == resolvedDriverId);
+
+        // Filter by present query parameters
+        if (from is not null)
+            entityQuery = entityQuery.Where(p => p.TransactionDateUtc >= from);
+        if (to is not null)
+            entityQuery = entityQuery.Where(p => p.TransactionDateUtc < to);
+        if (sign is not null)
+        {
+            if (sign == "negative")
+                entityQuery = entityQuery.Where(p => p.BalanceChange < 0);
+            else if (sign == "positive")
+                entityQuery = entityQuery.Where(p => p.BalanceChange > 0);
+            else
+                return BadRequest("Invalid sign.");
+        }
+
+        // Finalize query
+        var modelQuery = entityQuery.OrderByDescending(p => p.TransactionDateUtc).Select(p => new PointTransactionModel
+        {
+            Id = p.Id,
+            DriverId = p.DriverUserId,
+            SponsorOrgId = p.SponsorOrgId,
+            BalanceChange = p.BalanceChange,
+            Reason = p.Reason,
+            TransactionDateUtc = p.TransactionDateUtc
+        });
 
         // Perform pagination on the query and await the result.
-        var pageResult = await PagedResult.ToPagedResultAsync(query, page, pageSize);
+        var pageResult = await PagedResult.ToPagedResultAsync(modelQuery, page, pageSize);
 
         return Ok(pageResult);
     }

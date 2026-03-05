@@ -59,7 +59,7 @@ export default function Navbar()
 
               {/* Adding the role title to navbar */}
               {roleBadge && (
-                <span className={clsx(styles.roleBadge, roleBadge.style )}>
+                <span className={clsx(styles.roleBadge, roleBadge.style)}>
                   {roleBadge.label}
                 </span>
               )}
@@ -74,11 +74,10 @@ export default function Navbar()
                   <StarIcon />
                 </span>
               )}
-
               {isSponsor && (
                 <Button className={styles.button} onClick={() => navigate("/org")} text='Organization' color='primary' icon={BuildingIcon} />
               )}
-
+              <Button className={styles.button} onClick={() => navigate("/profile")} text='Profile' />
               <Button className={styles.button} onClick={handleLogout} text='Logout' />
             </>
           ) : (
