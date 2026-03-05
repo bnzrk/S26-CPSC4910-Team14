@@ -39,7 +39,8 @@ public class SponsorOrgsController : ControllerBase
                 SponsorName = o.SponsorName,
                 DateJoined = o.DateJoined,
                 SponsorCount = o.SponsorUsers.Count(),
-                DriverCount = o.DriverUsers.Count()
+                DriverCount = o.DriverUsers.Count(),
+                PointRatio = o.PointRatio
             })
             .ToListAsync();
 
