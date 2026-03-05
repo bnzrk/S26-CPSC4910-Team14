@@ -43,6 +43,7 @@
     &.failed {
         background: var(--color-warn);
         color: var(--color-surface);
+        border-color: var(--color-warn);
 
         &:hover:not(:disabled) {
             background: var(--color-warn);

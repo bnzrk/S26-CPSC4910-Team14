@@ -3,6 +3,49 @@ import { useCurrentUser } from "./currentUser";
 import { apiFetch } from "./apiFetch";
 import { USER_TYPES } from "../constants/userTypes";
 
+export function useAllSponsorOrgs()
+{
+    const { data: user } = useCurrentUser();
+    const isAdmin = user?.userType === USER_TYPES.ADMIN;
+
+    return useQuery({
+        queryKey: ["allSponsorOrgs"],
+        queryFn: async () => apiFetch('/sponsor-orgs/all').then(r => r.json()),
+        enabled: !!user && isAdmin,
+        retry: 1
+    });
+}
+
+export function useCreateSponsorOrg()
+{
+    const { data: user } = useCurrentUser();
+    const isAdmin = user?.userType === USER_TYPES.ADMIN;
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ sponsorName }) =>
+        {
+            const res = await apiFetch("/sponsor-orgs", {
+                method: "POST",
+                body: JSON.stringify({ sponsorName }),
+            });
+
+            if (!res.ok)
+            {
+                throw await res.json();
+            }
+
+            return null;
+        },
+        onSuccess: () =>
+        {
+            queryClient.invalidateQueries({ queryKey: ["allSponsorOrgs"] });
+        },
+        retry: 0,
+        enabled: !!user && isAdmin,
+    });
+}
+
 export function useSponsorOrg()
 {
     const { data: user } = useCurrentUser();
@@ -80,9 +123,10 @@ export function useCreateSponsorOrgUser()
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({ email, username, firstName, lastName, password }) =>
+        mutationFn: async ({ orgId, email, username, firstName, lastName, password }) =>
         {
-            const res = await apiFetch("/sponsor-orgs/users", {
+            const path = `/sponsor-orgs${orgId ? `/${orgId}` : ''}/users`;
+            const res = await apiFetch(path, {
                 method: "POST",
                 body: JSON.stringify({ email, username, firstName, lastName, password }),
             });

@@ -27,6 +27,25 @@ public class SponsorOrgsController : ControllerBase
     }
 
     #region Org
+    [HttpGet("all")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<IActionResult> GetAllSponsorOrgs()
+    {
+        var orgModels = await _db.SponsorOrgs
+            .AsNoTracking()
+            .Select(o => new SponsorOrgInfoModel
+            {
+                Id = o.Id,
+                SponsorName = o.SponsorName,
+                DateJoined = o.DateJoined,
+                SponsorCount = o.SponsorUsers.Count(),
+                DriverCount = o.DriverUsers.Count()
+            })
+            .ToListAsync();
+
+        return Ok(orgModels);
+    }
+
     [HttpGet("{orgId}")]
     [HttpGet]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]

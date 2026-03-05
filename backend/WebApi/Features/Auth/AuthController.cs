@@ -36,7 +36,7 @@ public class AuthController : ControllerBase
             lockoutOnFailure: false
         );
         if (!result.Succeeded)
-            BadRequest("Invalid email or password.");
+            return BadRequest("Invalid email or password.");
 
         user.LastLoginUtc = DateTime.UtcNow;
         await _db.SaveChangesAsync();
