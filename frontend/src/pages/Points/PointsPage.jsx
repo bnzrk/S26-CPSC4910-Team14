@@ -1,6 +1,4 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '../../api/apiFetch';
 import { usePoints, usePointHistory } from '../../api/points';
 import { useDriverOrg } from '@/api/driver';
 import Card from '@/components/Card/Card';
@@ -21,30 +19,46 @@ function formatDMY(dateLike)
   return `${month}/${day}/${year}`;
 }
 
+function normalizeDateTimeLocal(value)
+{
+  // <input type="datetime-local" /> often returns "YYYY-MM-DDTHH:mm"
+  // Your API example includes seconds, so add ":00" when missing.
+  if (!value) return undefined;
+  return value.length === 16 ? `${value}:00` : value;
+}
+
 export default function PointsPage()
 {
   const [page, setPage] = useState(1);
   const pageSize = 5;
 
+  // Filters
+  const [sign, setSign] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+
+  const from = fromDate ? `${fromDate}T00:00:00` : undefined;
+  const to = toDate ? `${toDate}T23:59:59` : undefined;
+
   const {
     data: totalPoints,
-    isLoading: totalLoading,
     isError: totalError,
-    refetch: refetchTotal,
   } = usePoints();
 
   const {
     data: history,
     isLoading: historyLoading,
     isError: historyError,
-    refetch: refetchHistory,
-  } = usePointHistory(page, pageSize);
+  } = usePointHistory(page, pageSize, {
+    sign: sign || undefined,
+    from,
+    to,
+  });
 
-  const { data: org, isLoading: isOrgLoading, isError: isOrgError } = useDriverOrg();
+  const { data: org } = useDriverOrg();
 
   const items = history?.items ?? [];
-  const totalCount =
-    history?.totalCount ?? 0;
+  const totalCount = history?.totalCount ?? 0;
 
   const totalPages = useMemo(() =>
   {
@@ -57,37 +71,126 @@ export default function PointsPage()
 
   const hasError = totalError || historyError;
 
+  const clearFilters = () =>
+  {
+    setSign('');
+    setFromLocal('');
+    setToLocal('');
+    setPage(1);
+  };
+
   return (
     <main className={styles.page}>
       <CardHost title={'Points'} subtitle={'Point balance and history'}>
         <PointCard points={totalPoints}></PointCard>
+
         {hasError && (
           <InlineErrors errors={['Something went wrong loading your points.']}></InlineErrors>
         )}
-        {org && <InlineInfo type='info' messages={[`Points are equivalent to $${org?.pointRatio} USD when purchasing from this sponsor's catalog.`]} />}
-        <Card title="Point History" headerRight={
-          <div className={styles.pager}>
+
+        {org && (
+          <InlineInfo
+            type='info'
+            messages={[`Points are equivalent to $${org?.pointRatio} USD when purchasing from this sponsor's catalog.`]}
+          />
+        )}
+
+        <Card
+          title="Point History"
+          headerRight={
+            <div className={styles.pager}>
+              <button
+                type="button"
+                className={styles.buttonSecondary}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={!canPrev || historyLoading}
+              >
+                Prev
+              </button>
+              <span className={styles.pageInfo}>
+                Page {page} of {totalPages}
+              </span>
+              <button
+                type="button"
+                className={styles.buttonSecondary}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={!canNext || historyLoading}
+              >
+                Next
+              </button>
+            </div>
+          }
+        >
+          {/* Filters */}
+          <div className={styles.filtersRow}>
+            <div className={styles.filterGroup}>
+              <label className={styles.filterLabel} htmlFor="points-sign">Type</label>
+              <select
+                id="points-sign"
+                className={styles.filterControl}
+                value={sign}
+                onChange={(e) =>
+                {
+                  setSign(e.target.value);
+                  setPage(1);
+                }}
+                disabled={historyLoading}
+              >
+                <option value="">All</option>
+                <option value="positive">Positive</option>
+                <option value="negative">Negative</option>
+              </select>
+            </div>
+
+            <div className={styles.filterGroup}>
+              <label className={styles.filterLabel} htmlFor="points-from">From</label>
+              <input
+                id="points-from"
+                className={styles.filterControl}
+                type="date"
+                value={fromDate}
+                onChange={(e) =>
+                {
+                  setFromDate(e.target.value);
+                  setPage(1);
+                }}
+                disabled={historyLoading}
+              />
+            </div>
+
+            <div className={styles.filterGroup}>
+              <label className={styles.filterLabel} htmlFor="points-to">To</label>
+              <input
+                id="points-to"
+                className={styles.filterControl}
+                type="date"
+                value={toDate}
+                onChange={(e) =>
+                {
+                  setToDate(e.target.value);
+                  setPage(1);
+                }}
+                disabled={historyLoading}
+              />
+            </div>
+
             <button
               type="button"
-              className={styles.buttonSecondary}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={!canPrev || historyLoading}
+              className={styles.filterClear}
+              onClick={() =>
+              {
+                setSign('');
+                setFromDate('');
+                setToDate('');
+                setPage(1);
+              }}
+              disabled={historyLoading || (!sign && !fromDate && !toDate)}
+              aria-label="Clear filters"
             >
-              Prev
-            </button>
-            <span className={styles.pageInfo}>
-              Page {page} of {totalPages}
-            </span>
-            <button
-              type="button"
-              className={styles.buttonSecondary}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={!canNext || historyLoading}
-            >
-              Next
+              Clear
             </button>
           </div>
-        }>
+
           {historyLoading ? (
             <p className={styles.muted}>Loading history…</p>
           ) : items.length === 0 ? (
@@ -118,9 +221,8 @@ export default function PointsPage()
                               : isNegative
                                 ? styles.negative
                                 : undefined,
-                                styles.balance
-                              )
-                          }
+                            styles.balance
+                          )}
                         >
                           {isPositive ? `+${change}` : `${change}`}
                         </td>
@@ -132,6 +234,7 @@ export default function PointsPage()
               </table>
             </div>
           )}
+
           <div className={styles.footerMeta}>
             <span className={styles.muted}>
               Showing {items.length} of {totalCount || items.length}
