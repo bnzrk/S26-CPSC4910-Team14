@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using WebApi.Features.Auth.Models;
 using WebApi.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
+using WebApi.Data;
 
 namespace WebApi.Features.Auth;
 
@@ -10,11 +11,13 @@ namespace WebApi.Features.Auth;
 [Route("/auth")]
 public class AuthController : ControllerBase
 {
+    private readonly AppDbContext _db;
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
 
-    public AuthController(UserManager<User> userManager, SignInManager<User> signInManager, IAuthorizationService authService)
+    public AuthController(UserManager<User> userManager, SignInManager<User> signInManager, AppDbContext db)
     {
+        _db = db;
         _userManager = userManager;
         _signInManager = signInManager;
     }
@@ -32,8 +35,13 @@ public class AuthController : ControllerBase
             isPersistent: login.RememberMe,
             lockoutOnFailure: false
         );
+        if (!result.Succeeded)
+            BadRequest("Invalid email or password.");
 
-        return result.Succeeded ? Ok() : BadRequest("Invalid email or password.");
+        user.LastLoginUtc = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+
+        return Ok();
     }
 
     [HttpPost("logout")]

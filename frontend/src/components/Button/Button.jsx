@@ -1,7 +1,7 @@
 import styles from './Button.module.scss';
 import clsx from 'clsx';
 
-export default function Button({ text = '', color, disabled = false, onClick})
+export default function Button({ children, text = '', color, icon: Icon, size, disabled = false, onClick, className, ...other})
 {
   var colorClass = "";
   switch (color) {
@@ -16,7 +16,11 @@ export default function Button({ text = '', color, disabled = false, onClick})
       break;
   }
 
-  return <button type="button" className={clsx(styles.buttonSimple, colorClass)} disabled={disabled} onClick={onClick}>
-    {text}
+  var sizeClass = size == 'small' ? styles.small : '';
+
+  return <button {...other} type="button" className={clsx(className, styles.buttonSimple, colorClass, sizeClass)} disabled={disabled} onClick={onClick}>
+    {Icon && <Icon className={styles.icon}/>}
+    <span>{text}</span>
+    {children}
   </button>
 }

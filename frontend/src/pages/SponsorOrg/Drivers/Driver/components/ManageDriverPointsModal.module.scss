@@ -1,0 +1,135 @@
+@use '@/styles/globals' as *;
+
+.tabs {
+    margin: 0 auto;
+    width: 40%;
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+
+    .tab {
+        width: min-content;
+        flex-grow: 1;
+        flex-basis: 0;
+        min-width: 0;
+
+        &.selected {
+            background-color: var(--color-border);
+
+            &:hover {
+                border-color: var(--color-border);
+            }
+        }
+    }
+
+    .tab:first-child {
+        border-radius: $grid-half 0 0 $grid-half
+    }
+
+    .tab:not:first-child:not:last-child {
+        border-radius: 0
+    }
+
+    .tab:last-child {
+        border-radius: 0 $grid-half $grid-half 0
+    }
+}
+
+.ruleBody {
+    display: flex;
+    flex-direction: column;
+    gap: $grid-2x;
+}
+
+.ruleDropdown {
+    margin-top: $grid-2x;
+}
+
+.rule {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: $grid-1x $grid-2x $grid-1x $grid-1x;
+    border-radius: $grid-1x;
+    border: 1px solid var(--color-border);
+
+    .name {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: row;
+        gap: $grid-1x;
+        overflow: hidden;
+
+        mask-image: linear-gradient(to right,
+                black 80%,
+                transparent 100%);
+        -webkit-mask-image: linear-gradient(to right,
+                black 80%,
+                transparent 100%);
+    }
+
+    .balanceChange {
+        flex: 0 0 auto;
+    }
+}
+
+.positive {
+    color: #0A6847;
+    font-weight: 600;
+}
+
+.negative {
+    color: #d32f2f;
+    font-weight: 600;
+}
+
+.pointTotal {
+    display: flex;
+    flex-direction: row;
+    gap: $grid-fourth;
+    align-items: center;
+    color: var(--color-accent);
+    font-weight: 600;
+
+    svg {
+        width: calc($grid-1x + $grid-half);
+        height: calc($grid-1x + $grid-half);
+    }
+}
+
+.finalResult {
+    padding-top: $grid-3x;
+    width: fit-content;
+    margin-left: auto;
+    display: flex;
+    flex-direction: row;
+    gap: $grid-1x;
+}
+
+.inputs {
+    padding-top: $grid-2x;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: $grid-2x;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    flex: 1;
+    min-width: 150px;
+}
+
+@media only screen and (max-width : $small-width) {
+    .tabs {
+        min-width: 80%;
+    }
+
+    .inputs {
+        flex-direction: column;
+        gap: $grid-1x;
+    }
+}

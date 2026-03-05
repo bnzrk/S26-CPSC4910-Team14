@@ -5,7 +5,7 @@ import { usePoints, usePointHistory } from '../../api/points';
 import Card from '@/components/Card/Card';
 import PointCard from '@/components/PointCard/PointCard';
 import CardHost from '@/components/CardHost/CardHost';
-import Error from '@/components/Error/Error';
+import InlineErrors from '@/components/InlineErrors/InlineErrors';
 import styles from './PointsPage.module.scss';
 import clsx from 'clsx';
 
@@ -16,7 +16,7 @@ function formatDMY(dateLike)
   const day = String(d.getDate());
   const month = String(d.getMonth() + 1);
   const year = String(d.getFullYear()).slice(-2);
-  return `${day}/${month}/${year}`;
+  return `${month}/${day}/${year}`;
 }
 
 export default function PointsPage()
@@ -42,9 +42,6 @@ export default function PointsPage()
   const totalCount =
     history?.totalCount ?? 0;
 
-  if (!historyLoading)
-    console.log(history);
-
   const totalPages = useMemo(() =>
   {
     if (!totalCount) return 1;
@@ -61,7 +58,7 @@ export default function PointsPage()
       <CardHost title={'Points'} subtitle={'Point balance and history'}>
         <PointCard points={totalPoints}></PointCard>
         {hasError && (
-          <Error message={'Something went wrong loading your points.'}></Error>
+          <InlineErrors errors={['Something went wrong loading your points.']}></InlineErrors>
         )}
         <Card title="Point History" headerRight={
           <div className={styles.pager}>

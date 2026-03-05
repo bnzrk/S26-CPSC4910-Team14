@@ -32,6 +32,11 @@ public class AppDbContext : IdentityDbContext<User>
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<User>(u =>
+        {
+            u.Property(e => e.CreatedDateUtc).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+        });
+
         // Table relationships
         modelBuilder.Entity<AdminUser>(b =>
         {
@@ -85,8 +90,8 @@ public class AppDbContext : IdentityDbContext<User>
         {
             Id = 1,
             Team = 14,
-            Version = 4,
-            ReleaseDateUtc = new DateTime(2026, 2, 26, 0, 0, 0, DateTimeKind.Utc),
+            Version = 5,
+            ReleaseDateUtc = new DateTime(2026, 3, 4, 0, 0, 0, DateTimeKind.Utc),
             ProductName = "DrivePoints",
             ProductDescription = "A rewards platform where sponsor companies award points to truck drivers for good driving behavior, redeemable for products from a sponsor-managed catalog."
         });

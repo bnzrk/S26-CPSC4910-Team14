@@ -20,12 +20,12 @@ const getChildrenFromDisplayName = (children, displayName) =>
     });
 }
 
-const Header = ({ children, title, ...other }) =>
+const Header = ({ children, title, className, ...other }) =>
 {
     const { onClose, closeButton } = useModal();
 
     return (
-        <div className={styles.header}>
+        <div {...other} className={clsx(className, styles.header)}>
             {title && <h2 className={styles.title}>{title}</h2>}
             {children}
             {closeButton &&
@@ -38,16 +38,16 @@ const Header = ({ children, title, ...other }) =>
 Header.displayName = "Header";
 Modal.Header = Header;
 
-const Body = ({ children, ...other }) => (
-    <div className={styles.body}>
+const Body = ({ children, className, ...other }) => (
+    <div {...other} className={clsx(className, styles.body)}>
         {children}
     </div>
 )
 Body.displayName = "Body";
 Modal.Body = Body;
 
-const Footer = ({ children, ...other }) => (
-    <div className={styles.footer}>
+const Footer = ({ children, className, ...other }) => (
+    <div {...other} className={clsx(className, styles.footer)}>
         {children}
     </div>
 )
@@ -57,6 +57,7 @@ Modal.Footer = Footer;
 const Buttons = ({
     children,
     position,
+    className,
     ...other }) =>
 {
     var positionStyle;
@@ -73,7 +74,7 @@ const Buttons = ({
     }
 
     return (
-        <div className={clsx(styles.buttons, positionStyle)}>
+        <div {...other} className={clsx(className, styles.buttons, positionStyle)}>
             {children}
         </div>
     );
@@ -81,7 +82,7 @@ const Buttons = ({
 Buttons.displayName = "Buttons";
 Modal.Buttons = Buttons;
 
-export default function Modal({ isOpen, onClose, closeButton, children })
+export default function Modal({ isOpen, onClose, closeButton = true, children, className, ...other })
 {
     // Scroll lock when open
     useEffect(() =>
@@ -107,7 +108,7 @@ export default function Modal({ isOpen, onClose, closeButton, children })
     return createPortal(
         <ModalContext.Provider value={{ onClose, closeButton }}>
             <div className={styles.overlay}>
-                <div className={styles.modal}>
+                <div {...other} className={clsx(styles.modal, className)}>
                     {children}
                 </div>
             </div>

@@ -19,10 +19,10 @@
 
 .header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1.25rem 1.5rem 0.75rem 1.5rem;
+  padding: calc($grid-2x + $grid-half) $grid-3x $grid-2x $grid-3x;
   flex-wrap: wrap;
 }
 
@@ -39,10 +39,10 @@
 }
 
 .body {
-  padding: 0 1.5rem 1.25rem 1.5rem;
+  padding: 0 $grid-3x calc($grid-2x + $grid-half) $grid-3x;
   color: var(--color-text-secondary)
 }
 
 .footer {
-  padding: 0.75rem 1.5rem;
+  padding: $grid-2x $grid-3x;
 }

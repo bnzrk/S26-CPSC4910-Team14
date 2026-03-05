@@ -180,9 +180,9 @@ namespace WebApi.Migrations
                             Id = 1,
                             ProductDescription = "A rewards platform where sponsor companies award points to truck drivers for good driving behavior, redeemable for products from a sponsor-managed catalog.",
                             ProductName = "DrivePoints",
-                            ReleaseDateUtc = new DateTime(2026, 2, 11, 0, 0, 0, 0, DateTimeKind.Utc),
+                            ReleaseDateUtc = new DateTime(2026, 3, 4, 0, 0, 0, 0, DateTimeKind.Utc),
                             Team = 14,
-                            Version = 2
+                            Version = 5
                         });
                 });
 
@@ -589,6 +589,11 @@ namespace WebApi.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("longtext");
 
+                    b.Property<DateTime>("CreatedDateUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
@@ -602,6 +607,9 @@ namespace WebApi.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime?>("LastLoginUtc")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("LastName")
                         .IsRequired()

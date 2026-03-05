@@ -9,4 +9,6 @@ public class User : IdentityUser
     public required string LastName { get; set; }
     public UserType UserType { get; set; }
     public bool IsActive { get; set; }
+    public DateTime CreatedDateUtc { get; set; }
+    public DateTime? LastLoginUtc { get; set; }
 }

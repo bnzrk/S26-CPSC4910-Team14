@@ -10,7 +10,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    text-wrap: nowrap;
     transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    padding: 0 $grid-2x;
+
+    &.small {
+        height: $grid-4x;
+    }
 
     &:disabled {
         opacity: 0.6;
@@ -42,6 +48,13 @@
 
         &:hover:not(:disabled) {
             background-color: #9d2a36;
+        }
+    }
+
+    .icon {
+        padding-right: $grid-1x;
+        &:first-child:last-child {
+            padding: 0;
         }
     }
 }
