@@ -6,6 +6,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import Button from "../Button/Button";
 import BuildingIcon from "@/assets/icons/building-2.svg?react";
 import StarIcon from "@/assets/icons/star.svg?react";
+import ToolsIcon from "@/assets/icons/wrench.svg?react";
 import styles from './Navbar.module.scss';
 import clsx from "clsx";
 
@@ -76,6 +77,10 @@ export default function Navbar()
               )}
               {isSponsor && (
                 <Button className={styles.button} onClick={() => navigate("/org")} text='Organization' color='primary' icon={BuildingIcon} />
+              )}
+
+              {isAdmin && (
+                <Button className={styles.button} onClick={() => navigate("/admin")} text='Tools' icon={ToolsIcon} />
               )}
               <Button className={styles.button} onClick={() => navigate("/profile")} text='Profile' />
               <Button className={styles.button} onClick={handleLogout} text='Logout' />
