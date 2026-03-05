@@ -69,7 +69,9 @@ export default function Navbar()
                   🏆 {points ?? 0} pts
                 </span>
               )}
-
+              <Link to="/profile" style={{ padding: '0.4rem 1rem', border: '2px solid white', borderRadius: '6px', color: 'white', textDecoration: 'none' }}>
+                Profile
+              </Link>
               <button onClick={handleLogout} style={{ padding: '0.4rem 1rem', border: '2px solid white', borderRadius: '6px', background: 'transparent', color: 'white', cursor: 'pointer' }}>
                 Log Out
               </button>
