@@ -1,0 +1,38 @@
+@use '@/styles/globals' as *;
+
+.messages {
+    border-radius: 4px;
+    margin: 0;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: $grid-2x;
+
+    svg {
+        width: $grid-2x;
+        height: $grid-2x;
+    }
+
+    ul {
+        padding-left: $grid-2x;
+        margin: 0;
+    }
+}
+
+.info {
+    background-color: color-mix(in srgb, var(--color-accent) 5%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 50%, transparent);
+    color: var(--color-accent);
+}
+
+.warning {
+    background-color: color-mix(in srgb, var(--color-warn) 5%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-warn) 50%, transparent);
+    color: var(--color-warn);
+}
+
+.message {
+    margin: 0;
+}

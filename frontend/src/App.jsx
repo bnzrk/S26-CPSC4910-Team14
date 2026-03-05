@@ -18,10 +18,10 @@ import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPa
 import RegisterPage from './pages/Register/RegisterPage';
 import AdminToolsPage from './pages/Admin/Tools/AdminToolsPage';
 import Navbar from './components/Navbar/NavBar';
+import ProfilePage from './pages/Profile/ProfilePage';
 import './App.scss';
 
-export default function App()
-{
+export default function App() {
   const navigate = useNavigate();
 
   const { data: user, isLoading } = useCurrentUser();
@@ -81,6 +81,11 @@ export default function App()
         <Route path="/admin" element={
           <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
             <AdminToolsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/profile" element={
+          <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER, USER_TYPES.SPONSOR, USER_TYPES.ADMIN]}>
+            <ProfilePage />
           </ProtectedRoute>
         } />
       </Routes>

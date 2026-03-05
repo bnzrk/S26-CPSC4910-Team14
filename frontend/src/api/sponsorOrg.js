@@ -146,21 +146,21 @@ export function useCreateSponsorOrgUser()
     });
 }
 
-export function useRenameSponsorOrg()
+export function useUpdateSponsorOrg()
 {
     const { data: user } = useCurrentUser();
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({ name }) =>
+        mutationFn: async ({ sponsorName, pointRatio }) =>
         {
-            return apiFetch("/sponsor-orgs/rename", {
+            return apiFetch("/sponsor-orgs", {
                 method: "PATCH",
-                body: JSON.stringify({ sponsorName: name }),
+                body: JSON.stringify({...{ sponsorName }, ...{ pointRatio }}),
             });
         },
 
-        onMutate: async ({ name }) =>
+        onMutate: async ({ sponsorName, pointRatio }) =>
         {
             const queryKey = ["sponsorOrg", user?.id];
 
@@ -171,7 +171,7 @@ export function useRenameSponsorOrg()
             queryClient.setQueryData(queryKey, (old) =>
             {
                 if (!old) return old;
-                return { ...old, sponsorName: name };
+                return { ...old, ...{ sponsorName }, ...{ pointRatio }};
             });
 
             return { previousOrg, queryKey };

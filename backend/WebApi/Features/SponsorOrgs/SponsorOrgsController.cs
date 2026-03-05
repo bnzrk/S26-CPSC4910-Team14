@@ -76,7 +76,8 @@ public class SponsorOrgsController : ControllerBase
                 DateJoined = o.DateJoined,
                 SponsorName = o.SponsorName,
                 SponsorCount = o.SponsorUsers.Count(),
-                DriverCount = o.DriverUsers.Count()
+                DriverCount = o.DriverUsers.Count(),
+                PointRatio = o.PointRatio
             })
             .FirstOrDefaultAsync();
 
@@ -92,16 +93,21 @@ public class SponsorOrgsController : ControllerBase
             SponsorName = request.SponsorName,
             DateJoined = DateTime.UtcNow
         };
+        if (request.PointRatio == 0m)
+            return BadRequest("Cannot have a point conversion value of 0.");
+        if (request.PointRatio is not null)
+            org.PointRatio = request.PointRatio.Value;
+
         _db.SponsorOrgs.Add(org);
         _db.SaveChanges();
 
         return Ok();
     }
 
-    [HttpPatch("{orgId}/rename")]
-    [HttpPatch("rename")]
+    [HttpPatch("{orgId}")]
+    [HttpPatch]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
-    public async Task<ActionResult> RenameOrg(int? orgId, [FromBody] RenameSponsorOrgModel request)
+    public async Task<ActionResult> UpdateOrg(int? orgId, [FromBody] UpdateSponsorOrgModel request)
     {
         var resolvedOrgId = await GetCurrentSponsorOrgId();
 
@@ -123,10 +129,17 @@ public class SponsorOrgsController : ControllerBase
         if (org is null)
             return BadRequest("Invalid organization.");
 
-        org.SponsorName = request.SponsorName;
+        if (request.SponsorName is not null)
+            org.SponsorName = request.SponsorName;
+        if (request.PointRatio is not null)
+        {
+            if (request.PointRatio == 0m || request.PointRatio < 0m)
+                return BadRequest("Invalid point value.");
+            org.PointRatio = request.PointRatio.Value;
+        }
         await _db.SaveChangesAsync();
 
-        return Ok();
+        return Ok(request.SponsorName);
     }
     #endregion
 

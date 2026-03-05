@@ -1,4 +1,4 @@
-import { useSponsorOrg, useRenameSponsorOrg } from '@/api/sponsorOrg';
+import { useSponsorOrg, useUpdateSponsorOrg } from '@/api/sponsorOrg';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '@/components/Card/Card';
@@ -32,13 +32,13 @@ export default function SponsorOrgPage()
     }, [org?.sponsorName, showRenameModal]);
 
 
-    const renameOrgMutation = useRenameSponsorOrg();
+    const renameOrgMutation = useUpdateSponsorOrg();
     const handleSaveRename = () =>
     {
-        const name = renameValue.trim();
-        if (!name || !org) return;
+        const sponsorName = renameValue.trim();
+        if (!sponsorName || !org) return;
 
-        renameOrgMutation.mutate({ name });
+        renameOrgMutation.mutate({ sponsorName: sponsorName });
 
         setShowRenameModal(false);
     };
