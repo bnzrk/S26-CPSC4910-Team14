@@ -482,10 +482,10 @@ public class SponsorOrgsController : ControllerBase
         }
         else if (User.IsInRole(UserTypeRoles.Role(UserType.Driver)))
         {
-            return await _db.SponsorUsers
+            return await _db.DriverUsers
                 .AsNoTracking()
-                .Where(s => s.UserId == userId)
-                .Select(s => (int?)s.SponsorOrgId)
+                .Where(d => d.UserId == userId)
+                .Select(d => (int?)d.SponsorOrgId)
                 .FirstOrDefaultAsync();
         }
 

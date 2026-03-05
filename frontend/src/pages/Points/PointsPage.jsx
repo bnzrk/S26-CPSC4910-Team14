@@ -2,10 +2,12 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '../../api/apiFetch';
 import { usePoints, usePointHistory } from '../../api/points';
+import { useDriverOrg } from '@/api/driver';
 import Card from '@/components/Card/Card';
 import PointCard from '@/components/PointCard/PointCard';
 import CardHost from '@/components/CardHost/CardHost';
 import InlineErrors from '@/components/InlineErrors/InlineErrors';
+import InlineInfo from '@/components/InlineInfo/InlineInfo';
 import styles from './PointsPage.module.scss';
 import clsx from 'clsx';
 
@@ -38,6 +40,8 @@ export default function PointsPage()
     refetch: refetchHistory,
   } = usePointHistory(page, pageSize);
 
+  const { data: org, isLoading: isOrgLoading, isError: isOrgError } = useDriverOrg();
+
   const items = history?.items ?? [];
   const totalCount =
     history?.totalCount ?? 0;
@@ -60,6 +64,7 @@ export default function PointsPage()
         {hasError && (
           <InlineErrors errors={['Something went wrong loading your points.']}></InlineErrors>
         )}
+        {org && <InlineInfo type='info' messages={[`Points can be exchange at a rate of 1 to $${org?.pointRatio} USD for this sponsor.`]} />}
         <Card title="Point History" headerRight={
           <div className={styles.pager}>
             <button

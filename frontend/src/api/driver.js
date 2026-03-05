@@ -3,6 +3,19 @@ import { useCurrentUser } from "./currentUser";
 import { apiFetch } from "./apiFetch";
 import { USER_TYPES } from "../constants/userTypes";
 
+export function useDriverOrg()
+{
+  const { data: user } = useCurrentUser();
+  const isDriver = user?.userType === USER_TYPES.DRIVER;
+
+  return useQuery({
+    queryKey: ["driverOrg", user?.id],
+    queryFn: async () => apiFetch('/drivers/sponsor-org').then(r => r.json()),
+    enabled: !!user && isDriver,
+    retry: 1
+  });
+}
+
 export function useEditDriverProfile()
 {
     const { data: user } = useCurrentUser();
