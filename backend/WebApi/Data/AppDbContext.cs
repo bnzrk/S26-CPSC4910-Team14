@@ -83,6 +83,13 @@ public class AppDbContext : IdentityDbContext<User>
                 .IsRequired();
 
             b.Navigation("User");
+
+            b.HasMany(d => d.SponsorOrgs)
+                .WithMany(o => o.DriverUsers)
+                .UsingEntity<Dictionary<string, object>>(
+                    "DriverUserSponsorOrg",
+                    j => j.HasOne<SponsorOrg>().WithMany().HasForeignKey("SponsorOrgId"),
+                    j => j.HasOne<DriverUser>().WithMany().HasForeignKey("DriverUserId"));
         });
 
         // Seeded about info data

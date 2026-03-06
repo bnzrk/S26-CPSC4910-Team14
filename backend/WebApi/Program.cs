@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using WebApi.Data;
 using WebApi.Data.Enums;
+using WebApi.Features.DriverUsers;
 using WebApi.Features.Users;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +34,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Our services
 // .NET handles injecting all other services specified in the constructor for us
 builder.Services.AddScoped<IUsersService, UsersService>();
+builder.Services.AddScoped<IDriverUsersService, DriverUsersService>();
 
 var app = builder.Build();
 
