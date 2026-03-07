@@ -72,7 +72,7 @@ public class DriverUsersController : ControllerBase
         if (isSponsor && !await IsDriverInSponsorUserOrg(driverId, userId))
             return NotFound();
 
-        var driver = await _db.DriverUsers.Where(d => d.Id == driverId).SingleOrDefaultAsync();
+        var driver = await _db.DriverUsers.Where(d => d.Id == driverId).Include(d => d.User).SingleOrDefaultAsync();
         if (driver is null)
             return NotFound();
 
@@ -289,6 +289,7 @@ public class DriverUsersController : ControllerBase
     }
     #endregion
 
+    #region Helpers
     private async Task<bool> IsDriverInSponsorUserOrg(int driverId, string sponsorUserId)
     {
         return await _db.SponsorUsers
@@ -308,4 +309,5 @@ public class DriverUsersController : ControllerBase
                 d.Id == driverId &&
                 d.SponsorOrgs.Any(o => o.Id == orgId));
     }
+    #endregion
 }

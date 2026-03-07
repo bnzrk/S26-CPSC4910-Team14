@@ -444,25 +444,25 @@ public class SponsorOrgsController : ControllerBase
         if (userId is null)
             return Unauthorized();
 
-        // Ensure the request sponsor organization exists.
-        var requestOrg = _db.SponsorOrgs.Where(s => s.Id == orgId).FirstOrDefault();
-        if (requestOrg is null)
-        {
-            return NotFound();
-        }
-
+        var targetOrgId = orgId;
         // If the user making the request is a sponsor, only allow if they are creating another
         // user for their own sponsor.
         if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
         {
+            if (orgId is not null)
+                return BadRequest("Sponsors should not specify an org id.");
+
             var currentSponsorOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => (int?)s.SponsorOrgId).SingleOrDefaultAsync();
-            if (currentSponsorOrgId is null || currentSponsorOrgId != orgId)
+            if (currentSponsorOrgId is null)
             {
                 return BadRequest("Cannot create a sponsor user for a different organization.");
             }
+            targetOrgId = currentSponsorOrgId;
         }
+        if (targetOrgId is null)
+            return NotFound();
 
-        var result = await _usersService.CreateSponsorUser(request.Email, request.Password, request.FirstName, request.LastName, requestOrg);
+        var result = await _usersService.CreateSponsorUser(request.Email, request.Password, request.FirstName, request.LastName, targetOrgId.Value);
         if (!result.Succeeded)
         {
             return BadRequest(new

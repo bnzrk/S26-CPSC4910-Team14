@@ -38,22 +38,6 @@ export function usePointHistory(page, pageSize, { sign, from, to } = {})
   });
 }
 
-export function usePointRules()
-{
-  const { data: user } = useCurrentUser();
-
-  return useQuery({
-    queryKey: ['pointRules', user?.id],
-    queryFn: async () =>
-    {
-      const response = await apiFetch(`/sponsor-orgs/point-rules`);
-      if (!response.ok) throw new Error('Failed to fetch point rules');
-      return response.json();
-    },
-    placeholderData: keepPreviousData,
-  });
-}
-
 export function useCreatePointTransaction()
 {
   const { data: user } = useCurrentUser();
