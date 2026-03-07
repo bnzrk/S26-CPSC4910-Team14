@@ -285,7 +285,7 @@ public class DriverUsersController : ControllerBase
         _db.PointTransactions.Add(transaction);
         await _db.SaveChangesAsync();
 
-        return Ok();
+        return Created();
     }
     #endregion
 
