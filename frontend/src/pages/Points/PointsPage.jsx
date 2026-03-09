@@ -59,7 +59,7 @@ export default function PointsPage()
   });
 
   const { data: orgs } = useDriverOrgs();
-  const org = orgs ? orgs[0] : null;
+  const org = orgs ? orgs.find((o) => o.id == selectedOrgId) : null;
 
   const items = history?.items ?? [];
   const totalCount = history?.totalCount ?? 0;
@@ -192,7 +192,7 @@ export default function PointsPage()
           {historyLoading ? (
             <p className={styles.muted}>Loading history…</p>
           ) : items.length === 0 ? (
-            <p className={styles.muted}>No point history yet.</p>
+            <p className={styles.muted}>No point history.</p>
           ) : (
             <div className={styles.tableWrap}>
               <table className={styles.table}>

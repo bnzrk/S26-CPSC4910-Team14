@@ -1,0 +1,35 @@
+@use '@/styles/globals' as *;
+
+.orgSelect {
+    .trigger {
+        height: calc($grid-3x + $grid-fourth);
+        border: 1px solid var(--color-accent);
+        background: var(--color-surface);
+        border-radius: 999px;
+        padding: $grid-half calc($grid-1x + $grid-fourth);
+        color: var(--color-accent);
+        font-weight: bold;
+        font-family: var(--font-body);
+        font-size: calc($grid-1x + $grid-half);
+        height: fit-content;
+
+        svg {
+            --size: #{$grid-2x + $grid-half};
+            min-width: var(--size);
+            min-height: var(--size);
+            max-width: var(--size);
+            max-height: var(--size);
+            margin-top: -$grid-fourth;
+            margin-bottom: -$grid-fourth;
+        }
+    }
+
+    .content {
+        border-color: var(--color-accent);
+    }
+
+    .option {
+        font-family: var(--font-body);
+        font-size: calc($grid-1x + $grid-half); 
+    }
+}
