@@ -3,18 +3,22 @@ import { usePoints } from "@/api/points";
 import { apiFetch } from "../../api/apiFetch";
 import { queryClient } from "../../api/queryClient";
 import { useNavigate, Link } from 'react-router-dom';
+import { useOrgContext } from "@/contexts/OrgContext/OrgContext";
 import Button from "../Button/Button";
 import BuildingIcon from "@/assets/icons/building-2.svg?react";
 import StarIcon from "@/assets/icons/star.svg?react";
 import ToolsIcon from "@/assets/icons/wrench.svg?react";
 import styles from './NavBar.module.scss';
-import clsx from "clsx";
+import clsx from "clsx"
 
 export default function Navbar()
 {
   const navigate = useNavigate();
   const { data: currentUser, isLoading } = useCurrentUser();
-  const { data: points, isLoading: isPointsLoading } = usePoints();
+  const { selectedOrgId } = useOrgContext();
+  const { data: points, isLoading: isPointsLoading } = usePoints(selectedOrgId);
+  console.log(selectedOrgId);
+  console.log(points);
 
   const isLoggedIn = !!currentUser;
   const isDriver = currentUser?.userType === 'Driver';
@@ -66,12 +70,12 @@ export default function Navbar()
               )}
 
               {/* Only driver users should show points */}
-              {isDriver && (
+              {isDriver && points && (
                 <span
                   className={styles.points}
                   onClick={() => navigate("/points")}
                 >
-                  {points ?? 0}
+                  {points.balance ?? 0}
                   <StarIcon />
                 </span>
               )}

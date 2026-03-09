@@ -120,7 +120,7 @@ public class DriverUsersController : ControllerBase
         if (userId is null)
             return Unauthorized();
 
-        var orgs = _driversService.GetSponsorOrgsFromUserIdAsync(userId);
+        var orgs = await _driversService.GetSponsorOrgsFromUserIdAsync(userId);
 
         return Ok(orgs);
     }
@@ -137,7 +137,7 @@ public class DriverUsersController : ControllerBase
 
     #region Points
     [HttpGet("me/points")]
-    public async Task<ActionResult<List<PointsModel>>> GetMyPoints([FromQuery] int? orgId = null)
+    public async Task<ActionResult<List<PointsModel>>> GetAllMyPoints([FromQuery] int? orgId = null)
     {
         var userId = _userManager.GetUserId(User);
         if (userId is null)
@@ -148,28 +148,63 @@ public class DriverUsersController : ControllerBase
         return Ok(points);
     }
 
-    [HttpGet("{driverId}/points")]
-    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
-    public async Task<ActionResult<List<PointsModel>>> GetPoints([FromQuery] int? orgId)
+    [HttpGet("me/points/{orgId}")]
+    [Authorize(Policy = PolicyNames.DriverOnly)]
+    public async Task<ActionResult<PointsModel>> GetMyPoints(int orgId)
     {
         var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
 
-        var transactions = _db.DriverUsers
+        var balance = await _db.DriverUsers
             .AsNoTracking()
             .Where(d => d.UserId == userId)
-            .SelectMany(d => d.PointTransactions);
+            .SelectMany(d => d.PointTransactions)
+            .Where(t => t.SponsorOrgId == orgId)
+            .SumAsync(t => t.BalanceChange);
 
-        if (orgId.HasValue)
-            transactions = transactions.Where(t => t.SponsorOrgId == orgId.Value);
+        return Ok(new PointsModel
+        {
+            SponsorOrgId = orgId,
+            Balance = balance
+        });
+    }
 
-        var points = await transactions
-            .GroupBy(t => t.SponsorOrgId)
-            .Select(g => new PointsModel
-            {
-                SponsorOrgId = g.Key,
-                Balance = g.Sum(t => t.BalanceChange)
-            })
-            .ToListAsync();
+    [HttpGet("{driverId}/points/{orgId}")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<ActionResult<PointsModel>> GetPoints(int driverId, int orgId)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor)
+        {
+            var sponsorOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => (int?)s.SponsorOrgId).SingleOrDefaultAsync();
+            if (sponsorOrgId is null || sponsorOrgId != orgId)
+                return NotFound();
+        }
+
+        var balance = await _db.DriverUsers
+            .AsNoTracking()
+            .Where(d => d.Id == driverId)
+            .SelectMany(d => d.PointTransactions)
+            .Where(t => t.SponsorOrgId == orgId)
+            .SumAsync(t => t.BalanceChange);
+
+        return Ok(new PointsModel
+        {
+            SponsorOrgId = orgId,
+            Balance = balance
+        });
+    }
+
+    [HttpGet("{driverId}/points")]
+    [Authorize(Policy = PolicyNames.AdminOnly)]
+    public async Task<ActionResult<List<PointsModel>>> GetAllPoints(int driverId)
+    {
+        var points = await _driversService.GetPointsByIdAsync(driverId);
 
         return Ok(points);
     }

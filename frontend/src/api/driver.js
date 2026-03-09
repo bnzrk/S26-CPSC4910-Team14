@@ -3,14 +3,17 @@ import { useCurrentUser } from "./currentUser";
 import { apiFetch } from "./apiFetch";
 import { USER_TYPES } from "../constants/userTypes";
 
-export function useDriverOrg()
+export function useDriverOrgs(driverId)
 {
     const { data: user } = useCurrentUser();
+
     const isDriver = user?.userType === USER_TYPES.DRIVER;
 
+    const driverPath = driverId ?? "me";
+
     return useQuery({
-        queryKey: ["driverOrg", user?.id],
-        queryFn: async () => apiFetch('/drivers/sponsor-org').then(r => r.json()),
+        queryKey: ["driverOrgs", driverId],
+        queryFn: async () => apiFetch(`/drivers/${driverPath}/sponsor-orgs`).then(r => r.json()),
         enabled: !!user && isDriver,
         retry: 1
     });

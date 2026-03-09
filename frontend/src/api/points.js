@@ -3,23 +3,23 @@ import { useCurrentUser } from "./currentUser";
 import { apiFetch } from "./apiFetch";
 import { USER_TYPES } from "../constants/userTypes";
 
-export function usePoints()
+export function usePoints(orgId)
 {
   const { data: user } = useCurrentUser();
   const isDriver = user?.userType === USER_TYPES.DRIVER;
 
   return useQuery({
     queryKey: ["points", user?.id],
-    queryFn: async () => apiFetch('/drivers/points').then(r => r.json()),
-    enabled: !!user && isDriver,
+    queryFn: async () => apiFetch(`/drivers/me/points/${orgId}`).then(r => r.json()),
+    enabled: !!user && !!orgId && isDriver,
     retry: 1
   });
 }
 
-export function usePointHistory(page, pageSize, { sign, from, to } = {})
+export function usePointHistory({ orgId, page, pageSize, sign, from, to })
 {
   return useQuery({
-    queryKey: ['driverPointTransactions', page, pageSize, sign, from, to],
+    queryKey: ['pointTransactions', orgId, page, pageSize, sign, from, to],
     queryFn: async () =>
     {
       const params = new URLSearchParams({
@@ -27,11 +27,12 @@ export function usePointHistory(page, pageSize, { sign, from, to } = {})
         pageSize: String(pageSize),
       });
 
+      if (orgId) params.append('orgId ', orgId);
       if (sign) params.append('sign', sign);
       if (from) params.append('from', from);
       if (to) params.append('to', to);
 
-      const res = await apiFetch(`/drivers/point-transactions?${params.toString()}`);
+      const res = await apiFetch(`/drivers/me/point-transactions?${params.toString()}`);
       return res.json();
     },
     placeholderData: keepPreviousData,

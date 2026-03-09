@@ -1,9 +1,9 @@
-import { Routes, Route, Navigate, Link } from 'react-router-dom';
-import { queryClient } from './api/queryClient';
-import { useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useCurrentUser } from "./api/currentUser";
-import { apiFetch } from "./api/apiFetch";
 import { USER_TYPES } from './constants/userTypes';
+import { OrgProvider } from './contexts/OrgContext/OrgContext';
+import { useDriverOrgs } from './api/driver';
+import { useSponsorOrg } from './api/sponsorOrg';
 import GuestRoute from './routes/GuestRoute';
 import ProtectedRoute from './routes/ProtectedRoute';
 import AboutPage from './pages/About/AboutPage';
@@ -21,74 +21,69 @@ import Navbar from './components/Navbar/NavBar';
 import ProfilePage from './pages/Profile/ProfilePage';
 import './App.scss';
 
-export default function App() {
-  const navigate = useNavigate();
-
+export default function App()
+{
   const { data: user, isLoading } = useCurrentUser();
+  const isDriver = user?.userType == USER_TYPES.DRIVER;
+  const isSponsor = user?.userType == USER_TYPES.SPONSOR;
+  const { data: driverOrgs, isLoading: isDriverOrgsLoading, isError: isDriverOrgsError } = useDriverOrgs();
+  const { data: sponsorOrg, isLoading: isSponsorOrgLoading, isError: isSponsorOrgError } = useSponsorOrg();
+
+  const orgs = isDriver
+    ? driverOrgs ?? []
+    : isSponsor && sponsorOrg
+      ? [sponsorOrg]
+      : [];
 
   if (!isLoading)
     console.log(`Current user: ${JSON.stringify(user)}`);
 
-  async function handleLogout()
-  {
-    try
-    {
-      await apiFetch("/auth/logout", { method: "POST" });
-    } catch (err)
-    {
-      console.error("Logout failed:", err);
-    }
-
-    // Clear user
-    queryClient.setQueryData(["currentUser"], null);
-
-    navigate("/about");
-  }
-
   return (
     <>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<AboutPage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/login" element={
-          <GuestRoute>
-            <LoginPage />
-          </GuestRoute>
-        } />
-        <Route path="/register" element={
-          <GuestRoute>
-            <RegisterPage />
-          </GuestRoute>
-        } />
-        <Route path="*" element={<Navigate to="/" replace />} />
-        <Route path="/points" element={
-          <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
-            <PointsPage />
-          </ProtectedRoute>
-        } />
-        <Route path='/org' element={
-          <ProtectedRoute allowedUserTypes={[USER_TYPES.SPONSOR]}>
-            <SponsorOrgLayout />
-          </ProtectedRoute>
-        }>
-          <Route index element={<SponsorOrgPage />} />
-          <Route path="point-rules" element={<PointRulesPage />} />
-          <Route path="users" element={<SponsorUsersPage />} />
-          <Route path="drivers" element={<SponsorDriversPage />} />
-          <Route path="drivers/:driverId" element={<SponsorDriverPage />} />
-        </Route>
-        <Route path="/admin" element={
-          <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
-            <AdminToolsPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/profile" element={
-          <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER, USER_TYPES.SPONSOR, USER_TYPES.ADMIN]}>
-            <ProfilePage />
-          </ProtectedRoute>
-        } />
-      </Routes>
+      <OrgProvider user={user} orgs={orgs}>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<AboutPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/login" element={
+            <GuestRoute>
+              <LoginPage />
+            </GuestRoute>
+          } />
+          <Route path="/register" element={
+            <GuestRoute>
+              <RegisterPage />
+            </GuestRoute>
+          } />
+          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/points" element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+              <PointsPage />
+            </ProtectedRoute>
+          } />
+          <Route path='/org' element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.SPONSOR]}>
+              <SponsorOrgLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<SponsorOrgPage />} />
+            <Route path="point-rules" element={<PointRulesPage />} />
+            <Route path="users" element={<SponsorUsersPage />} />
+            <Route path="drivers" element={<SponsorDriversPage />} />
+            <Route path="drivers/:driverId" element={<SponsorDriverPage />} />
+          </Route>
+          <Route path="/admin" element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
+              <AdminToolsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER, USER_TYPES.SPONSOR, USER_TYPES.ADMIN]}>
+              <ProfilePage />
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </OrgProvider>
     </>
   );
 }

@@ -80,7 +80,7 @@ public class DriverUsersService : IDriverUsersService
             .ToListAsync();
     }
 
-    public async Task<List<PointsModel>> GetPointsByUserIdAsync(string userId, int? orgId)
+    public async Task<List<PointsModel>> GetPointsByUserIdAsync(string userId, int? orgId = null)
     {
         var transactions = _db.DriverUsers
             .AsNoTracking()

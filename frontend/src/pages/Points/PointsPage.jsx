@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { usePoints, usePointHistory } from '../../api/points';
-import { useDriverOrg } from '@/api/driver';
+import { useDriverOrgs } from '@/api/driver';
+import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
 import Card from '@/components/Card/Card';
 import PointCard from '@/components/PointCard/PointCard';
 import CardHost from '@/components/CardHost/CardHost';
@@ -21,8 +22,6 @@ function formatDMY(dateLike)
 
 function normalizeDateTimeLocal(value)
 {
-  // <input type="datetime-local" /> often returns "YYYY-MM-DDTHH:mm"
-  // Your API example includes seconds, so add ":00" when missing.
   if (!value) return undefined;
   return value.length === 16 ? `${value}:00` : value;
 }
@@ -40,22 +39,27 @@ export default function PointsPage()
   const from = fromDate ? `${fromDate}T00:00:00` : undefined;
   const to = toDate ? `${toDate}T23:59:59` : undefined;
 
+  const { selectedOrgId } = useOrgContext();
   const {
-    data: totalPoints,
-    isError: totalError,
-  } = usePoints();
+    data: points,
+    isError: isPointsError,
+  } = usePoints(selectedOrgId);
 
   const {
     data: history,
     isLoading: historyLoading,
     isError: historyError,
-  } = usePointHistory(page, pageSize, {
+  } = usePointHistory({ 
+    orgId: selectedOrgId,
+    page, 
+    pageSize,
     sign: sign || undefined,
     from,
     to,
   });
 
-  const { data: org } = useDriverOrg();
+  const { data: orgs } = useDriverOrgs();
+  const org = orgs ? orgs[0] : null;
 
   const items = history?.items ?? [];
   const totalCount = history?.totalCount ?? 0;
@@ -69,20 +73,20 @@ export default function PointsPage()
   const canPrev = page > 1;
   const canNext = page < totalPages;
 
-  const hasError = totalError || historyError;
+  const hasError = isPointsError || historyError;
 
   const clearFilters = () =>
   {
     setSign('');
-    setFromLocal('');
-    setToLocal('');
+    setFromDate('');
+    setToDate('');
     setPage(1);
   };
 
   return (
     <main className={styles.page}>
       <CardHost title={'Points'} subtitle={'Point balance and history'}>
-        <PointCard points={totalPoints}></PointCard>
+        <PointCard points={points ? points.balance : 0}></PointCard>
 
         {hasError && (
           <InlineErrors errors={['Something went wrong loading your points.']}></InlineErrors>
@@ -177,13 +181,7 @@ export default function PointsPage()
             <button
               type="button"
               className={styles.filterClear}
-              onClick={() =>
-              {
-                setSign('');
-                setFromDate('');
-                setToDate('');
-                setPage(1);
-              }}
+              onClick={clearFilters}
               disabled={historyLoading || (!sign && !fromDate && !toDate)}
               aria-label="Clear filters"
             >
