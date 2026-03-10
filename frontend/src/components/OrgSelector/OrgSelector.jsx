@@ -11,9 +11,10 @@ export default function OrgSelector({ className, ...other })
 
     return (
         <Select
+            {...other}
             value={selectedOrgId}
             onChange={setSelectedOrgId}
-            className={styles.orgSelect}
+            className={clsx(className, styles.orgSelect)}
         >
             <Select.Trigger className={styles.trigger} icon={BuildingIcon} />
             <Select.Content className={styles.content}>

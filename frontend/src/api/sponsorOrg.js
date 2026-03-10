@@ -10,7 +10,7 @@ export function useAllSponsorOrgs()
 
     return useQuery({
         queryKey: ["allSponsorOrgs"],
-        queryFn: async () => apiFetch('/sponsor-orgs/all').then(r => r.json()),
+        queryFn: async () => apiFetch('/sponsor-orgs').then(r => r.json()),
         enabled: !!user && isAdmin,
         retry: 1
     });

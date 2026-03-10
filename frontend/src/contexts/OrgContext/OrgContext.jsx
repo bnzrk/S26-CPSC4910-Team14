@@ -53,9 +53,6 @@ export function OrgProvider ({ user, orgs, children }) {
     sponsorOrg,
   };
 
-  console.log("Providing context:");
-  console.log(value);
-
   return (
     <OrgContext.Provider value={value}>
       {children}

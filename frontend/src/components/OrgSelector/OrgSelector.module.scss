@@ -11,7 +11,6 @@
         font-weight: bold;
         font-family: var(--font-body);
         font-size: calc($grid-1x + $grid-half);
-        height: fit-content;
 
         svg {
             --size: #{$grid-2x + $grid-half};
@@ -22,14 +21,23 @@
             margin-top: -$grid-fourth;
             margin-bottom: -$grid-fourth;
         }
+
+        &:hover:not(:disabled) {
+            border-color: var(--color-accent);
+        }
     }
 
     .content {
         border-color: var(--color-accent);
+        border-radius: $grid-1x;
     }
 
     .option {
         font-family: var(--font-body);
         font-size: calc($grid-1x + $grid-half); 
+
+        &:hover {
+            background: var(--color-accent-light);
+        }
     }
 }

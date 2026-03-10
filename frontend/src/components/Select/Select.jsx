@@ -1,4 +1,4 @@
-import { useState, createContext, useContext, useMemo, Children, isValidElement } from 'react';
+import { useState, createContext, useContext, useMemo, Children, isValidElement, useEffect, useRef } from 'react';
 import Button from '../Button/Button';
 import ChevronDownIcon from '@/assets/icons/chevron-down.svg?react';
 import styles from './Select.module.scss';
@@ -74,12 +74,33 @@ function Option({ children, value, className, ...other })
         </div>
     );
 }
-Option.displayName = "Content";
+Option.displayName = "Option";
 Select.Option = Option;
 
 export default function Select({ children, value, onChange, className, ...other })
 {
     const [open, setOpen] = useState(false);
+
+    const selectRef = useRef(null);
+    // Close when clicking outside
+    useEffect(() =>
+    {
+        function handlePointerDown(event)
+        {
+            if (!selectRef.current) return;
+            if (!selectRef.current.contains(event.target))
+                setOpen(false);
+        }
+
+        document.addEventListener('mousedown', handlePointerDown);
+        document.addEventListener('touchstart', handlePointerDown);
+
+        return () =>
+        {
+            document.removeEventListener('mousedown', handlePointerDown);
+            document.removeEventListener('touchstart', handlePointerDown);
+        };
+    }, []);
 
     const selectedLabel = useMemo(() =>
     {
@@ -110,6 +131,12 @@ export default function Select({ children, value, onChange, className, ...other 
         return label;
     }, [children, value]);
 
+    // Close on navigate
+    useEffect(() =>
+    {
+        setOpen(false);
+    }, [location.pathname, location.search, location.hash]);
+
     const contextValue = useMemo(
         () => ({
             value,
@@ -118,12 +145,12 @@ export default function Select({ children, value, onChange, className, ...other 
             setOpen,
             selectedLabel
         }),
-        [children, value, onChange, open, selectedLabel]
+        [value, onChange, open, selectedLabel]
     );
 
     return (
         <SelectContext.Provider value={contextValue}>
-            <div {...other} className={clsx(className, styles.select)}>
+            <div {...other} ref={selectRef} className={clsx(className, styles.select)}>
                 {children}
             </div>
         </SelectContext.Provider>
