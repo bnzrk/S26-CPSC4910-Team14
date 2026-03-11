@@ -17,4 +17,5 @@ public class AuditDbContext : DbContext
 
     public DbSet<LoginAuditLog> LoginAuditLogs { get; set; }
     public DbSet<PasswordChangeAuditLog> PasswordChangeAuditLogs { get; set; }
+    public DbSet<DriverSponsorChangeAuditLog> DriverSponsorChangeAuditLogs { get; set; }
 }

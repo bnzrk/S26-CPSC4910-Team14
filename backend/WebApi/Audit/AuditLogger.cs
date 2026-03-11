@@ -40,4 +40,18 @@ public class AuditLogger : IAuditLogger
         _auditDb.PasswordChangeAuditLogs.Add(log);
         await _auditDb.SaveChangesAsync();
     }
+
+    public async Task CreateDriverSponsorChangeAuditLog(string userId, int driverId, int orgId, DriverSponsorChangeType type)
+    {
+        var log = new DriverSponsorChangeAuditLog
+        {
+            TimestampUtc = DateTime.UtcNow,
+            DriverId = driverId,
+            SponsorOrgId = orgId,
+            ChangeType = type
+        };
+
+        _auditDb.DriverSponsorChangeAuditLogs.Add(log);
+        await _auditDb.SaveChangesAsync();
+    }
 }

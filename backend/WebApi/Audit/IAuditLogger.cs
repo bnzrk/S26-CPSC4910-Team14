@@ -7,4 +7,5 @@ public interface IAuditLogger
 {
     Task CreateLoginAuditLog(string email, bool successful);
     Task CreatePasswordChangeAuditLog(string userId, string email, PasswordChangeType type, bool successful);
+    Task CreateDriverSponsorChangeAuditLog(string userId, int driverId, int orgId, DriverSponsorChangeType type);
 }
