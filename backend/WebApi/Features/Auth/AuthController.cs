@@ -5,6 +5,7 @@ using WebApi.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
 using WebApi.Data;
 using WebApi.Audit;
+using WebApi.Data.Enums;
 
 namespace WebApi.Features.Auth;
 
@@ -135,8 +136,12 @@ public class AuthController : ControllerBase
 
         var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
         if (!result.Succeeded)
-            return BadRequest(result.Errors.Select(e => e.Description));
+        {
+            await _auditLogger.CreatePasswordChangeAuditLog(user.Id, user.Email!, PasswordChangeType.SelfUpdate, false);
+            return BadRequest(result.Errors.Select(e => e.Description));   
+        }
 
+        await _auditLogger.CreatePasswordChangeAuditLog(user.Id, user.Email!, PasswordChangeType.SelfUpdate, true);
         return Ok();
     }
 }
