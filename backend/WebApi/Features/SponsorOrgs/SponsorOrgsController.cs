@@ -263,7 +263,7 @@ public class SponsorOrgsController : ControllerBase
 
         driver.SponsorOrgs.Add(org);
         await _db.SaveChangesAsync();
-        await _auditLogger.CreateDriverSponsorChangeAuditLog(userId, driverId, orgId, DriverSponsorChangeType.Added);
+        await _auditLogger.CreateDriverSponsorChangeAuditLog(driverId, driver.User.Email!, orgId, org.SponsorName, DriverSponsorChangeType.Added);
 
         return Ok();
     }
@@ -277,6 +277,7 @@ public class SponsorOrgsController : ControllerBase
             return Unauthorized();
             
         var driver = await _db.DriverUsers
+            .Include(d => d.User)
             .Include(d => d.SponsorOrgs.Where(o => o.Id == orgId))
             .SingleOrDefaultAsync(d => d.Id == driverId);
 
@@ -289,7 +290,7 @@ public class SponsorOrgsController : ControllerBase
 
         driver.SponsorOrgs.Remove(org);
         await _db.SaveChangesAsync();
-        await _auditLogger.CreateDriverSponsorChangeAuditLog(userId, driverId, orgId, DriverSponsorChangeType.Removed);
+        await _auditLogger.CreateDriverSponsorChangeAuditLog(driverId, driver.User.Email!, orgId, org.SponsorName, DriverSponsorChangeType.Removed);
 
         return Ok();
     }

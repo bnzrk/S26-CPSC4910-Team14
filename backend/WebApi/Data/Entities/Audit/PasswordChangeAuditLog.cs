@@ -1,5 +1,7 @@
 using WebApi.Data.Enums;
 
+namespace WebApi.Data.Entities.Audit;
+
 public class PasswordChangeAuditLog
 {
     public int Id { get; set; }

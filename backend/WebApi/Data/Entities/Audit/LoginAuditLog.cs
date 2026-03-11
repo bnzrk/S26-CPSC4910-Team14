@@ -1,3 +1,5 @@
+namespace WebApi.Data.Entities.Audit;
+
 public class LoginAuditLog
 {
     public int Id { get; set; }
