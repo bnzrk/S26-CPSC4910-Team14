@@ -20,6 +20,7 @@ import AdminToolsPage from './pages/Admin/Tools/AdminToolsPage';
 import Navbar from './components/Navbar/NavBar';
 import ProfilePage from './pages/Profile/ProfilePage';
 import './App.scss';
+import DriverApplicationPage from "./pages/DriverApplication/DriverApplicationPage";
 
 export default function App() {
   const navigate = useNavigate();
@@ -61,6 +62,8 @@ export default function App() {
             <RegisterPage />
           </GuestRoute>
         } />
+        <Route path="/driver-application" element={<DriverApplicationPage />} />
+        
         <Route path="*" element={<Navigate to="/" replace />} />
         <Route path="/points" element={
           <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
