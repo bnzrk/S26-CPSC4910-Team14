@@ -19,8 +19,9 @@ import RegisterPage from './pages/Register/RegisterPage';
 import AdminToolsPage from './pages/Admin/Tools/AdminToolsPage';
 import Navbar from './components/Navbar/NavBar';
 import ProfilePage from './pages/Profile/ProfilePage';
-import './App.scss';
 import DriverApplicationPage from "./pages/DriverApplication/DriverApplicationPage";
+import SponsorDriverApplicationsPage from './pages/SponsorOrg/Applications/SponsorDriverApplicationsPage';
+import './App.scss';
 
 export default function App()
 {
@@ -77,6 +78,7 @@ export default function App()
             <Route path="users" element={<SponsorUsersPage />} />
             <Route path="drivers" element={<SponsorDriversPage />} />
             <Route path="drivers/:driverId" element={<SponsorDriverPage />} />
+            <Route path="applications" element={<SponsorDriverApplicationsPage />} />
           </Route>
           <Route path="/admin" element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>

@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +24,48 @@ public class DriverApplicationsController : ControllerBase
     {
         _db = db;
         _userManager = userManager;
+    }
+
+    [HttpGet]
+    [Authorize(Policy = PolicyNames.SponsorOnly)]
+    public async Task<ActionResult<List<DriverApplicationModel>>> GetMyOrgApplications()
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var sponsorOrgId = await _db.SponsorUsers
+            .AsNoTracking()
+            .Where(s => s.UserId == userId)
+            .Select(s => (int?)s.SponsorOrgId)
+            .SingleOrDefaultAsync();
+
+        if (!sponsorOrgId.HasValue)
+            return NotFound();
+
+        var applications = await _db.DriverApplications
+            .AsNoTracking()
+            .Where(a => a.SponsorOrgId == sponsorOrgId.Value && a.IsActive)
+            .Select(a => new DriverApplicationModel
+            {
+                Id = a.Id,
+                DriverUserId = a.DriverUserId,
+                SponsorOrgId = a.SponsorOrgId,
+                FirstName = a.FirstName,
+                LastName = a.LastName,
+                PhoneNumber = a.PhoneNumber,
+                Birthday = a.Birthday,
+                PreviousEmployee = a.PreviousEmployee,
+                TruckMake = a.TruckMake,
+                TruckYear = a.TruckYear,
+                TruckModel = a.TruckModel,
+                LicensePlate = a.LicensePlate,
+                Status = a.Status,
+                IsActive = a.IsActive
+            })
+            .ToListAsync();
+
+        return Ok(applications);
     }
 
     [HttpPost]
