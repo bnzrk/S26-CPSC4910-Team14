@@ -1,6 +1,6 @@
-namespace WebApi.Features.SponsorOrgs.Models;
+namespace WebApi.Features.DriverUsers.Models;
 
-public class SponsorUserModel
+public class DriverUserModel
 {
     public required int Id { get; set; }
     public required string Email { get; set; }
