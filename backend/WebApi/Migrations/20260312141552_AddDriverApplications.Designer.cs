@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApi.Data;
 
@@ -10,9 +11,11 @@ using WebApi.Data;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260312141552_AddDriverApplications")]
+    partial class AddDriverApplications
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -225,50 +228,46 @@ namespace WebApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<DateOnly?>("Birthday")
+                    b.Property<DateOnly>("Birthday")
                         .HasColumnType("date");
 
-                    b.Property<int?>("DriverUserId")
-                        .HasColumnType("int");
-
                     b.Property<string>("FirstName")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("LastName")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("LicensePlate")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("PhoneNumber")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<bool?>("PreviousEmployee")
+                    b.Property<bool>("PreviousEmployee")
                         .HasColumnType("tinyint(1)");
-
-                    b.Property<int>("SponsorOrgId")
-                        .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<string>("TruckMake")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("TruckModel")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int?>("TruckYear")
+                    b.Property<int>("TruckYear")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DriverUserId");
-
-                    b.HasIndex("SponsorOrgId");
 
                     b.ToTable("DriverApplications");
                 });
@@ -806,23 +805,6 @@ namespace WebApi.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.DriverApplication", b =>
-                {
-                    b.HasOne("WebApi.Data.Entities.DriverUser", "DriverUser")
-                        .WithMany()
-                        .HasForeignKey("DriverUserId");
-
-                    b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
-                        .WithMany()
-                        .HasForeignKey("SponsorOrgId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DriverUser");
-
-                    b.Navigation("SponsorOrg");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.DriverUser", b =>
