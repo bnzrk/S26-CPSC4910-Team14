@@ -28,6 +28,9 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<PointTransaction> PointTransactions { get; set; }
     public DbSet<PointRule> PointRules { get; set; }
 
+    // Applications
+    public DbSet<DriverApplication> DriverApplications { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

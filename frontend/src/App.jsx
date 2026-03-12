@@ -56,7 +56,11 @@ export default function App()
               <RegisterPage />
             </GuestRoute>
           } />
-          <Route path="/driver-application" element={<DriverApplicationPage />} />
+          <Route path="/driver-application" element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+              <DriverApplicationPage />
+            </ProtectedRoute>
+          } />
           <Route path="*" element={<Navigate to="/" replace />} />
           <Route path="/points" element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
