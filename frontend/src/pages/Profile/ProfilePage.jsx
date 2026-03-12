@@ -264,7 +264,7 @@ export default function ProfilePage()
       </Card>
       {/* Delete Account */}
       <Card title='Delete Account'>
-        <p className={styles.muted}>This will permanently delete your account and cannot be undone.</p>
+        <p>This will permanently delete your account and cannot be undone.</p>
         {!showDeleteConfirm ? (
           <button className={styles.buttonDelete} onClick={() => setShowDeleteConfirm(true)}>
             Delete Account
