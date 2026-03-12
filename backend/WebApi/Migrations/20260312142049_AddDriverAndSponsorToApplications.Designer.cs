@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApi.Data;
 
@@ -10,9 +11,11 @@ using WebApi.Data;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260312142049_AddDriverAndSponsorToApplications")]
+    partial class AddDriverAndSponsorToApplications
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -225,28 +228,32 @@ namespace WebApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<DateOnly?>("Birthday")
+                    b.Property<DateOnly>("Birthday")
                         .HasColumnType("date");
 
                     b.Property<int?>("DriverUserId")
                         .HasColumnType("int");
 
                     b.Property<string>("FirstName")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("LastName")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("LicensePlate")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("PhoneNumber")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<bool?>("PreviousEmployee")
+                    b.Property<bool>("PreviousEmployee")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<int>("SponsorOrgId")
@@ -256,12 +263,14 @@ namespace WebApi.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("TruckMake")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("TruckModel")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int?>("TruckYear")
+                    b.Property<int>("TruckYear")
                         .HasColumnType("int");
 
                     b.HasKey("Id");

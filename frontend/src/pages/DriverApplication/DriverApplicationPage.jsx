@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { apiFetch } from "@/api/apiFetch";
 import "./DriverApplicationPage.scss";
 
 export default function DriverApplicationPage() {
   const [formData, setFormData] = useState({
+    orgId: "",
     firstName: "",
     lastName: "",
     phoneNumber: "",
@@ -15,7 +17,7 @@ export default function DriverApplicationPage() {
   });
 
   const [formErrors, setFormErrors] = useState({});
-  const [submitStatus, setSubmitStatus] = useState(""); // "success", "error", or ""
+  const [submitStatus, setSubmitStatus] = useState("");
 
   function updateField(field, value) {
     setFormData(prev => ({
@@ -26,10 +28,16 @@ export default function DriverApplicationPage() {
 
   function validateForm() {
     const errors = {};
+
+    const orgId = parseInt(formData.orgId, 10);
+    if (isNaN(orgId) || orgId <= 0) {
+      errors.orgId = "Organization ID required";
+    }
+
     if (!formData.firstName) errors.firstName = "First name required";
     if (!formData.lastName) errors.lastName = "Last name required";
 
-    if (!/^\d{10}$/.test(formData.phoneNumber)) 
+    if (!/^\d{10}$/.test(formData.phoneNumber))
       errors.phoneNumber = "Phone must be 10 digits";
 
     const year = parseInt(formData.truckYear, 10);
@@ -39,10 +47,17 @@ export default function DriverApplicationPage() {
     if (formData.licensePlate.length < 5 || formData.licensePlate.length > 8)
       errors.licensePlate = "License plate must be 5-8 characters";
 
-    // Check that driver is at least 18 years old
     if (formData.birthday) {
       const birthDate = new Date(formData.birthday);
-      const age = new Date().getFullYear() - birthDate.getFullYear();
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      const dayDiff = today.getDate() - birthDate.getDate();
+
+      if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+        age--;
+      }
+
       if (age < 18) errors.birthday = "Driver must be at least 18";
     }
 
@@ -58,17 +73,31 @@ export default function DriverApplicationPage() {
       return;
     }
 
+    const payload = {
+      sponsorOrgId: parseInt(formData.orgId, 10),
+      firstName: formData.firstName || null,
+      lastName: formData.lastName || null,
+      phoneNumber: formData.phoneNumber || null,
+      birthday: formData.birthday || null,
+      previousEmployee: formData.previousEmployee,
+      truckMake: formData.truckMake || null,
+      truckModel: formData.truckModel || null,
+      truckYear: formData.truckYear ? parseInt(formData.truckYear, 10) : null,
+      licensePlate: formData.licensePlate || null
+    };
+
     try {
-      const response = await fetch("/api/driverApplications", {
+      const response = await apiFetch("/applications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) throw new Error("Failed to submit");
 
       setSubmitStatus("success");
       setFormData({
+        orgId: "",
         firstName: "",
         lastName: "",
         phoneNumber: "",
@@ -101,7 +130,19 @@ export default function DriverApplicationPage() {
           <p className="error-message">Submission failed. Try again later.</p>
         )}
 
-        {/* Personal Information */}
+        <p className="section-title">Organization</p>
+        <div className="form-field">
+          <input
+            type="number"
+            placeholder=" "
+            value={formData.orgId}
+            onChange={e => updateField("orgId", e.target.value)}
+            required
+          />
+          <label>Organization ID</label>
+          {formErrors.orgId && <p className="field-error">{formErrors.orgId}</p>}
+        </div>
+
         <p className="section-title">Personal Information</p>
         <div className="form-row">
           <div className="form-field">
@@ -152,20 +193,18 @@ export default function DriverApplicationPage() {
           {formErrors.birthday && <p className="field-error">{formErrors.birthday}</p>}
         </div>
 
-        {/* Getting employment */}
         <p className="section-title">Employment</p>
         <div className="form-field">
           <select
-            value={formData.previousEmployee}
+            value={String(formData.previousEmployee)}
             onChange={e => updateField("previousEmployee", e.target.value === "true")}
           >
-            <option value={false}>No</option>
-            <option value={true}>Yes</option>
+            <option value="false">No</option>
+            <option value="true">Yes</option>
           </select>
           <label>Previously Employed?</label>
         </div>
 
-        {/* Getting truck Information */}
         <p className="section-title">Truck Information</p>
         <div className="form-row">
           <div className="form-field">
