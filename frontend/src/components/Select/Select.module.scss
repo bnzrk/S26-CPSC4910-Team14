@@ -1,0 +1,57 @@
+@use '@/styles/globals' as *;
+
+.select {
+    position: relative;
+    border: 1 px solid var(--color-border);
+
+    .trigger,
+    .selectedValue {
+        display: flex;
+        flex-direction: row;
+        gap: $grid-1x;
+        text-wrap: nowrap;
+    }
+}
+
+.content {
+    position: absolute;
+    min-width: 100%;
+    top: calc(100% + 4px);
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    border-radius: $grid-half;
+    z-index: 5000;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    margin: 0;
+
+    .option {   
+        padding: $grid-half $grid-2x;
+        margin: 0 $grid-half;
+        border-radius: $grid-half;
+        text-wrap: nowrap;
+        cursor: pointer;
+
+        &:first-child {
+            margin-top: $grid-half
+        }
+
+        &:last-child {
+            margin-bottom: $grid-half
+        }
+
+        &:hover {
+            color: var(--color-accent);
+            background-color: var(--color-border);
+        }
+    }
+}
+
+.chevron {
+    width: $grid-2x;
+    height: $grid-2x;
+    margin-left: $grid-1x;
+}

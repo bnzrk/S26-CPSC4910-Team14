@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { API_URL } from '../../../config';
 import { useSponsorOrg, useUpdateSponsorOrg } from '@/api/sponsorOrg';
+import { useCreatePointRule, useDeletePointRule, usePointRules, useUpdatePointRule } from '@/api/pointRules';
 import { useToast } from '@/components/Toast/ToastContext';
 import CardHost from '@/components/CardHost/CardHost';
 import Card from '@/components/Card/Card';
@@ -13,68 +12,35 @@ import StarIcon from '@/assets/icons/star.svg?react';
 import EditIcon from '@/assets/icons/pencil-line.svg?react';
 import styles from './PointRulesPage.module.scss';
 
-async function fetchPointRules()
-{
-  const response = await fetch(`${API_URL}/sponsor-orgs/point-rules`, {
-    credentials: 'include',
-  });
-  if (!response.ok) throw new Error('Failed to fetch point rules');
-  return response.json();
-}
-
-async function createPointRule(data)
-{
-  const response = await fetch(`${API_URL}/sponsor-orgs/point-rules`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(data),
-  });
-  if (!response.ok) throw new Error('Failed to create point rule');
-}
-
-async function deletePointRule(id)
-{
-  const response = await fetch(`${API_URL}/sponsor-orgs/point-rules/${id}`, {
-    method: 'DELETE',
-    credentials: 'include',
-  });
-  if (!response.ok) throw new Error('Failed to delete point rule');
-}
-
-async function updatePointRule(id, balanceChange)
-{
-  const response = await fetch(`${API_URL}/sponsor-orgs/point-rules/${id}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ balanceChange: balanceChange }),
-  });
-  if (!response.ok) throw new Error('Failed to update point rule');
-}
-
 export default function PointRulesPage()
 {
   const { push } = useToast();
-  const { data: rules, isLoading, isError } = useQuery({
-    queryKey: ['pointRules'],
-    queryFn: fetchPointRules,
-  });
-  const { data: org, isLoading: isOrgLoading, isError: isOrgError } = useSponsorOrg();
-  const updateSponsorOrg = useUpdateSponsorOrg();
 
-  const queryClient = useQueryClient();
+  // Org queries
+  const { data: org, isLoading: isOrgLoading, isError: isOrgError } = useSponsorOrg();
+  const updateOrgMuation = useUpdateSponsorOrg();
+
+  // Point rule queries
+  const { data: rules, isLoading, isError } = usePointRules();
+  const createMutation = useCreatePointRule();
+  const deleteMutation = useDeletePointRule();
+  const updateMutation = useUpdatePointRule();
+
+  // Edit rule state
   const [reason, setReason] = useState('');
   const [balanceChange, setBalanceChange] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState('');
 
+  // Edit point ratio state
   const [editingPointValue, setEditingPointValue] = useState(false);
   const [inputPointValue, setInputPointValue] = useState('0.00');
   const [finalPointValue, setFinalPointValue] = useState(0.00);
 
+  // UI state
   const [showValueSaveModal, setShowValueSaveModal] = useState(false);
+  const disableRuleButtons = deleteMutation.isPending || updateMutation.isPending || createMutation.isPending;
 
   // Set the inital point ratio edit value from the org
   useEffect(() =>
@@ -85,46 +51,55 @@ export default function PointRulesPage()
     }
   }, [org]);
 
-  const createMutation = useMutation({
-    mutationFn: createPointRule,
-    onSuccess: () =>
-    {
-      queryClient.invalidateQueries(['pointRules']);
-      setReason('');
-      setBalanceChange('');
-      setErrorMsg('');
-    },
-    onError: () => setErrorMsg('Failed to create rule. Please try again.'),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: deletePointRule,
-    onSuccess: () => queryClient.invalidateQueries(['pointRules']),
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, balanceChange }) => updatePointRule(id, balanceChange),
-    onSuccess: () =>
-    {
-      queryClient.invalidateQueries(['pointRules']);
-      setEditingId(null);
-      setEditValue('');
-    },
-  });
-
-  function handleCreate(e)
+  // Handle creating a point rule
+  async function handleCreate(e)
   {
     e.preventDefault();
     if (!reason || balanceChange === '') return;
-    createMutation.mutate({ reason, balanceChange: parseInt(balanceChange) });
+    try
+    {
+      await createMutation.mutateAsync({ reason, balanceChange: parseInt(balanceChange) });
+      setReason('');
+      setBalanceChange('');
+      setErrorMsg('');
+    }
+    catch (err)
+    {
+      setErrorMsg('Failed to create rule. Please try again.');
+    }
   }
 
-  function handleEditSave(id)
+  // Handle deleting a point rule
+  async function handleDelete(ruleId)
+  {
+    if (!ruleId) return;
+    try
+    {
+      await deleteMutation.mutateAsync({ id: ruleId });
+    }
+    catch (err)
+    {
+      setErrorMsg('Failed to delete rule. Please try again.');
+    }
+  }
+
+  // Handle updating a point rule
+  async function handleUpdate(ruleId)
   {
     if (editValue === '') return;
-    updateMutation.mutate({ id, balanceChange: parseInt(editValue) });
+    try
+    {
+      await updateMutation.mutateAsync({ id: ruleId, balanceChange: parseInt(editValue) });
+      setEditingId(null);
+      setEditValue('');
+    }
+    catch (err)
+    {
+      setErrorMsg('Failed to update rule. Please try again.');
+    }
   }
 
+  // Check if a point ratio value is valid
   function validPointValue(decimalString)
   {
     if (!decimalString)
@@ -157,6 +132,7 @@ export default function PointRulesPage()
     return true
   }
 
+  // Normalize a decimal string
   function normalizedDecimal(decimalString)
   {
     if (!decimalString)
@@ -181,6 +157,7 @@ export default function PointRulesPage()
     return normalized;
   }
 
+  // Check if decimal strings are equal
   function decimalsEqual(aString, bString)
   {
     const a = normalizedDecimal(aString);
@@ -188,6 +165,7 @@ export default function PointRulesPage()
     return a === b;
   }
 
+  // Handle attempted save point ratio value
   function handlePointValueSave()
   {
     var normalizedInput = normalizedDecimal(inputPointValue);
@@ -205,6 +183,7 @@ export default function PointRulesPage()
     setShowValueSaveModal(true);
   }
 
+  // Handle cancel point ratio value editing
   function handlePointValueCancel()
   {
     setInputPointValue(`${org?.pointRatio}`);
@@ -215,11 +194,12 @@ export default function PointRulesPage()
     setEditingPointValue(false);
   }
 
+  // Handle confirm save point ratio value
   async function confirmSavePointValue()
   {
     try
     {
-      await updateSponsorOrg.mutateAsync({ pointRatio: finalPointValue });
+      await updateOrgMuation.mutateAsync({ pointRatio: finalPointValue });
       push({ type: 'success', message: 'Point value updated.' });
       setEditingPointValue(false);
       setShowValueSaveModal(false);
@@ -309,7 +289,7 @@ export default function PointRulesPage()
                 className={styles.button}
                 text={createMutation.isPending ? 'Adding...' : 'Add Rule'}
                 color='primary'
-                disabled={createMutation.isPending}
+                disabled={disableRuleButtons}
               />
             </div>
             {errorMsg && <p className={styles.error}>{errorMsg}</p>}
@@ -357,8 +337,8 @@ export default function PointRulesPage()
                         <>
                           <button
                             className={styles.buttonSave}
-                            onClick={() => handleEditSave(rule.id)}
-                            disabled={updateMutation.isPending}
+                            onClick={() => handleUpdate(rule.id)}
+                            disabled={disableRuleButtons}
                           >
                             Save
                           </button>
@@ -383,8 +363,8 @@ export default function PointRulesPage()
                           </button>
                           <button
                             className={styles.buttonDelete}
-                            onClick={() => deleteMutation.mutate(rule.id)}
-                            disabled={deleteMutation.isPending}
+                            onClick={() => handleDelete(rule.id)}
+                            disabled={disableRuleButtons}
                           >
                             Delete
                           </button>
