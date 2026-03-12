@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using WebApi.Helpers.Pagination;
 using WebApi.Features.Users;
 using WebApi.Features.DriverUsers.Models;
+using WebApi.Audit;
 
 namespace WebApi.Features.SponsorOrgs;
 
@@ -19,12 +20,14 @@ public class SponsorOrgsController : ControllerBase
     private readonly AppDbContext _db;
     private readonly UserManager<User> _userManager;
     private readonly IUsersService _usersService;
+    private readonly IAuditLogger _auditLogger;
 
-    public SponsorOrgsController(AppDbContext db, UserManager<User> userManager, IUsersService usersService)
+    public SponsorOrgsController(AppDbContext db, UserManager<User> userManager, IUsersService usersService, IAuditLogger auditLogger)
     {
         _db = db;
         _userManager = userManager;
         _usersService = usersService;
+        _auditLogger = auditLogger;
     }
 
     #region Org
@@ -243,6 +246,10 @@ public class SponsorOrgsController : ControllerBase
     [Authorize(Policy = PolicyNames.AdminOnly)]
     public async Task<ActionResult> AddDriverToOrg(int orgId, int driverId)
     {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
         var driver = await _db.DriverUsers.FindAsync(driverId);
         if (driver is null)
             return NotFound("Driver does not exist.");
@@ -256,6 +263,7 @@ public class SponsorOrgsController : ControllerBase
 
         driver.SponsorOrgs.Add(org);
         await _db.SaveChangesAsync();
+        await _auditLogger.CreateDriverSponsorChangeAuditLog(driverId, driver.User.Email!, orgId, org.SponsorName, DriverSponsorChangeType.Added);
 
         return Ok();
     }
@@ -264,7 +272,12 @@ public class SponsorOrgsController : ControllerBase
     [Authorize(Policy = PolicyNames.AdminOnly)]
     public async Task<ActionResult> RemoveDriverFromOrg(int orgId, int driverId)
     {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+            
         var driver = await _db.DriverUsers
+            .Include(d => d.User)
             .Include(d => d.SponsorOrgs.Where(o => o.Id == orgId))
             .SingleOrDefaultAsync(d => d.Id == driverId);
 
@@ -277,6 +290,7 @@ public class SponsorOrgsController : ControllerBase
 
         driver.SponsorOrgs.Remove(org);
         await _db.SaveChangesAsync();
+        await _auditLogger.CreateDriverSponsorChangeAuditLog(driverId, driver.User.Email!, orgId, org.SponsorName, DriverSponsorChangeType.Removed);
 
         return Ok();
     }

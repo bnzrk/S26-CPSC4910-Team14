@@ -4,6 +4,8 @@ using WebApi.Features.Auth.Models;
 using WebApi.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
 using WebApi.Data;
+using WebApi.Audit;
+using WebApi.Data.Enums;
 
 namespace WebApi.Features.Auth;
 
@@ -14,12 +16,14 @@ public class AuthController : ControllerBase
     private readonly AppDbContext _db;
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
+    private readonly IAuditLogger _auditLogger;
 
-    public AuthController(UserManager<User> userManager, SignInManager<User> signInManager, AppDbContext db)
+    public AuthController(UserManager<User> userManager, SignInManager<User> signInManager, AppDbContext db, IAuditLogger auditLogger)
     {
         _db = db;
         _userManager = userManager;
         _signInManager = signInManager;
+        _auditLogger = auditLogger;
     }
 
     [HttpPost("login")]
@@ -36,7 +40,12 @@ public class AuthController : ControllerBase
             lockoutOnFailure: false
         );
         if (!result.Succeeded)
-            return BadRequest("Invalid email or password.");
+        {
+            await _auditLogger.CreateLoginAuditLog(login.Email, false);
+            return BadRequest("Invalid email or password.");   
+        }
+
+        await _auditLogger.CreateLoginAuditLog(login.Email, true);
 
         user.LastLoginUtc = DateTime.UtcNow;
         await _db.SaveChangesAsync();
@@ -127,8 +136,12 @@ public class AuthController : ControllerBase
 
         var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
         if (!result.Succeeded)
-            return BadRequest(result.Errors.Select(e => e.Description));
+        {
+            await _auditLogger.CreatePasswordChangeAuditLog(user.Id, user.Email!, PasswordChangeType.SelfUpdate, false);
+            return BadRequest(result.Errors.Select(e => e.Description));   
+        }
 
+    await _auditLogger.CreatePasswordChangeAuditLog(user.Id, user.Email!, PasswordChangeType.SelfUpdate, true);
     return Ok();
 }
 
