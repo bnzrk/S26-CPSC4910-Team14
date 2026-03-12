@@ -129,6 +129,21 @@ public class AuthController : ControllerBase
         if (!result.Succeeded)
             return BadRequest(result.Errors.Select(e => e.Description));
 
-        return Ok();
-    }
+    return Ok();
+}
+
+[HttpDelete("account")]
+[Authorize]
+public async Task<ActionResult> DeleteAccount()
+{
+    var user = await _userManager.GetUserAsync(User);
+    if (user is null) return Unauthorized();
+
+    await _signInManager.SignOutAsync();
+    var result = await _userManager.DeleteAsync(user);
+    if (!result.Succeeded)
+        return BadRequest(result.Errors.Select(e => e.Description));
+
+    return Ok();
+}
 }

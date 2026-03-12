@@ -64,6 +64,7 @@ export default function ProfilePage()
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Populate form once profile loads
   useState(() =>
@@ -126,6 +127,21 @@ export default function ProfilePage()
       return;
     }
     passwordMutation.mutate({ currentPassword, newPassword });
+  }
+
+  async function handleDeleteAccount()
+  {
+    try
+    {
+      await fetch(`${API_URL}/auth/account`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      window.location.href = '/login';
+    } catch (err)
+    {
+      console.error('Failed to delete account:', err);
+    }
   }
 
   if (isLoading) return <div className={styles.page}><p className={styles.muted}>Loading...</p></div>;
@@ -245,6 +261,27 @@ export default function ProfilePage()
             text={passwordMutation.isPending ? 'Updating...' : 'Change Password'}
           />
         </form>
+      </Card>
+      {/* Delete Account */}
+      <Card title='Delete Account'>
+        <p>This will permanently delete your account and cannot be undone.</p>
+        {!showDeleteConfirm ? (
+          <button className={styles.buttonDelete} onClick={() => setShowDeleteConfirm(true)}>
+            Delete Account
+          </button>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <p style={{ color: '#d32f2f', fontWeight: '500' }}>Are you sure? This cannot be undone.</p>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button className={styles.buttonDelete} onClick={handleDeleteAccount}>
+                Yes, Delete My Account
+              </button>
+              <button className={styles.buttonCancel} onClick={() => setShowDeleteConfirm(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </Card>
       <Button text='Sign Out' onClick={handleLogout} icon={LogoutIcon} />
     </CardHost>
