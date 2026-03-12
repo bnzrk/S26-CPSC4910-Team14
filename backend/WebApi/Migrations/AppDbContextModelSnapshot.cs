@@ -19,6 +19,21 @@ namespace WebApi.Migrations
                 .HasAnnotation("ProductVersion", "10.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
+            modelBuilder.Entity("DriverUserSponsorOrg", b =>
+                {
+                    b.Property<int>("DriverUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SponsorOrgId")
+                        .HasColumnType("int");
+
+                    b.HasKey("DriverUserId", "SponsorOrgId");
+
+                    b.HasIndex("SponsorOrgId");
+
+                    b.ToTable("DriverUserSponsorOrg");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -204,13 +219,64 @@ namespace WebApi.Migrations
                     b.ToTable("AdminUsers");
                 });
 
-            modelBuilder.Entity("WebApi.Data.Entities.DriverUser", b =>
+            modelBuilder.Entity("WebApi.Data.Entities.DriverApplication", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int?>("SponsorOrgId")
+                    b.Property<DateOnly?>("Birthday")
+                        .HasColumnType("date");
+
+                    b.Property<int?>("DriverUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FirstName")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("LicensePlate")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool?>("PreviousEmployee")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("SponsorOrgId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TruckMake")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TruckModel")
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("TruckYear")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DriverUserId");
+
+                    b.HasIndex("SponsorOrgId");
+
+                    b.ToTable("DriverApplications");
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.DriverUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
@@ -218,8 +284,6 @@ namespace WebApi.Migrations
                         .HasColumnType("varchar(255)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("SponsorOrgId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -360,6 +424,7 @@ namespace WebApi.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<decimal>("PointRatio")
+                        .HasPrecision(18, 4)
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<string>("SponsorName")
@@ -666,6 +731,21 @@ namespace WebApi.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("DriverUserSponsorOrg", b =>
+                {
+                    b.HasOne("WebApi.Data.Entities.DriverUser", null)
+                        .WithMany()
+                        .HasForeignKey("DriverUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WebApi.Data.Entities.SponsorOrg", null)
+                        .WithMany()
+                        .HasForeignKey("SponsorOrgId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -728,19 +808,30 @@ namespace WebApi.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("WebApi.Data.Entities.DriverApplication", b =>
+                {
+                    b.HasOne("WebApi.Data.Entities.DriverUser", "DriverUser")
+                        .WithMany()
+                        .HasForeignKey("DriverUserId");
+
+                    b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
+                        .WithMany()
+                        .HasForeignKey("SponsorOrgId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DriverUser");
+
+                    b.Navigation("SponsorOrg");
+                });
+
             modelBuilder.Entity("WebApi.Data.Entities.DriverUser", b =>
                 {
-                    b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
-                        .WithMany("DriverUsers")
-                        .HasForeignKey("SponsorOrgId");
-
                     b.HasOne("WebApi.Data.Entities.User", "User")
                         .WithOne()
                         .HasForeignKey("WebApi.Data.Entities.DriverUser", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("SponsorOrg");
 
                     b.Navigation("User");
                 });
@@ -843,8 +934,6 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Data.Entities.SponsorOrg", b =>
                 {
-                    b.Navigation("DriverUsers");
-
                     b.Navigation("PointRules");
 
                     b.Navigation("SponsorUsers");

@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Data.Entities;
@@ -27,6 +28,9 @@ public class AppDbContext : IdentityDbContext<User>
     // Points
     public DbSet<PointTransaction> PointTransactions { get; set; }
     public DbSet<PointRule> PointRules { get; set; }
+
+    // Applications
+    public DbSet<DriverApplication> DriverApplications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -83,6 +87,25 @@ public class AppDbContext : IdentityDbContext<User>
                 .IsRequired();
 
             b.Navigation("User");
+
+            b.HasMany(d => d.SponsorOrgs)
+                .WithMany(o => o.DriverUsers)
+                .UsingEntity<Dictionary<string, object>>(
+                    "DriverUserSponsorOrg",
+                    j => j.HasOne<SponsorOrg>().WithMany().HasForeignKey("SponsorOrgId"),
+                    j => j.HasOne<DriverUser>().WithMany().HasForeignKey("DriverUserId"));
+        });
+
+        var nullableDateOnlyConverter = new ValueConverter<DateOnly?, DateTime?>(
+            v => v.HasValue ? v.Value.ToDateTime(TimeOnly.MinValue) : null,
+            v => v.HasValue ? DateOnly.FromDateTime(v.Value) : null
+        );
+
+        modelBuilder.Entity<DriverApplication>(b =>
+        {
+            b.Property(x => x.Birthday)
+                .HasConversion(nullableDateOnlyConverter)
+                .HasColumnType("date");
         });
 
         // Seeded about info data

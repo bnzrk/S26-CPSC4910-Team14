@@ -4,4 +4,5 @@ public static class PolicyNames
     public const string AdminOrSponsor = "AdminOrSponsor";
     public const string SponsorOnly = "SponsorOnly";
     public const string DriverOnly = "DriverOnly";
+    public const string AdminOrDriver = "AdminOrDriver";
 }

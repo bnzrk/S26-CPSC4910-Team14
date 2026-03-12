@@ -1,6 +1,6 @@
 namespace WebApi.Features.DriverUsers.Models;
 
-public class EditDriverProfileModel
+public class UpdateDriverUserModel
 {
     public string? Email { get; set; }
     public string? FirstName { get; set; }

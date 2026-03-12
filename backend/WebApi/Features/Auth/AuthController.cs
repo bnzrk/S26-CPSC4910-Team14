@@ -72,64 +72,66 @@ public class AuthController : ControllerBase
             User = new UserModel
             {
                 Id = user.Id,
-                Email = user.Email,
+                Email = user.Email!,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 UserType = user.UserType.ToString()
             }
         });
     }
+
     [HttpGet("profile")]
-[Authorize]
-public async Task<ActionResult> GetProfile()
-{
-    var user = await _userManager.GetUserAsync(User);
-    if (user is null) return Unauthorized();
-
-    return Ok(new UserModel
+    [Authorize]
+    public async Task<ActionResult> GetProfile()
     {
-        Id = user.Id,
-        Email = user.Email!,
-        FirstName = user.FirstName,
-        LastName = user.LastName,
-        UserType = user.UserType.ToString()
-    });
-}
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
 
-[HttpPatch("profile")]
-[Authorize]
-public async Task<ActionResult> UpdateProfile([FromBody] UpdateProfileModel request)
-{
-    var user = await _userManager.GetUserAsync(User);
-    if (user is null) return Unauthorized();
+        return Ok(new UserModel
+        {
+            Id = user.Id,
+            Email = user.Email!,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            UserType = user.UserType.ToString()
+        });
+    }
 
-    user.FirstName = request.FirstName;
-    user.LastName = request.LastName;
-    user.Email = request.Email;
-    user.UserName = request.Email;
-    user.NormalizedEmail = request.Email.ToUpper();
-    user.NormalizedUserName = request.Email.ToUpper();
+    [HttpPatch("profile")]
+    [Authorize]
+    public async Task<ActionResult> UpdateProfile([FromBody] UpdateProfileModel request)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
 
-    var result = await _userManager.UpdateAsync(user);
-    if (!result.Succeeded)
-        return BadRequest(result.Errors.Select(e => e.Description));
+        user.FirstName = request.FirstName;
+        user.LastName = request.LastName;
+        user.Email = request.Email;
+        user.UserName = request.Email;
+        user.NormalizedEmail = request.Email.ToUpper();
+        user.NormalizedUserName = request.Email.ToUpper();
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+            return BadRequest(result.Errors.Select(e => e.Description));
+
+        return Ok();
+    }
+
+    [HttpPatch("profile/password")]
+    [Authorize]
+    public async Task<ActionResult> UpdatePassword([FromBody] UpdatePasswordModel request)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
+
+        var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+        if (!result.Succeeded)
+            return BadRequest(result.Errors.Select(e => e.Description));
 
     return Ok();
 }
 
-[HttpPatch("profile/password")]
-[Authorize]
-public async Task<ActionResult> UpdatePassword([FromBody] UpdatePasswordModel request)
-{
-    var user = await _userManager.GetUserAsync(User);
-    if (user is null) return Unauthorized();
-
-    var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
-    if (!result.Succeeded)
-        return BadRequest(result.Errors.Select(e => e.Description));
-
-    return Ok();
-}
 [HttpDelete("account")]
 [Authorize]
 public async Task<ActionResult> DeleteAccount()
