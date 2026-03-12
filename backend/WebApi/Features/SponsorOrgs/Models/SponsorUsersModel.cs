@@ -1,3 +1,5 @@
+namespace WebApi.Features.SponsorOrgs.Models;
+
 public class SponsorUserModel
 {
     public required int Id { get; set; }

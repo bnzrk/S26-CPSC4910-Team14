@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Helpers.Pagination;
 using WebApi.Features.Users;
+using WebApi.Features.DriverUsers.Models;
 
 namespace WebApi.Features.SponsorOrgs;
 
@@ -27,8 +28,8 @@ public class SponsorOrgsController : ControllerBase
     }
 
     #region Org
-    [HttpGet("all")]
-    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    [HttpGet]
+    [Authorize(Policy = PolicyNames.AdminOnly)]
     public async Task<IActionResult> GetAllSponsorOrgs()
     {
         var orgModels = await _db.SponsorOrgs
@@ -48,9 +49,9 @@ public class SponsorOrgsController : ControllerBase
     }
 
     [HttpGet("{orgId}")]
-    [HttpGet]
+    [HttpGet("me")]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
-    public async Task<ActionResult> GetSponsorOrgInfo(int? orgId)
+    public async Task<ActionResult<SponsorOrgModel>> Get(int? orgId)
     {
         var resolvedOrgId = await GetCurrentSponsorOrgId();
 
@@ -102,11 +103,11 @@ public class SponsorOrgsController : ControllerBase
         _db.SponsorOrgs.Add(org);
         _db.SaveChanges();
 
-        return Ok();
+        return Created();
     }
 
     [HttpPatch("{orgId}")]
-    [HttpPatch]
+    [HttpPatch("me")]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
     public async Task<ActionResult> UpdateOrg(int? orgId, [FromBody] UpdateSponsorOrgModel request)
     {
@@ -140,42 +141,45 @@ public class SponsorOrgsController : ControllerBase
         }
         await _db.SaveChangesAsync();
 
-        return Ok(request.SponsorName);
+        return Ok();
     }
     #endregion
 
     #region Drivers
     [HttpGet("{orgId}/drivers")]
-    [HttpGet("drivers")]
+    [HttpGet("me/drivers")]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
-    public async Task<ActionResult> GetOrgDrivers(int? orgId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    public async Task<ActionResult<PagedResult<DriverModel>>> GetDrivers(int? orgId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
-        var resolvedOrgId = await GetCurrentSponsorOrgId();
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
 
-        // Ensure sponsor aren't trying to edit rules for another org.
-        if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
+        var targetOrgId = orgId;
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor)
         {
-            if (orgId is not null && resolvedOrgId != orgId)
-            {
-                return BadRequest("Cannot view drivers from an organization you are not a sponsor for.");
-            }
+            if (orgId.HasValue)
+                return BadRequest("Sponsors should use /me instead of an org id.");
+
+            targetOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => s.SponsorOrgId).SingleOrDefaultAsync();
         }
+        if (!targetOrgId.HasValue)
+            return NotFound();
 
-        resolvedOrgId = resolvedOrgId ?? orgId;
-        if (resolvedOrgId is null)
-            return BadRequest("Could not resolve sponor organization.");
-
-        var query = _db.DriverUsers
+        var query = _db.SponsorOrgs
             .AsNoTracking()
-            .Where(d => d.SponsorOrgId == resolvedOrgId)
+            .Where(s => s.Id == targetOrgId.Value)
+            .SelectMany(s => s.DriverUsers)
             .Select(d => new DriverModel
             {
                 Id = d.Id,
-                Email = d.User.Email,
+                Email = d.User.Email!,
                 FirstName = d.User.FirstName,
                 LastName = d.User.LastName,
                 Points = d.PointTransactions
-                    .Where(p => p.SponsorOrgId == resolvedOrgId)
+                    .Where(p => p.SponsorOrgId == targetOrgId)
                     .OrderByDescending(p => p.TransactionDateUtc)
                     .Sum(p => p.BalanceChange),
                 DateCreatedUtc = d.User.CreatedDateUtc,
@@ -188,36 +192,40 @@ public class SponsorOrgsController : ControllerBase
     }
 
     [HttpGet("{orgId}/drivers/{driverId}")]
-    [HttpGet("drivers/{driverId}")]
+    [HttpGet("me/drivers/{driverId}")]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
-    public async Task<ActionResult> GetOrgDriver(int? orgId, int driverId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    public async Task<ActionResult<DriverUserModel?>> GetDriver(int? orgId, int driverId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
-        var resolvedOrgId = await GetCurrentSponsorOrgId();
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
 
-        // Ensure sponsor aren't trying to edit rules for another org.
-        if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
+        var targetOrgId = orgId;
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor)
         {
-            if (orgId is not null && resolvedOrgId != orgId)
-            {
-                return BadRequest("Cannot view drivers from an organization you are not a sponsor for.");
-            }
+            if (orgId.HasValue)
+                return BadRequest("Sponsors should use /me instead of an org id.");
+
+            targetOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => s.SponsorOrgId).SingleOrDefaultAsync();
         }
+        if (!targetOrgId.HasValue)
+            return NotFound();
 
-        resolvedOrgId = resolvedOrgId ?? orgId;
-        if (resolvedOrgId is null)
-            return BadRequest("Could not resolve sponor organization.");
-
-        var driverModel = await _db.DriverUsers
+        var driverModel = await _db.SponsorOrgs
             .AsNoTracking()
-            .Where(d => d.SponsorOrgId == resolvedOrgId && d.Id == driverId)
+            .Where(s => s.Id == targetOrgId)
+            .SelectMany(s => s.DriverUsers)
+            .Where(d => d.Id == driverId)
             .Select(d => new DriverModel
             {
                 Id = d.Id,
-                Email = d.User.Email,
+                Email = d.User.Email!,
                 FirstName = d.User.FirstName,
                 LastName = d.User.LastName,
                 Points = d.PointTransactions
-                    .Where(p => p.SponsorOrgId == resolvedOrgId)
+                    .Where(p => p.SponsorOrgId == targetOrgId.Value)
                     .OrderByDescending(p => p.TransactionDateUtc)
                     .Sum(p => p.BalanceChange),
                 DateCreatedUtc = d.User.CreatedDateUtc,
@@ -226,29 +234,28 @@ public class SponsorOrgsController : ControllerBase
             .FirstOrDefaultAsync();
 
         if (driverModel is null)
-            return NotFound("Driver not found.");
+            return NotFound();
 
         return Ok(driverModel);
     }
 
-    // Drivers will be added to sponsor orgs through applications later.
     [HttpPost("{orgId}/drivers/{driverId}")]
     [Authorize(Policy = PolicyNames.AdminOnly)]
     public async Task<ActionResult> AddDriverToOrg(int orgId, int driverId)
     {
-        var driver = _db.DriverUsers.Where(d => d.Id == driverId).FirstOrDefault();
+        var driver = await _db.DriverUsers.FindAsync(driverId);
         if (driver is null)
-        {
-            return BadRequest("Driver does not exist.");
-        }
+            return NotFound("Driver does not exist.");
 
-        if (driver.SponsorOrgId is not null)
-        {
-            return BadRequest("Driver already belongs to a sponsor.");
-        }
+        if (driver.SponsorOrgs.Any(s => s.Id == orgId))
+            return BadRequest("Driver is already in this org.");
 
-        driver.SponsorOrgId = orgId;
-        _db.SaveChanges();
+        var org = await _db.SponsorOrgs.FindAsync(orgId);
+        if (org is null)
+            return NotFound("Org does not exist.");
+
+        driver.SponsorOrgs.Add(org);
+        await _db.SaveChangesAsync();
 
         return Ok();
     }
@@ -257,14 +264,19 @@ public class SponsorOrgsController : ControllerBase
     [Authorize(Policy = PolicyNames.AdminOnly)]
     public async Task<ActionResult> RemoveDriverFromOrg(int orgId, int driverId)
     {
-        var driver = _db.DriverUsers.Where(d => d.Id == driverId && d.SponsorOrgId == orgId).FirstOrDefault();
-        if (driver is null)
-        {
-            return BadRequest("Invalid driver.");
-        }
+        var driver = await _db.DriverUsers
+            .Include(d => d.SponsorOrgs.Where(o => o.Id == orgId))
+            .SingleOrDefaultAsync(d => d.Id == driverId);
 
-        driver.SponsorOrgId = null;
-        _db.SaveChanges();
+        if (driver == null)
+            return NotFound("Driver does not exist.");
+
+        var org = driver.SponsorOrgs.SingleOrDefault();
+        if (org == null)
+            return NotFound("Driver is not in specified org.");
+
+        driver.SponsorOrgs.Remove(org);
+        await _db.SaveChangesAsync();
 
         return Ok();
     }
@@ -272,9 +284,9 @@ public class SponsorOrgsController : ControllerBase
 
     #region Points
     [HttpGet("{orgId}/point-rules")]
-    [HttpGet("point-rules")]
+    [HttpGet("me/point-rules")]
     [Authorize]
-    public async Task<IActionResult> GetPointRules(int? orgId)
+    public async Task<ActionResult<List<PointRuleModel>>> GetPointRules(int? orgId)
     {
         var resolvedOrgId = orgId ?? await GetCurrentSponsorOrgId();
         if (resolvedOrgId is null) return BadRequest("Could not resolve sponor organization.");
@@ -294,7 +306,7 @@ public class SponsorOrgsController : ControllerBase
     }
 
     [HttpPost("{orgId}/point-rules")]
-    [HttpPost("point-rules")]
+    [HttpPost("me/point-rules")]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
     public async Task<IActionResult> CreatePointRule(int? orgId, [FromBody] CreatePointRulesModel request)
     {
@@ -318,13 +330,13 @@ public class SponsorOrgsController : ControllerBase
             BalanceChange = request.BalanceChange
         };
         _db.PointRules.Add(rule);
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
 
-        return Ok();
+        return Created();
     }
 
     [HttpPatch("{orgId}/point-rules/{ruleId}")]
-    [HttpPatch("point-rules/{ruleId}")]
+    [HttpPatch("me/point-rules/{ruleId}")]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
     public async Task<IActionResult> UpdatePointRule(int? orgId, int ruleId, [FromBody] UpdatePointRulesModel request)
     {
@@ -353,7 +365,7 @@ public class SponsorOrgsController : ControllerBase
     }
 
     [HttpDelete("{orgId}/point-rules/{ruleId}")]
-    [HttpDelete("point-rules/{ruleId}")]
+    [HttpDelete("me/point-rules/{ruleId}")]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
     public async Task<IActionResult> DeletePointRule(int? orgId, int ruleId)
     {
@@ -383,8 +395,8 @@ public class SponsorOrgsController : ControllerBase
 
     #region Users
     [HttpGet("{orgId}/users")]
-    [HttpGet("users")]
-    public async Task<IActionResult> GetOrgUsers(
+    [HttpGet("me/users")]
+    public async Task<ActionResult<PagedResult<SponsorUserModel>>> GetOrgUsers(
         int? orgId,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
@@ -411,7 +423,7 @@ public class SponsorOrgsController : ControllerBase
             .Select(s => new SponsorUserModel
             {
                 Id = s.Id,
-                Email = s.User.Email,
+                Email = s.User.Email!,
                 FirstName = s.User.FirstName,
                 LastName = s.User.LastName,
                 DateCreatedUtc = s.User.CreatedDateUtc,
@@ -423,45 +435,39 @@ public class SponsorOrgsController : ControllerBase
         return Ok(pageResult);
     }
 
-    [HttpPost("users")]
     [HttpPost("{orgId}/users")]
+    [HttpPost("me/users")]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
     public async Task<ActionResult> CreateOrgUser(int? orgId, CreateSponsorUserModel request)
     {
-        var resolvedOrgId = await GetCurrentSponsorOrgId();
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
 
-        // Ensure sponsor aren't trying to edit rules for another org.
+        var targetOrgId = orgId;
+        // If the user making the request is a sponsor, only allow if they are creating another
+        // user for their own sponsor.
         if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
         {
-            if (orgId is not null && resolvedOrgId != orgId)
+            if (orgId is not null)
+                return BadRequest("Sponsors should not specify an org id.");
+
+            var currentSponsorOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => (int?)s.SponsorOrgId).SingleOrDefaultAsync();
+            if (currentSponsorOrgId is null)
             {
-                return BadRequest("Cannot create user for an organization you are not a sponsor for.");
+                return BadRequest("Cannot create a sponsor user for a different organization.");
             }
+            targetOrgId = currentSponsorOrgId;
         }
+        if (targetOrgId is null)
+            return NotFound();
 
-        resolvedOrgId = resolvedOrgId ?? orgId;
-        if (resolvedOrgId is null)
-            return BadRequest("Could not resolve sponor organization.");
-
-        // Ensure the request sponsor organization exists.
-        var requestOrg = _db.SponsorOrgs.Where(s => s.Id == resolvedOrgId).FirstOrDefault();
-        if (requestOrg is null)
-        {
-            return BadRequest("Sponsor organization does not exist.");
-        }
-
-        var currentUser = await _userManager.GetUserAsync(User);
-        if (currentUser is null)
-        {
-            return Unauthorized("Current user not found.");
-        }
-
-        var result = await _usersService.CreateSponsorUser(request.Email, request.Password, request.FirstName, request.LastName, requestOrg);
+        var result = await _usersService.CreateSponsorUser(request.Email, request.Password, request.FirstName, request.LastName, targetOrgId.Value);
         if (!result.Succeeded)
         {
             return BadRequest(new
             {
-                Errors = result.Errors.Select(e => e.Description).ToArray()
+                Errors = result.Errors.Select(e => e.Description).ToArray() 
             });
         }
 
@@ -478,14 +484,6 @@ public class SponsorOrgsController : ControllerBase
                 .AsNoTracking()
                 .Where(s => s.UserId == userId)
                 .Select(s => (int?)s.SponsorOrgId)
-                .FirstOrDefaultAsync();
-        }
-        else if (User.IsInRole(UserTypeRoles.Role(UserType.Driver)))
-        {
-            return await _db.DriverUsers
-                .AsNoTracking()
-                .Where(d => d.UserId == userId)
-                .Select(d => (int?)d.SponsorOrgId)
                 .FirstOrDefaultAsync();
         }
 
