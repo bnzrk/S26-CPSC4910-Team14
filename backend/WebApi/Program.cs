@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using WebApi.Audit;
 using WebApi.Data;
 using WebApi.Data.Entities;
 using WebApi.Data.Enums;
@@ -32,11 +33,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
    options.UseMySQL(connectionString);
 });
+builder.Services.AddDbContext<AuditDbContext>(options =>
+{
+   options.UseMySQL(connectionString);
+});
 
 // Our services
 // .NET handles injecting all other services specified in the constructor for us
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IDriverUsersService, DriverUsersService>();
+builder.Services.AddScoped<IAuditLogger, AuditLogger>();
 
 var app = builder.Build();
 

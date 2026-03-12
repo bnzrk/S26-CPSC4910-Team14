@@ -8,6 +8,7 @@ using WebApi.Features.DriverUsers.Models;
 using WebApi.Features.Users;
 using WebApi.Helpers.Pagination;
 using WebApi.Data.Enums;
+using WebApi.Audit;
 
 namespace WebApi.Features.DriverUsers;
 
@@ -19,13 +20,15 @@ public class DriverUsersController : ControllerBase
     private readonly IUsersService _usersService;
     private readonly UserManager<User> _userManager;
     private readonly IDriverUsersService _driversService;
+    private readonly IAuditLogger _auditLogger;
 
-    public DriverUsersController(AppDbContext db, IUsersService usersService, UserManager<User> userManager, IDriverUsersService driversService)
+    public DriverUsersController(AppDbContext db, IUsersService usersService, UserManager<User> userManager, IDriverUsersService driversService, IAuditLogger auditLogger)
     {
         _db = db;
         _usersService = usersService;
         _userManager = userManager;
         _driversService = driversService;
+        _auditLogger = auditLogger;
     }
 
     #region Drivers
@@ -284,6 +287,7 @@ public class DriverUsersController : ControllerBase
         return Ok(pagedResult);
     }
 
+    // TODO: Reduce the db calls here
     [HttpPost("{driverId}/point-transactions")]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
     public async Task<ActionResult> CreatePointTransaction(
@@ -295,6 +299,10 @@ public class DriverUsersController : ControllerBase
         if (userId is null)
             return Unauthorized();
 
+        var driver = await _db.DriverUsers.AsNoTracking().Where(d => d.Id == driverId).Include(d => d.User).SingleOrDefaultAsync();
+        if (driver is null)
+            return NotFound();
+
         var targetOrgId = orgId;
 
         var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
@@ -303,10 +311,14 @@ public class DriverUsersController : ControllerBase
             if (orgId.HasValue)
                 return BadRequest("Sponsors should not specify an org id.");
 
-            targetOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => s.SponsorOrgId).SingleOrDefaultAsync();
+            targetOrgId = await _db.SponsorUsers.AsNoTracking().Where(s => s.UserId == userId).Select(s => s.SponsorOrgId).SingleOrDefaultAsync();
         }
 
         if (!targetOrgId.HasValue || !await IsDriverInOrg(driverId, targetOrgId.Value))
+            return NotFound();
+
+        var org = await _db.SponsorOrgs.AsNoTracking().Where(o => o.Id == targetOrgId).SingleOrDefaultAsync();
+        if (org is null)
             return NotFound();
 
         var transaction = new PointTransaction
@@ -319,6 +331,7 @@ public class DriverUsersController : ControllerBase
         };
         _db.PointTransactions.Add(transaction);
         await _db.SaveChangesAsync();
+        await _auditLogger.CreatePointTransactionAuditLog(driver.Id, driver.User.Email!, org.Id, org.SponsorName, transaction.BalanceChange, transaction.Reason);
 
         return Created();
     }

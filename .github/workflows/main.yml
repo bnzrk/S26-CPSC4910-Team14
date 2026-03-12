@@ -64,13 +64,19 @@ jobs:
             echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
           fi
 
-      - name: Build migration bundle
+      - name: Build migration bundles
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
           dotnet ef migrations bundle \
             --configuration Release \
-            -o "./${OUT_DIR}/migration-bundle" \
-            -r "${RUNTIME}"
+            -o "./${OUT_DIR}/app-migration" \
+            -r "${RUNTIME}" \
+            --context AppDbContext
+          dotnet ef migrations bundle \
+            --configuration Release \
+            -o "./${OUT_DIR}/audit-migration" \
+            -r "${RUNTIME}" \
+            --context AuditDbContext
 
       - name: Pack artifacts
         working-directory: ${{ env.PROJECT_DIR }}
@@ -121,11 +127,13 @@ jobs:
             echo "== Copy artifacts to app dir =="
             sudo cp -a "./$DEPLOY_DIR"/. "./$APP_DIR"/
 
-            echo "== Ensure migration bundle is executable =="
-            sudo chmod +x "./$APP_DIR/migration-bundle"
+            echo "== Ensure migration bundles are executable =="
+            sudo chmod +x "./$APP_DIR/app-migration"
+            sudo chmod +x "./$APP_DIR/audit-migration"
 
             echo "== Run migrations with env loaded =="
-            bash -lc "set -a; source '$ENV_FILE'; set +a; './$APP_DIR/migration-bundle'"
+            bash -lc "set -a; source '$ENV_FILE'; set +a; './$APP_DIR/app-migration'"
+            bash -lc "set -a; source '$ENV_FILE'; set +a; './$APP_DIR/audit-migration'"
 
             echo "== Start service =="
             sudo systemctl start "$SERVICE"
