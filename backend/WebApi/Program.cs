@@ -3,7 +3,9 @@ using WebApi.Audit;
 using WebApi.Data;
 using WebApi.Data.Entities;
 using WebApi.Data.Enums;
+using WebApi.Features.Catalogs;
 using WebApi.Features.DriverUsers;
+using WebApi.Features.Store;
 using WebApi.Features.Users;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,7 +30,7 @@ builder.Services.AddAuthorization(options =>
 AppBuilderExtensions.ConfigureAppCookie(builder);
 
 // DB Connection
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
    options.UseMySQL(connectionString);
@@ -38,10 +40,18 @@ builder.Services.AddDbContext<AuditDbContext>(options =>
    options.UseMySQL(connectionString);
 });
 
+// External store client
+var externalStoreApi = "https://api.escuelajs.co/api/v1/";
+builder.Services.AddHttpClient<IStoreClient, StoreClient>(client =>
+{
+    client.BaseAddress = new Uri(externalStoreApi);
+});
+
 // Our services
 // .NET handles injecting all other services specified in the constructor for us
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IDriverUsersService, DriverUsersService>();
+builder.Services.AddScoped<ICatalogsService, CatalogsService>();
 builder.Services.AddScoped<IAuditLogger, AuditLogger>();
 
 var app = builder.Build();

@@ -13,7 +13,7 @@ public static class AppBuilderExtensions
             options.AddPolicy(releaseCorsPolicyName, policy =>
             {
                 policy
-                .WithOrigins("https://team14.cpsc4911.com")
+                .WithOrigins("https://team14.cpsc4911.com", "https://api.escuelajs.co")
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
@@ -21,7 +21,7 @@ public static class AppBuilderExtensions
             options.AddPolicy(devCorsPolicyName, policy =>
             {
                 policy
-                .WithOrigins("http://localhost:5173")
+                .WithOrigins("http://localhost:5173", "https://api.escuelajs.co")
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
