@@ -32,9 +32,17 @@ public class AppDbContext : IdentityDbContext<User>
     // Applications
     public DbSet<DriverApplication> DriverApplications { get; set; }
 
+    // Catalogs
+    public DbSet<Catalog> Catalogs { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<SponsorOrg>()
+            .HasOne(s => s.Catalog)
+            .WithOne(c => c.SponsorOrg)
+            .HasForeignKey<Catalog>(c => c.SponsorOrgId);
 
         modelBuilder.Entity<User>(u =>
         {

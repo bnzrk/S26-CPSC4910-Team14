@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApi.Data;
 
@@ -10,9 +11,11 @@ using WebApi.Data;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260318200745_AddCatalogToOrgs")]
+    partial class AddCatalogToOrgs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -225,7 +228,7 @@ namespace WebApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("SponsorOrgId")
+                    b.Property<int?>("SponsorOrgId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -829,9 +832,7 @@ namespace WebApi.Migrations
                 {
                     b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
                         .WithOne("Catalog")
-                        .HasForeignKey("WebApi.Data.Entities.Catalog", "SponsorOrgId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("WebApi.Data.Entities.Catalog", "SponsorOrgId");
 
                     b.Navigation("SponsorOrg");
                 });
