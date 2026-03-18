@@ -11,8 +11,8 @@ using WebApi.Data;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260318201718_RequireCatalogOrgId")]
-    partial class RequireCatalogOrgId
+    [Migration("20260318211543_RequiredCatalogOrgId")]
+    partial class RequiredCatalogOrgId
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -965,7 +965,8 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Data.Entities.SponsorOrg", b =>
                 {
-                    b.Navigation("Catalog");
+                    b.Navigation("Catalog")
+                        .IsRequired();
 
                     b.Navigation("PointRules");
 

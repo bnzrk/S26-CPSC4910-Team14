@@ -962,7 +962,8 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Data.Entities.SponsorOrg", b =>
                 {
-                    b.Navigation("Catalog");
+                    b.Navigation("Catalog")
+                        .IsRequired();
 
                     b.Navigation("PointRules");
 

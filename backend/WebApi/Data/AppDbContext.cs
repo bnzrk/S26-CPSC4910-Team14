@@ -39,17 +39,17 @@ public class AppDbContext : IdentityDbContext<User>
     {
         base.OnModelCreating(modelBuilder);
 
+        // Table relationships
         modelBuilder.Entity<SponsorOrg>()
-            .HasOne(s => s.Catalog)
-            .WithOne(c => c.SponsorOrg)
-            .HasForeignKey<Catalog>(c => c.SponsorOrgId);
+                .HasOne(s => s.Catalog)
+                .WithOne(c => c.SponsorOrg)
+                .HasForeignKey<Catalog>(c => c.SponsorOrgId);
 
         modelBuilder.Entity<User>(u =>
         {
             u.Property(e => e.CreatedDateUtc).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
         });
 
-        // Table relationships
         modelBuilder.Entity<AdminUser>(b =>
         {
             b.HasKey(a => a.Id);
