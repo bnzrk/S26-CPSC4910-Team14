@@ -34,6 +34,7 @@ public class AppDbContext : IdentityDbContext<User>
 
     // Catalogs
     public DbSet<Catalog> Catalogs { get; set; }
+    public DbSet<CatalogItem> CatalogItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
