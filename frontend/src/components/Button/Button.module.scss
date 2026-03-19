@@ -56,7 +56,10 @@
     .icon {
         padding-right: $grid-1x;
         &:first-child:last-child {
+            width: $grid-2x;
+            height: $grid-2x;
             padding: 0;
+            margin: 0 calc($grid-1x + $grid-half);
         }
     }
 }

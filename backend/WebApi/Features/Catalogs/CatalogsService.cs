@@ -12,7 +12,7 @@ public class CatalogsService : ICatalogsService
     private readonly AppDbContext _db;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IStoreClient _store;
-    private readonly TimeSpan _cacheDuration = TimeSpan.FromMinutes(2);
+    private readonly TimeSpan _cacheDuration = TimeSpan.FromHours(1);
 
     public CatalogsService(AppDbContext db, IStoreClient store, IServiceScopeFactory scopeFactory)
     {
@@ -46,6 +46,8 @@ public class CatalogsService : ICatalogsService
                 Title = i.Title,
                 Description = i.Description,
                 Slug = i.Slug,
+                CateogryId = i.CategoryId,
+                CategoryTitle = i.CategoryTitle,
                 ExternalPrice = i.ExternalPrice,
                 Price = i.CatalogPrice,
                 Images = i.Images,

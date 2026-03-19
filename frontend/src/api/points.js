@@ -17,28 +17,28 @@ export function usePoints(orgId)
   });
 }
 
-  export function usePointHistory({ orgId, page, pageSize, sign, from, to })
-  {
-    return useQuery({
-      queryKey: ['pointTransactions', orgId, page, pageSize, sign, from, to],
-      queryFn: async () =>
-      {
-        const params = new URLSearchParams({
-          page: String(page),
-          pageSize: String(pageSize),
-        });
+export function usePointHistory({ orgId, page, pageSize, sign, from, to })
+{
+  return useQuery({
+    queryKey: ['pointTransactions', orgId, page, pageSize, sign, from, to],
+    queryFn: async () =>
+    {
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(pageSize),
+      });
 
-        if (orgId) params.append('orgId', orgId);
-        if (sign) params.append('sign', sign);
-        if (from) params.append('from', from);
-        if (to) params.append('to', to);
+      if (orgId) params.append('orgId', orgId);
+      if (sign) params.append('sign', sign);
+      if (from) params.append('from', from);
+      if (to) params.append('to', to);
 
-        const res = await apiFetch(`/drivers/me/point-transactions?${params.toString()}`);
-        return res.json();
-      },
-      placeholderData: keepPreviousData,
-    });
-  }
+      const res = await apiFetch(`/drivers/me/point-transactions?${params.toString()}`);
+      return res.json();
+    },
+    placeholderData: keepPreviousData,
+  });
+}
 
 export function useCreatePointTransaction()
 {
