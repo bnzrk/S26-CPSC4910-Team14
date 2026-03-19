@@ -1,4 +1,4 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useQuery, keepPreviousData, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useCurrentUser } from "./currentUser";
 import { apiFetch } from "./apiFetch";
 
@@ -12,5 +12,25 @@ export function useCatalog(orgId)
         enabled: !!user && !!orgId,
         retry: 1,
         placeholderData: keepPreviousData,
+    });
+}
+
+export function useRemoveCatalogItem(orgId)
+{
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ id }) =>
+        {
+            const response = await apiFetch(`/sponsor-orgs/${orgId}/catalog/${id}`, {
+                method: 'DELETE',
+                credentials: 'include',
+            });
+            if (!response.ok) throw new Error('Failed to delete catalog item');
+        },
+        onSuccess: () =>
+        {
+            queryClient.invalidateQueries({ queryKey: ['catalog', orgId] });
+        },
     });
 }

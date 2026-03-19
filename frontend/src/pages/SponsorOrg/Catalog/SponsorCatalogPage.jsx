@@ -1,10 +1,15 @@
+import { useState } from 'react';
 import { useProducts } from '@/api/store';
 import { useCatalog } from '@/api/catalog';
 import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
+import { useRemoveCatalogItem } from '@/api/catalog';
+import { useToast } from '@/components/Toast/ToastContext';
+import Modal from '@/components/Modal/Modal';
 import InlineInfo from '@/components/InlineInfo/InlineInfo';
 import CardHost from '@/components/CardHost/CardHost';
 import Card from '@/components/Card/Card';
 import Button from '@/components/Button/Button';
+import AsyncButton from '@/components/AsyncButton/AsyncButton';
 import ShopItem from '@/components/ShopItem/ShopItem';
 import EditIcon from '@/assets/icons/square-pen.svg?react';
 import TrashIcon from '@/assets/icons/trash.svg?react';
@@ -16,12 +21,55 @@ export default function SponsorCatalogPage()
     const productLimit = 12;
 
     const { selectedOrgId } = useOrgContext();
+    const { push } = useToast();
 
     const { data: products, isLoading: isProductsLoading, isError: isProductsError } = useProducts({ limit: productLimit, offset: 0 });
     const { data: catalog, isLoading: isCatalogLoading, isError: isCatalogError } = useCatalog(selectedOrgId);
 
+    const removeCatalogItemMutation = useRemoveCatalogItem(selectedOrgId);
+
+    const modals = {
+        addItem: 'addItem',
+        removeItem: 'removeItem',
+        editItem: 'editItem',
+    }
+    const [currentModal, setCurrentModal] = useState(null);
+
+    const [selectedCatalogItemId, setSelectedCatalogItemId] = useState(null);
+
+    function handleItemRemoveClick(id)
+    {
+        setSelectedCatalogItemId(id);
+        setCurrentModal(modals.removeItem);
+    }
+
+    async function handleRemoveCatalogItem()
+    {        var id = selectedCatalogItemId;
+
+        try
+        {
+            await removeCatalogItemMutation.mutateAsync({ id: id });
+            push({ type: 'success', message: 'Item removed.' });
+            setCurrentModal(null);
+        }
+        catch (err)
+        {
+            push({ type: 'error', message: 'Failed to remove item.' });
+        }
+    }
+
     return (
         <>
+            <Modal isOpen={currentModal == modals.removeItem} onClose={() => setCurrentModal(null)}>
+                <Modal.Header title='Remove Catalog Item' />
+                <Modal.Body>
+                    Remove this item from the catalog?
+                </Modal.Body>
+                <Modal.Buttons position='right'>
+                    <Button className={styles.button} text='Cancel' onClick={() => setCurrentModal(null)} />
+                    <AsyncButton className={styles.button} text='Remove' color='warn' action={handleRemoveCatalogItem} />
+                </Modal.Buttons>
+            </Modal>
             <CardHost title='Catalog' subtitle="Manage your orgnization's product catalog.">
                 <Card title='Catalog'>
                     <div className={styles.grid}>
@@ -40,6 +88,7 @@ export default function SponsorCatalogPage()
                                         className={styles.catalogButton}
                                         icon={TrashIcon}
                                         size='small'
+                                        onClick={() => handleItemRemoveClick(item.id)}
                                     />
                                     <Button
                                         className={styles.catalogButton}
