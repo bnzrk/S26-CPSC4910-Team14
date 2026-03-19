@@ -17,11 +17,11 @@ public class StoreClient : IStoreClient
         try
         {
             response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<StoreItemModel>();
         }
         catch
         {
             return null;
         }
-        return await response.Content.ReadFromJsonAsync<StoreItemModel>();
     }
 }

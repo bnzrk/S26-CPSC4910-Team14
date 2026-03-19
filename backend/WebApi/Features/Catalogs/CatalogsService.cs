@@ -10,33 +10,33 @@ namespace WebApi.Features.Catalogs;
 public class CatalogsService : ICatalogsService
 {
     private readonly AppDbContext _db;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly IStoreClient _store;
-    private readonly TimeSpan _cacheDuration = TimeSpan.FromMinutes(1);
+    private readonly TimeSpan _cacheDuration = TimeSpan.FromMinutes(2);
 
-    public CatalogsService(AppDbContext db, IStoreClient store)
+    public CatalogsService(AppDbContext db, IStoreClient store, IServiceScopeFactory scopeFactory)
     {
         _db = db;
         _store = store;
+        _scopeFactory = scopeFactory;
     }
 
     public async Task<List<CatalogItemModel>> GetOrgCatalogAsync(int orgId)
     {
         var items = await _db.Catalogs
+            .AsNoTracking()
             .Where(c => c.SponsorOrgId == orgId)
             .SelectMany(c => c.Items)
             .ToListAsync();
 
         var models = new List<CatalogItemModel>();
 
-        var staleCount = 0;
+        var staleIds = new List<int>();
         foreach (var i in items)
         {
             var isStale = DateTime.UtcNow - i.CachedAtUtc > _cacheDuration;
             if (isStale)
-            {
-                staleCount++;
-                await RefreshItemCacheAsync(i);   
-            }
+                staleIds.Add(i.Id);
 
             models.Add(new CatalogItemModel
             {
@@ -53,30 +53,44 @@ public class CatalogsService : ICatalogsService
             });
         }
 
-        if (staleCount > 0)
-            await _db.SaveChangesAsync();
+        if (staleIds.Any())
+            _ = Task.Run(() => RefreshItemCachesAsync(staleIds));
 
         return models;
     }
 
-    private async Task RefreshItemCacheAsync(CatalogItem item)
+    private async Task RefreshItemCachesAsync(List<int> itemIds)
     {
-        var fresh = await _store.GetItemAsync(item.ExternalId);
-        if (fresh is null)
-        {
-            item.IsAvailable = false;
-            return;
-        }
+        // Because we're accessing the database in a thread, we need to make a new scope
+        using var scope = _scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var store = scope.ServiceProvider.GetRequiredService<IStoreClient>();
 
-        item.Title = fresh.Title;
-        item.Slug = fresh.Slug;
-        item.Description = fresh.Description;
-        item.ExternalPrice = fresh.Price;
-        item.CategoryId = fresh.Category.Id;
-        item.CategoryTitle = fresh.Category.Name;
-        item.Images = fresh.Images;
-        item.CachedAtUtc = DateTime.UtcNow;
-        item.IsAvailable = true;
+        var items = await db.CatalogItems.Where(i => itemIds.Contains(i.Id)).ToListAsync();
+
+        // Wait for all parallel cache updates to finish before saving
+        await Task.WhenAll(items.Select(async item =>
+        {
+            item.CachedAtUtc = DateTime.UtcNow;
+
+            var fresh = await store.GetItemAsync(item.ExternalId);
+            if (fresh is null)
+            {
+                item.IsAvailable = false;
+                return;
+            }
+            
+            item.Title = fresh.Title;
+            item.Slug = fresh.Slug;
+            item.Description = fresh.Description;
+            item.ExternalPrice = fresh.Price;
+            item.CategoryId = fresh.Category.Id;
+            item.CategoryTitle = fresh.Category.Name;
+            item.Images = fresh.Images;
+            item.IsAvailable = true;
+        }));
+
+        await db.SaveChangesAsync();
     }
 
     public async Task CreateCatalogItem(int orgId, int externalItemId, decimal catalogPrice)
