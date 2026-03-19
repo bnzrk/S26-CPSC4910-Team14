@@ -11,4 +11,5 @@ public class CatalogItemModel
     public decimal ExternalPrice { get; set; }
     public decimal Price { get; set; }
     public List<string> Images { get; set; } = new List<string>();
+    public bool IsAvailable { get; set; }
 }

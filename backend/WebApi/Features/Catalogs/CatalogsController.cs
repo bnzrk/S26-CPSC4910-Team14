@@ -84,4 +84,41 @@ public class CatalogsController : ControllerBase
 
         return BadRequest();
     }
+
+    [HttpDelete("{itemId}")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<ActionResult> DeleteCatalogItem(int orgId, int itemId)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        // Ensure item exists
+        var isItemInCatalog = await _db.Catalogs
+            .AsNoTracking()
+            .Where(c => c.SponsorOrgId == orgId)
+            .SelectMany(c => c.Items)
+            .AnyAsync(i => i.Id == itemId);
+        if (!isItemInCatalog)
+            return NotFound();
+
+        // Ensure access allowed if sponsor user
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor)
+        {
+            var isInOrg = await _db.SponsorUsers.AnyAsync(s => s.UserId == userId && s.SponsorOrgId == orgId);
+            if (!isInOrg)
+                return NotFound();
+        }
+
+        // Try delete
+        try
+        {
+            await _catalogs.DeleteCatalogItem(itemId);
+            return Ok();
+        }
+        catch { }
+
+        return BadRequest();
+    }
 }

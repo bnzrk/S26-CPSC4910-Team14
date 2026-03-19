@@ -7,5 +7,6 @@ public class StoreItemModel
     public required string Slug { get; set; }
     public required string Description { get; set; }
     public decimal Price { get; set; }
+    public required StoreCategoryModel Category { get; set; }
     public List<string> Images { get; set; } = new List<string>();
 }

@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Data.Entities;
+using System.Text.Json;
 
 namespace WebApi.Data;
 
@@ -45,6 +47,29 @@ public class AppDbContext : IdentityDbContext<User>
                 .HasOne(s => s.Catalog)
                 .WithOne(c => c.SponsorOrg)
                 .HasForeignKey<Catalog>(c => c.SponsorOrgId);
+
+        modelBuilder.Entity<CatalogItem>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(i => new { i.CatalogId, i.ExternalId })
+                .IsUnique();
+            e.Property(x => x.CatalogPrice)
+                .HasColumnType("decimal(18,2)");
+            e.Property(x => x.ExternalPrice)
+                .HasColumnType("decimal(18,2)");
+            e.Property(i => i.Images)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, default(JsonSerializerOptions)),
+                    v => JsonSerializer.Deserialize<List<string>>(v, default(JsonSerializerOptions))!
+                )
+                .Metadata.SetValueComparer(
+                    new ValueComparer<List<string>>(
+                        (c1, c2) => c1!.SequenceEqual(c2!),
+                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                        c => c.ToList()
+                    )
+                );
+        });
 
         modelBuilder.Entity<User>(u =>
         {
