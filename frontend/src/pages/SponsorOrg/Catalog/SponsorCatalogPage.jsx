@@ -6,6 +6,7 @@ import { useRemoveCatalogItem, useAddCatalogItem } from '@/api/catalog';
 import { useToast } from '@/components/Toast/ToastContext';
 import { useDebounce } from '@/helpers/debounce';
 import Modal from '@/components/Modal/Modal';
+import SearchInput from '@/components/SearchInput/SearchInput';
 import InlineInfo from '@/components/InlineInfo/InlineInfo';
 import CardHost from '@/components/CardHost/CardHost';
 import Card from '@/components/Card/Card';
@@ -20,7 +21,7 @@ import styles from './SponsorCatalogPage.module.scss';
 export default function SponsorCatalogPage()
 {
     const productLimit = 12;
-    const searchDebounceMs = 500;
+    const searchDebounceMs = 200;
 
     const { selectedOrgId } = useOrgContext();
     const { push } = useToast();
@@ -111,11 +112,14 @@ export default function SponsorCatalogPage()
                     </div>
                 </Card>
                 <Card title='Add Items'>
-                    <input
-                        type="text"
+                    <SearchInput 
+                        className={styles.productSearch}
                         onChange={(e) => setStoreSearchString(e.target.value)}
                     />
                     <div className={styles.grid}>
+                        {(!products || products.length < 1) &&
+                            <p>No results</p>
+                        }
                         {products &&
                             products.map((item) => (
                                 <ShopItem

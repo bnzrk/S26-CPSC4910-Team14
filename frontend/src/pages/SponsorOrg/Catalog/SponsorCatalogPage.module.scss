@@ -29,6 +29,10 @@
     }
 }
 
+.productSearch {
+    margin-bottom: $grid-2x;
+}
+
 @media only screen and (max-width : $small-width) {
     .grid {
         display: flex;
