@@ -15,6 +15,28 @@ export function useCatalog(orgId)
     });
 }
 
+export function useAddCatalogItem(orgId)
+{
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ externalItemId, price }) =>
+        {
+            const response = await apiFetch(`/sponsor-orgs/${orgId}/catalog`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ externalItemId, price}),
+            });
+            if (!response.ok) throw new Error('Failed to delete catalog item');
+        },
+        onSuccess: () =>
+        {
+            queryClient.invalidateQueries({ queryKey: ['catalog', orgId] });
+        },
+    });
+}
+
 export function useRemoveCatalogItem(orgId)
 {
     const queryClient = useQueryClient();

@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useProducts } from '@/api/store';
 import { useCatalog } from '@/api/catalog';
 import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
-import { useRemoveCatalogItem } from '@/api/catalog';
+import { useRemoveCatalogItem, useAddCatalogItem } from '@/api/catalog';
 import { useToast } from '@/components/Toast/ToastContext';
+import { useDebounce } from '@/helpers/debounce';
 import Modal from '@/components/Modal/Modal';
 import InlineInfo from '@/components/InlineInfo/InlineInfo';
 import CardHost from '@/components/CardHost/CardHost';
@@ -19,13 +20,14 @@ import styles from './SponsorCatalogPage.module.scss';
 export default function SponsorCatalogPage()
 {
     const productLimit = 12;
+    const searchDebounceMs = 500;
 
     const { selectedOrgId } = useOrgContext();
     const { push } = useToast();
 
-    const { data: products, isLoading: isProductsLoading, isError: isProductsError } = useProducts({ limit: productLimit, offset: 0 });
     const { data: catalog, isLoading: isCatalogLoading, isError: isCatalogError } = useCatalog(selectedOrgId);
 
+    const addCatalogItemMutation = useAddCatalogItem(selectedOrgId);
     const removeCatalogItemMutation = useRemoveCatalogItem(selectedOrgId);
 
     const modals = {
@@ -36,6 +38,13 @@ export default function SponsorCatalogPage()
     const [currentModal, setCurrentModal] = useState(null);
 
     const [selectedCatalogItemId, setSelectedCatalogItemId] = useState(null);
+    const [selectedExternalItemId, setSelectedExternalItemId] = useState(null);
+
+    const [storeSearchString, setStoreSearchString] = useState(null);
+
+    // Store search results
+    const debouncedSearch = useDebounce(storeSearchString, searchDebounceMs);
+    const { data: products, isLoading: isProductsLoading, isError: isProductsError } = useProducts({ filters: { title: debouncedSearch }, limit: productLimit, offset: 0 });
 
     function handleItemRemoveClick(id)
     {
@@ -44,7 +53,8 @@ export default function SponsorCatalogPage()
     }
 
     async function handleRemoveCatalogItem()
-    {        var id = selectedCatalogItemId;
+    {
+        var id = selectedCatalogItemId;
 
         try
         {
@@ -101,6 +111,10 @@ export default function SponsorCatalogPage()
                     </div>
                 </Card>
                 <Card title='Add Items'>
+                    <input
+                        type="text"
+                        onChange={(e) => setStoreSearchString(e.target.value)}
+                    />
                     <div className={styles.grid}>
                         {products &&
                             products.map((item) => (

@@ -12,16 +12,20 @@ export function useProducts({ filters, limit, offset })
             switch (key)
             {
                 case "title":
-                    params.append("title", value);
+                    if (value != null)
+                        params.append("title", value);
                     break;
                 case "category":
-                    params.append("category", value);
+                    if (value != null)
+                        params.append("category", value);
                     break;
                 case "priceMin":
-                    params.append("price_min", value);
+                    if (value != null)
+                        params.append("price_min", value);
                     break;
                 case "priceMax":
-                    params.append("price_max", value);
+                    if (value != null)
+                        params.append("price_max", value);
                     break;
                 default:
                     console.warn(`Unknown filter: ${key}`);
