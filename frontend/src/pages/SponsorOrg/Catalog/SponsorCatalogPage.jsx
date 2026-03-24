@@ -6,6 +6,7 @@ import { useRemoveCatalogItem, useAddCatalogItem } from '@/api/catalog';
 import { useToast } from '@/components/Toast/ToastContext';
 import { useDebounce } from '@/helpers/debounce';
 import Modal from '@/components/Modal/Modal';
+import AddCatalogItemModal from './components/AddCatalogItemModal';
 import SearchInput from '@/components/SearchInput/SearchInput';
 import InlineInfo from '@/components/InlineInfo/InlineInfo';
 import CardHost from '@/components/CardHost/CardHost';
@@ -47,6 +48,12 @@ export default function SponsorCatalogPage()
     const debouncedSearch = useDebounce(storeSearchString, searchDebounceMs);
     const { data: products, isLoading: isProductsLoading, isError: isProductsError } = useProducts({ filters: { title: debouncedSearch }, limit: productLimit, offset: 0 });
 
+    function handleItemAddClick(id)
+    {
+        setSelectedExternalItemId(id);
+        setCurrentModal(modals.addItem);
+    }
+
     function handleItemRemoveClick(id)
     {
         setSelectedCatalogItemId(id);
@@ -81,6 +88,11 @@ export default function SponsorCatalogPage()
                     <AsyncButton className={styles.button} text='Remove' color='warn' action={handleRemoveCatalogItem} />
                 </Modal.Buttons>
             </Modal>
+            <AddCatalogItemModal
+                isOpen={currentModal == modals.addItem}
+                onClose={() => setCurrentModal(null)}
+                item={products ? products.find((p) => p.id == selectedExternalItemId) : null}
+            />
             <CardHost title='Catalog' subtitle="Manage your orgnization's product catalog.">
                 <Card title='Catalog'>
                     <div className={styles.grid}>
@@ -111,10 +123,11 @@ export default function SponsorCatalogPage()
                         ))}
                     </div>
                 </Card>
-                <Card title='Add Items'>
+                <Card title='Available Products'>
                     <SearchInput 
                         className={styles.productSearch}
                         onChange={(e) => setStoreSearchString(e.target.value)}
+                        placeholder='Search products...'
                     />
                     <div className={styles.grid}>
                         {(!products || products.length < 1) &&
@@ -135,6 +148,7 @@ export default function SponsorCatalogPage()
                                             icon={AddIcon}
                                             color='primary'
                                             size='small'
+                                            onClick={() => handleItemAddClick(item.id)}
                                         />
                                     </div>
                                 </ShopItem>

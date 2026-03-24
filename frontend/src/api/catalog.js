@@ -20,13 +20,13 @@ export function useAddCatalogItem(orgId)
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({ externalItemId, price }) =>
+        mutationFn: async ({ externalItemId, catalogPrice }) =>
         {
             const response = await apiFetch(`/sponsor-orgs/${orgId}/catalog`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ externalItemId, price}),
+                body: JSON.stringify({ externalItemId, catalogPrice}),
             });
             if (!response.ok) throw new Error('Failed to delete catalog item');
         },
