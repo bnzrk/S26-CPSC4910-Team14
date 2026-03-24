@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useProducts } from '@/api/store';
 import { useCatalog } from '@/api/catalog';
 import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
@@ -29,7 +29,6 @@ export default function SponsorCatalogPage()
 
     const { data: catalog, isLoading: isCatalogLoading, isError: isCatalogError } = useCatalog(selectedOrgId);
 
-    const addCatalogItemMutation = useAddCatalogItem(selectedOrgId);
     const removeCatalogItemMutation = useRemoveCatalogItem(selectedOrgId);
 
     const modals = {
@@ -47,6 +46,19 @@ export default function SponsorCatalogPage()
     // Store search results
     const debouncedSearch = useDebounce(storeSearchString, searchDebounceMs);
     const { data: products, isLoading: isProductsLoading, isError: isProductsError } = useProducts({ filters: { title: debouncedSearch }, limit: productLimit, offset: 0 });
+
+    const productInCatalog = useMemo(() =>
+    {
+        if (!products || !catalog) return {};
+
+        return products.reduce((acc, item) =>
+        {
+            acc[item.id] = !catalog.some(
+                (catalogItem) => catalogItem.externalId == item.id
+            );
+            return acc;
+        }, {});
+    }, [products, catalog]);
 
     function handleItemAddClick(id)
     {
@@ -124,7 +136,7 @@ export default function SponsorCatalogPage()
                     </div>
                 </Card>
                 <Card title='Available Products'>
-                    <SearchInput 
+                    <SearchInput
                         className={styles.productSearch}
                         onChange={(e) => setStoreSearchString(e.target.value)}
                         placeholder='Search products...'
@@ -141,13 +153,15 @@ export default function SponsorCatalogPage()
                                     title={item.title}
                                     category={item.category.name}
                                     price={item.price}
-                                    available={true}
+                                    available={productInCatalog[item.id]}
                                 >
+                                    {!productInCatalog[item.id] && <InlineInfo className={styles.itemWarning} messages={['In Catalog']} />}
                                     <div className={styles.itemButtons}>
                                         <Button
                                             icon={AddIcon}
                                             color='primary'
                                             size='small'
+                                            disabled={!productInCatalog[item.id]}
                                             onClick={() => handleItemAddClick(item.id)}
                                         />
                                     </div>

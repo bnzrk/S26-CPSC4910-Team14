@@ -19,6 +19,10 @@
 
     &.unavailable {
         color: var(--color-text-tertiary);
+
+        .itemBody {
+            cursor: default;
+        }
     }
 }
 
