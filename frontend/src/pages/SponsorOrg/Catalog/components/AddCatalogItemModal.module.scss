@@ -5,6 +5,7 @@
     flex-direction: row;
     gap: $grid-2x;
     margin-top: $grid-2x;
+    padding-left: $grid-2x;
 }
 
 .placeholder {
@@ -70,6 +71,10 @@
             height: calc($grid-1x + $grid-half);
         }
     }
+}
+
+.priceInput {
+    margin-top: $grid-2x;
 }
 
 .thumbnail {

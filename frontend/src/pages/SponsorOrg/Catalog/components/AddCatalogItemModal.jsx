@@ -7,6 +7,7 @@ import { useToast } from '@/components/Toast/ToastContext';
 import Modal from '@/components/Modal/Modal';
 import Button from '@/components/Button/Button';
 import AsyncButton from '@/components/AsyncButton/AsyncButton';
+import UsdInput from '@/components/UsdInput/UsdInput';
 import ImageErrorIcon from '@/assets/icons/image-off.svg?react';
 import StarIcon from '@/assets/icons/star.svg?react';
 import styles from './AddCatalogItemModal.module.scss';
@@ -24,6 +25,8 @@ export default function AddCatalogItemModal({ item, showPlaceholder, onClose, is
     const { data: org, isLoading: isOrgLoading, isError: isOrgError } = useSponsorOrg();
 
     const addCatalogItemMutation = useAddCatalogItem(org ? org.id : null);
+
+    const [isPriceValid, setIsPriceValid] = useState(false);
 
     useEffect(() =>
     {
@@ -43,7 +46,7 @@ export default function AddCatalogItemModal({ item, showPlaceholder, onClose, is
 
     const handleClose = () =>
     {
-        setPrice('');
+        setPrice(null);
         onClose();
     }
 
@@ -93,16 +96,21 @@ export default function AddCatalogItemModal({ item, showPlaceholder, onClose, is
                                 <div className={clsx(styles.catalog, styles.price)}>
                                     <div>Catalog Price</div>
                                     <div className={styles.row}>
-                                        <div>{validDecimalString(price) ? formatUsd(price) : formatUsd(0)}</div>
+                                        <div>{isPriceValid ? formatUsd(price) : formatUsd(0)}</div>
                                         <div className={styles.points}>
                                             <StarIcon />
-                                            {validDecimalString(price) ? priceToPoints(normalizedDecimalString(price)) : 0}
+                                            {isPriceValid ? priceToPoints(normalizedDecimalString(price)) : 0}
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <label>Catalog Price:</label>
-                            <input value={price} type='text' onChange={(e) => setPrice(e.target.value)} />
+                            <UsdInput 
+                                className={styles.priceInput}
+                                value={price}
+                                label='Catalog Price' 
+                                onChange={(e) => setPrice(e.target.value)}
+                                onValidChange={(v) => setIsPriceValid(v)}
+                            />
                         </div>
                     }
                 </div>
@@ -114,7 +122,7 @@ export default function AddCatalogItemModal({ item, showPlaceholder, onClose, is
                     text='Add to Catalog'
                     color='primary'
                     action={handleAddCatalogItem}
-                    disabled={!validDecimalString(price)}
+                    disabled={!isPriceValid}
                 />
             </Modal.Buttons>
         </Modal>

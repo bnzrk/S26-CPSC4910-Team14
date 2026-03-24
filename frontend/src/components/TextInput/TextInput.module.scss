@@ -1,0 +1,95 @@
+@use '@/styles/globals' as *;
+
+.textInput {
+
+
+    margin-bottom: $grid-2x;
+}
+
+.inputWrapper {
+    position: relative;
+    border: 1px solid var(--color-border);
+    border-radius: $grid-half;
+    width: fit-content;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: $grid-half;
+
+    font-size: var(--font-size-medium);
+    background: var(--color-surface);
+    color: var(--color-text);
+
+    margin-bottom: $grid-2x;
+
+    &.withLabel {
+        padding-top: $grid-half;
+    }
+
+    &:not(.invalid):focus-within {
+        border-color: var(--color-accent);
+
+        svg {
+            color: var(--color-accent);
+        }
+
+        label {
+            color: var(--color-accent);
+        }
+    }
+
+    &.invalid {
+        border-color: var(--color-warn);
+
+        svg {
+            color: var(--color-warn);
+        }
+
+        label {
+            color: var(--color-warn);
+        }
+    }
+
+    input {
+        padding-left: $grid-half;
+        border: none;
+        outline: none;
+        background: none;
+    }
+
+    svg {
+        width: calc($grid-2x);
+        height: calc($grid-2x);
+        color: var(--color-text-secondary);
+
+        &.left {
+            margin-left: $grid-1x;
+        }
+
+        &.right {
+            margin-right: $grid-1x;
+        }
+    }
+
+    label {
+        position: absolute;
+        top: -10px;
+        left: 12px;
+        font-size: 12px;
+        color: #6b7280;
+        pointer-events: none;
+        background: white;
+        padding: 0 4px;
+    }
+}
+
+// label {
+//     padding: 0;
+//     font-size: 12px;
+//     font-weight: bold;
+//     color: var(--color-text-secondary);
+//     pointer-events: none;
+//     background: white;
+//     padding: 0 4px;
+// }

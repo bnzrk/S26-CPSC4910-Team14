@@ -61,5 +61,5 @@ export function validDecimalString(decimalString)
 
     if (normalized == '0' || normalized == '0.0') return false;
 
-    return true
+    return true;
 }

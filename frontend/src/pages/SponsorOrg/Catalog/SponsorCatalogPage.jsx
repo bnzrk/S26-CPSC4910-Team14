@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useProducts } from '@/api/store';
 import { useCatalog } from '@/api/catalog';
 import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
-import { useRemoveCatalogItem, useAddCatalogItem } from '@/api/catalog';
+import { useRemoveCatalogItem } from '@/api/catalog';
 import { useToast } from '@/components/Toast/ToastContext';
 import { useDebounce } from '@/helpers/debounce';
 import Modal from '@/components/Modal/Modal';
