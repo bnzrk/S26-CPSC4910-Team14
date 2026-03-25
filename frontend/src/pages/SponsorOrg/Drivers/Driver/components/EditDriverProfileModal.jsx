@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useEditDriverProfile } from "@/api/driver";
+import { useUpdateDriver } from "@/api/driver";
 import { useToast } from "@/components/Toast/ToastContext";
 import Modal from "@/components/Modal/Modal";
 import Button from "@/components/Button/Button";
@@ -8,7 +8,7 @@ import styles from './EditDriverProfileModal.module.scss';
 
 export default function EditDriverProfileModal({ isOpen, onClose, onSuccess, driver, ...other })
 {
-    const { push, clearAll } = useToast();
+    const { push } = useToast();
 
     const [email, setEmail] = useState(driver?.email);
     const [firstName, setFirstName] = useState(driver?.firstName);
@@ -27,13 +27,13 @@ export default function EditDriverProfileModal({ isOpen, onClose, onSuccess, dri
         return Promise.fail();
     }
 
-    const editProfile = useEditDriverProfile();
+    const editProfile = useUpdateDriver();
 
     async function submitForm()
     {
         try
         {
-            await editProfile.mutateAsync({ driverId: driver?.id, email, firstName, lastName });
+            await editProfile.mutateAsync({ id: driver?.id, email, firstName, lastName });
             resetForm();
             push({ type: 'success', message: 'Profile updated.' });
             onSuccess();

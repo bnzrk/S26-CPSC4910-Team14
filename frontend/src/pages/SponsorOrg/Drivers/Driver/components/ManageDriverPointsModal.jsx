@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useCreatePointTransaction } from "@/api/points";
-import { usePointRules } from "@/api/points";
+import { usePointRules } from "@/api/pointRules";
 import { useToast } from "@/components/Toast/ToastContext";
 import Modal from "@/components/Modal/Modal";
 import Button from "@/components/Button/Button";

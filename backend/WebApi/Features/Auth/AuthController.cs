@@ -4,6 +4,8 @@ using WebApi.Features.Auth.Models;
 using WebApi.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
 using WebApi.Data;
+using WebApi.Audit;
+using WebApi.Data.Enums;
 
 namespace WebApi.Features.Auth;
 
@@ -14,12 +16,14 @@ public class AuthController : ControllerBase
     private readonly AppDbContext _db;
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
+    private readonly IAuditLogger _auditLogger;
 
-    public AuthController(UserManager<User> userManager, SignInManager<User> signInManager, AppDbContext db)
+    public AuthController(UserManager<User> userManager, SignInManager<User> signInManager, AppDbContext db, IAuditLogger auditLogger)
     {
         _db = db;
         _userManager = userManager;
         _signInManager = signInManager;
+        _auditLogger = auditLogger;
     }
 
     [HttpPost("login")]
@@ -36,7 +40,12 @@ public class AuthController : ControllerBase
             lockoutOnFailure: false
         );
         if (!result.Succeeded)
-            return BadRequest("Invalid email or password.");
+        {
+            await _auditLogger.CreateLoginAuditLog(login.Email, false);
+            return BadRequest("Invalid email or password.");   
+        }
+
+        await _auditLogger.CreateLoginAuditLog(login.Email, true);
 
         user.LastLoginUtc = DateTime.UtcNow;
         await _db.SaveChangesAsync();
@@ -72,59 +81,79 @@ public class AuthController : ControllerBase
             User = new UserModel
             {
                 Id = user.Id,
-                Email = user.Email,
+                Email = user.Email!,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 UserType = user.UserType.ToString()
             }
         });
     }
+
     [HttpGet("profile")]
-[Authorize]
-public async Task<ActionResult> GetProfile()
-{
-    var user = await _userManager.GetUserAsync(User);
-    if (user is null) return Unauthorized();
-
-    return Ok(new UserModel
+    [Authorize]
+    public async Task<ActionResult> GetProfile()
     {
-        Id = user.Id,
-        Email = user.Email!,
-        FirstName = user.FirstName,
-        LastName = user.LastName,
-        UserType = user.UserType.ToString()
-    });
-}
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
 
-[HttpPatch("profile")]
-[Authorize]
-public async Task<ActionResult> UpdateProfile([FromBody] UpdateProfileModel request)
-{
-    var user = await _userManager.GetUserAsync(User);
-    if (user is null) return Unauthorized();
+        return Ok(new UserModel
+        {
+            Id = user.Id,
+            Email = user.Email!,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            UserType = user.UserType.ToString()
+        });
+    }
 
-    user.FirstName = request.FirstName;
-    user.LastName = request.LastName;
-    user.Email = request.Email;
-    user.UserName = request.Email;
-    user.NormalizedEmail = request.Email.ToUpper();
-    user.NormalizedUserName = request.Email.ToUpper();
+    [HttpPatch("profile")]
+    [Authorize]
+    public async Task<ActionResult> UpdateProfile([FromBody] UpdateProfileModel request)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
 
-    var result = await _userManager.UpdateAsync(user);
-    if (!result.Succeeded)
-        return BadRequest(result.Errors.Select(e => e.Description));
+        user.FirstName = request.FirstName;
+        user.LastName = request.LastName;
+        user.Email = request.Email;
+        user.UserName = request.Email;
+        user.NormalizedEmail = request.Email.ToUpper();
+        user.NormalizedUserName = request.Email.ToUpper();
 
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+            return BadRequest(result.Errors.Select(e => e.Description));
+
+        return Ok();
+    }
+
+    [HttpPatch("profile/password")]
+    [Authorize]
+    public async Task<ActionResult> UpdatePassword([FromBody] UpdatePasswordModel request)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
+
+        var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+        if (!result.Succeeded)
+        {
+            await _auditLogger.CreatePasswordChangeAuditLog(user.Id, user.Email!, PasswordChangeType.SelfUpdate, false);
+            return BadRequest(result.Errors.Select(e => e.Description));   
+        }
+
+    await _auditLogger.CreatePasswordChangeAuditLog(user.Id, user.Email!, PasswordChangeType.SelfUpdate, true);
     return Ok();
 }
 
-[HttpPatch("profile/password")]
+[HttpDelete("account")]
 [Authorize]
-public async Task<ActionResult> UpdatePassword([FromBody] UpdatePasswordModel request)
+public async Task<ActionResult> DeleteAccount()
 {
     var user = await _userManager.GetUserAsync(User);
     if (user is null) return Unauthorized();
 
-    var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+    await _signInManager.SignOutAsync();
+    var result = await _userManager.DeleteAsync(user);
     if (!result.Succeeded)
         return BadRequest(result.Errors.Select(e => e.Description));
 

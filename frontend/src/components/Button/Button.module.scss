@@ -5,7 +5,9 @@
     border: none;
     border-radius: 4px;
     height: var(--btn-height, $grid-5x);
-    font-size: 1rem;
+    font-size: var(--font-size-medium);
+    line-height: var(--line-height-medium);
+    text-align: center;
     cursor: pointer;
     display: flex;
     align-items: center;

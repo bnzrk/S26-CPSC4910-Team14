@@ -3,44 +3,42 @@ import { useCurrentUser } from "./currentUser";
 import { apiFetch } from "./apiFetch";
 import { USER_TYPES } from "../constants/userTypes";
 
-export function usePoints()
+export function usePoints(orgId)
 {
   const { data: user } = useCurrentUser();
   const isDriver = user?.userType === USER_TYPES.DRIVER;
 
   return useQuery({
-    queryKey: ["points", user?.id],
-    queryFn: async () => apiFetch('/drivers/points').then(r => r.json()),
-    enabled: !!user && isDriver,
-    retry: 1
-  });
-}
-
-export function usePointHistory(page, pageSize)
-{
-  return useQuery({
-    queryKey: ['driverPointTransactions', page, pageSize],
-    queryFn: async () =>
-      apiFetch(`/drivers/point-transactions?page=${page}&pageSize=${pageSize}`).then(r => r.json()),
+    queryKey: ["points", user?.id, orgId],
+    queryFn: async () => apiFetch(`/drivers/me/points/${orgId}`).then(r => r.json()),
+    enabled: !!user && !!orgId && isDriver,
+    retry: 1,
     placeholderData: keepPreviousData,
   });
 }
 
-export function usePointRules()
-{
-  const { data: user } = useCurrentUser();
+  export function usePointHistory({ orgId, page, pageSize, sign, from, to })
+  {
+    return useQuery({
+      queryKey: ['pointTransactions', orgId, page, pageSize, sign, from, to],
+      queryFn: async () =>
+      {
+        const params = new URLSearchParams({
+          page: String(page),
+          pageSize: String(pageSize),
+        });
 
-  return useQuery({
-    queryKey: ['pointRules', user?.id],
-    queryFn: async () =>
-    {
-      const response = await apiFetch(`/sponsor-orgs/point-rules`);
-      if (!response.ok) throw new Error('Failed to fetch point rules');
-      return response.json();
-    },
-    placeholderData: keepPreviousData,
-  });
-}
+        if (orgId) params.append('orgId', orgId);
+        if (sign) params.append('sign', sign);
+        if (from) params.append('from', from);
+        if (to) params.append('to', to);
+
+        const res = await apiFetch(`/drivers/me/point-transactions?${params.toString()}`);
+        return res.json();
+      },
+      placeholderData: keepPreviousData,
+    });
+  }
 
 export function useCreatePointTransaction()
 {

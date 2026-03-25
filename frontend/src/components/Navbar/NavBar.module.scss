@@ -14,6 +14,51 @@
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  gap: $grid-2x;
+
+  .button {
+    height: $grid-4x;
+    padding: calc($grid-1x + $grid-half);
+    font-size: calc($grid-1x + $grid-half + $grid-fourth);
+    line-height: calc($grid-2x + $grid-half);
+  }
+}
+
+.profile {
+  min-width: 32px;
+  min-height: 32px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  outline: none;
+  background: #cce2da;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  .profileIconWrapper {
+    position: relative;
+    top: 20%;
+  }
+
+  svg {
+    color: #518674;
+    width: 32px;
+    height: 32px;
+  }
+}
+
+.right,
+.left {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: $grid-1x;
+  align-items: center;
 }
 
 .points {
@@ -25,6 +70,8 @@
   flex-direction: row;
   align-items: center;
   gap: $grid-fourth;
+  min-width: calc($grid-5x + $grid-3x);
+  justify-content: flex-end ;
 
   svg {
     width: $grid-2x;
@@ -58,4 +105,10 @@
   font-size: $grid-3x;
   color: var(--color-accent-dark);
   letter-spacing: -0.5px;
+}
+
+@media only screen and (max-width : $small-width) {
+  .navbar {
+    padding: 0 $grid-2x;
+  }
 }

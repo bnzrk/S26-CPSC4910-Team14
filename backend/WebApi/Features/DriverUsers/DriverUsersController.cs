@@ -8,6 +8,7 @@ using WebApi.Features.DriverUsers.Models;
 using WebApi.Features.Users;
 using WebApi.Helpers.Pagination;
 using WebApi.Data.Enums;
+using WebApi.Audit;
 
 namespace WebApi.Features.DriverUsers;
 
@@ -18,15 +19,19 @@ public class DriverUsersController : ControllerBase
     private readonly AppDbContext _db;
     private readonly IUsersService _usersService;
     private readonly UserManager<User> _userManager;
+    private readonly IDriverUsersService _driversService;
+    private readonly IAuditLogger _auditLogger;
 
-    public DriverUsersController(AppDbContext db, IUsersService usersService, UserManager<User> userManager)
+    public DriverUsersController(AppDbContext db, IUsersService usersService, UserManager<User> userManager, IDriverUsersService driversService, IAuditLogger auditLogger)
     {
         _db = db;
         _usersService = usersService;
         _userManager = userManager;
+        _driversService = driversService;
+        _auditLogger = auditLogger;
     }
 
-    #region Account
+    #region Drivers
     [HttpPost("register")]
     [AllowAnonymous]
     public async Task<ActionResult> Register(RegisterDriverUserModel request)
@@ -42,135 +47,279 @@ public class DriverUsersController : ControllerBase
 
         return Created();
     }
-    #endregion
 
-    // TODO: Allow specifying driverId
-    [HttpGet("sponsor-org")]
+    [HttpGet("me")]
     [Authorize(Policy = PolicyNames.DriverOnly)]
-    public async Task<ActionResult> GetDriverSponsorOrg()
+    public async Task<ActionResult<DriverUserModel>> GetMe()
     {
-        var resolvedOrgId = await GetCurrentSponsorOrgId();
-        if (resolvedOrgId is null)
-            return BadRequest("Could not resolve sponor organization.");
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
 
-        var orgModel = await _db.SponsorOrgs
-            .AsNoTracking()
-            .Where(o => o.Id == resolvedOrgId)
-            .Select(o => new SponsorOrgModel
-            {
-                Id = o.Id,
-                SponsorName = o.SponsorName,
-                PointRatio = o.PointRatio
-            })
-            .FirstOrDefaultAsync();
+        var driver = await _driversService.GetByUserIdAsync(userId);
+        if (driver is null)
+            return Unauthorized();
 
-        if (orgModel is null)
-            return NotFound();
-
-        return Ok(orgModel);
+        return Ok(driver);
     }
 
+    [HttpPatch("{driverId}")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<ActionResult> UpdateDriverUser(int driverId, UpdateDriverUserModel request)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor && !await IsDriverInSponsorUserOrg(driverId, userId))
+            return NotFound();
+
+        var driver = await _db.DriverUsers.Where(d => d.Id == driverId).Include(d => d.User).SingleOrDefaultAsync();
+        if (driver is null)
+            return NotFound();
+
+        var driverUser = driver.User;
+
+        driverUser.FirstName = request.FirstName ?? driverUser.FirstName;
+        driverUser.LastName = request.LastName ?? driverUser.LastName;
+        driverUser.Email = request.Email ?? driverUser.Email;
+        driverUser.UserName = request.Email ?? driverUser.UserName;
+        driverUser.NormalizedEmail = driverUser.Email!.ToUpper();
+        driverUser.NormalizedUserName = request.Email!.ToUpper();
+        var result = await _userManager.UpdateAsync(driverUser);
+        if (!result.Succeeded)
+            return BadRequest(result.Errors.Select(e => e.Description));
+
+        return Ok();
+    }
+
+    [HttpGet("{driverId}")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<ActionResult<DriverUserModel>> GetDriverUser(int driverId)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor && !await IsDriverInSponsorUserOrg(driverId, userId))
+            return NotFound();
+
+        var driver = await _driversService.GetByIdAsync(driverId);
+        if (driver is null)
+            return NotFound();
+
+        return Ok(driver);
+    }
+    #endregion
+
+    #region Sponsor Orgs
+    [HttpGet("me/sponsor-orgs")]
+    [Authorize(Policy = PolicyNames.DriverOnly)]
+    public async Task<ActionResult<List<SponsorOrgModel>>> GetMySponsorOrgs()
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var orgs = await _driversService.GetSponsorOrgsFromUserIdAsync(userId);
+
+        return Ok(orgs);
+    }
+
+    [HttpGet("{driverId}/sponsor-orgs")]
+    [Authorize(Policy = PolicyNames.AdminOnly)]
+    public async Task<ActionResult<List<SponsorOrgModel>>> GetSponsorOrgs(int driverId)
+    {
+        var orgs = await _driversService.GetSponsorOrgsFromIdAsync(driverId);
+
+        return Ok(orgs);
+    }
+    #endregion
 
     #region Points
-    [HttpGet("{driverId}/points")]
-    [HttpGet("points")]
-    [Authorize]
-    public async Task<ActionResult> GetPoints(int? driverId)
+    [HttpGet("me/points")]
+    public async Task<ActionResult<List<PointsModel>>> GetAllMyPoints([FromQuery] int? orgId = null)
     {
-        var resolvedDriverId = driverId ?? await GetCurrentDriverId();
-        if (resolvedDriverId is null) return BadRequest();
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
 
-        var points = await _db.PointTransactions
-            .AsNoTracking()
-            .Where(p => p.DriverUserId == resolvedDriverId)
-            .OrderByDescending(p => p.TransactionDateUtc)
-            .Select(p => p.BalanceChange)
-            .SumAsync();
+        var points = await _driversService.GetPointsByUserIdAsync(userId, orgId);
+
         return Ok(points);
     }
 
-    [HttpGet("{driverId}/point-transactions")]
-    [HttpGet("point-transactions")]
-    [Authorize]
-    public async Task<ActionResult> GetPointTransactions(
-        int? driverId,
+    [HttpGet("me/points/{orgId}")]
+    [Authorize(Policy = PolicyNames.DriverOnly)]
+    public async Task<ActionResult<PointsModel>> GetMyPoints(int orgId)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var balance = await _db.DriverUsers
+            .AsNoTracking()
+            .Where(d => d.UserId == userId)
+            .SelectMany(d => d.PointTransactions)
+            .Where(t => t.SponsorOrgId == orgId)
+            .SumAsync(t => t.BalanceChange);
+
+        return Ok(new PointsModel
+        {
+            SponsorOrgId = orgId,
+            Balance = balance
+        });
+    }
+
+    [HttpGet("{driverId}/points/{orgId}")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<ActionResult<PointsModel>> GetPoints(int driverId, int orgId)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor)
+        {
+            var sponsorOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => (int?)s.SponsorOrgId).SingleOrDefaultAsync();
+            if (sponsorOrgId is null || sponsorOrgId != orgId)
+                return NotFound();
+        }
+
+        var balance = await _db.DriverUsers
+            .AsNoTracking()
+            .Where(d => d.Id == driverId)
+            .SelectMany(d => d.PointTransactions)
+            .Where(t => t.SponsorOrgId == orgId)
+            .SumAsync(t => t.BalanceChange);
+
+        return Ok(new PointsModel
+        {
+            SponsorOrgId = orgId,
+            Balance = balance
+        });
+    }
+
+    [HttpGet("{driverId}/points")]
+    [Authorize(Policy = PolicyNames.AdminOnly)]
+    public async Task<ActionResult<List<PointsModel>>> GetAllPoints(int driverId)
+    {
+        var points = await _driversService.GetPointsByIdAsync(driverId);
+
+        return Ok(points);
+    }
+
+    [HttpGet("me/point-transactions")]
+    [Authorize(Policy = PolicyNames.DriverOnly)]
+    public async Task<ActionResult<List<PointTransactionModel>>> GetMyPointTransactions(
+        [FromQuery] int? orgId = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? sign = null,
         [FromQuery] DateTime? from = null,
         [FromQuery] DateTime? to = null)
     {
-        Console.WriteLine(from);
-        Console.WriteLine(to);
-
-        var resolvedDriverId = driverId ?? await GetCurrentDriverId();
-        if (resolvedDriverId is null)
-            return BadRequest();
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
 
         if (from is not null && to is not null && from > to)
             return BadRequest("Invalid date range.");
 
-        // Normal EF query but don't await it.
-        var entityQuery = _db.PointTransactions
-            .AsNoTracking()
-            .Where(p => p.DriverUserId == resolvedDriverId);
+        var pagedResult = await _driversService.GetPointTransactionsByUserIdAsync(
+            userId,
+            orgId,
+            page,
+            pageSize,
+            sign,
+            from,
+            to);
 
-        // Filter by present query parameters
-        if (from is not null)
-            entityQuery = entityQuery.Where(p => p.TransactionDateUtc >= from);
-        if (to is not null)
-            entityQuery = entityQuery.Where(p => p.TransactionDateUtc < to);
-        if (sign is not null)
-        {
-            if (sign == "negative")
-                entityQuery = entityQuery.Where(p => p.BalanceChange < 0);
-            else if (sign == "positive")
-                entityQuery = entityQuery.Where(p => p.BalanceChange > 0);
-            else
-                return BadRequest("Invalid sign.");
-        }
-
-        // Finalize query
-        var modelQuery = entityQuery.OrderByDescending(p => p.TransactionDateUtc).Select(p => new PointTransactionModel
-        {
-            Id = p.Id,
-            DriverId = p.DriverUserId,
-            SponsorOrgId = p.SponsorOrgId,
-            BalanceChange = p.BalanceChange,
-            Reason = p.Reason,
-            TransactionDateUtc = p.TransactionDateUtc
-        });
-
-        // Perform pagination on the query and await the result.
-        var pageResult = await PagedResult.ToPagedResultAsync(modelQuery, page, pageSize);
-
-        return Ok(pageResult);
+        return Ok(pagedResult);
     }
 
+    [HttpGet("{driverId}/point-transactions")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<ActionResult<PagedResult<PointTransaction>>> GetPointTransactions(
+        int driverId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? sign = null,
+        [FromQuery] DateTime? from = null,
+        [FromQuery] DateTime? to = null,
+        [FromQuery] int? orgId = null)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var targetOrgId = orgId;
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor)
+        {
+            if (orgId.HasValue)
+                return BadRequest("Sponsors should not specify an org id.");
+
+            targetOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => s.SponsorOrgId).SingleOrDefaultAsync();
+            if (!targetOrgId.HasValue)
+                return NotFound();
+        }
+
+        if (targetOrgId.HasValue && !await IsDriverInOrg(driverId, targetOrgId.Value))
+            return NotFound();
+
+        if (from is not null && to is not null && from > to)
+            return BadRequest("Invalid date range.");
+
+        var pagedResult = await _driversService.GetPointTransactionsByIdAsync(
+            driverId,
+            targetOrgId,
+            page,
+            pageSize,
+            sign,
+            from,
+            to);
+
+        return Ok(pagedResult);
+    }
+
+    // TODO: Reduce the db calls here
     [HttpPost("{driverId}/point-transactions")]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
-    public async Task<ActionResult> CreatePointTransaction(int driverId, [FromBody] CreatePointTransactionModel request)
+    public async Task<ActionResult> CreatePointTransaction(
+        int driverId,
+        [FromBody] CreatePointTransactionModel request,
+        [FromQuery] int? orgId)
     {
-        // Ensure driver exists and is in an org.
-        var driver = await _db.DriverUsers.Where(d => d.Id == driverId).FirstOrDefaultAsync();
-        if (driver is null || driver.SponsorOrgId is null)
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var driver = await _db.DriverUsers.AsNoTracking().Where(d => d.Id == driverId).Include(d => d.User).SingleOrDefaultAsync();
+        if (driver is null)
+            return NotFound();
+
+        var targetOrgId = orgId;
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor)
         {
-            return BadRequest("Invalid driver.");
+            if (orgId.HasValue)
+                return BadRequest("Sponsors should not specify an org id.");
+
+            targetOrgId = await _db.SponsorUsers.AsNoTracking().Where(s => s.UserId == userId).Select(s => s.SponsorOrgId).SingleOrDefaultAsync();
         }
 
-        var targetOrgId = driver.SponsorOrgId;
-        if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
-        {
-            var resolvedOrgId = await GetCurrentSponsorOrgId();
-            if (driver.SponsorOrgId != resolvedOrgId)
-                return BadRequest("Cannot modify points for an organization you are not a sponsor for.");
+        if (!targetOrgId.HasValue || !await IsDriverInOrg(driverId, targetOrgId.Value))
+            return NotFound();
 
-            // Later when driver's can have multiple sponsors, we'll use the logged in sponsor org
-            targetOrgId = resolvedOrgId.Value;
-        }
-
-        if (targetOrgId is null)
-            return BadRequest("Could not resolve organization.");
+        var org = await _db.SponsorOrgs.AsNoTracking().Where(o => o.Id == targetOrgId).SingleOrDefaultAsync();
+        if (org is null)
+            return NotFound();
 
         var transaction = new PointTransaction
         {
@@ -181,106 +330,32 @@ public class DriverUsersController : ControllerBase
             TransactionDateUtc = DateTime.UtcNow
         };
         _db.PointTransactions.Add(transaction);
-        _db.SaveChanges();
-
-        return Ok();
-    }
-    #endregion
-
-    #region Profile
-    [HttpPatch("{driverId}/profile")]
-    [HttpPatch("profile")]
-    [Authorize]
-    public async Task<ActionResult> EditProfile(int? driverId, [FromBody] EditDriverProfileModel request)
-    {
-        var currentDriverId = await GetCurrentDriverId();
-        var isDriver = User.IsInRole(UserTypeRoles.Role(UserType.Driver));
-        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
-        var isAdmin = User.IsInRole(UserTypeRoles.Role(UserType.Admin));
-
-        // Get driver id from logged in driver or request if admin/sponsor
-        int? targetDriverId = isDriver ? currentDriverId : driverId;
-        if (targetDriverId is null)
-            return BadRequest("Driver id is required.");
-
-        // Ensure driver can't edit someone else
-        if (isDriver && driverId is not null && driverId != currentDriverId)
-            return BadRequest("Cannot edit profile for another driver.");
-
-        var driver = await _db.DriverUsers.Where(d => d.Id == targetDriverId).Include(d => d.User).FirstOrDefaultAsync();
-        if (driver is null)
-            return BadRequest("Driver not found.");
-
-        // Sponsors can only edit drivers in their org
-        if (isSponsor)
-        {
-            var sponsorOrgId = await GetCurrentSponsorOrgId();
-            if (sponsorOrgId != driver.SponsorOrgId)
-                return BadRequest("Cannot edit profile for driver of another organization.");
-        }
-
-        if (!isDriver && !isSponsor && !isAdmin)
-            return Forbid();
-
-        // Begin a transaction for the changes
-        await using var transaction = await _db.Database.BeginTransactionAsync();
-
-        if (request.Email is not null)
-        {
-            var result = await _userManager.SetEmailAsync(driver.User, request.Email);
-            if (!result.Succeeded)
-            {
-                return BadRequest(new
-                {
-                    Errors = result.Errors.Select(e => e.Description).ToArray()
-                });
-            }
-        }
-
-        if (request.FirstName is not null)
-            driver.User.FirstName = request.FirstName;
-
-        if (request.LastName is not null)
-            driver.User.LastName = request.LastName;
-
-        // Finalize the transaction if everything went okay
         await _db.SaveChangesAsync();
-        await transaction.CommitAsync();
+        await _auditLogger.CreatePointTransactionAuditLog(driver.Id, driver.User.Email!, org.Id, org.SponsorName, transaction.BalanceChange, transaction.Reason);
 
-        return Ok();
+        return Created();
     }
     #endregion
 
-    private async Task<int?> GetCurrentDriverId()
+    #region Helpers
+    private async Task<bool> IsDriverInSponsorUserOrg(int driverId, string sponsorUserId)
     {
-        var userId = _userManager.GetUserId(User);
+        return await _db.SponsorUsers
+            .AsNoTracking()
+            .AnyAsync(s =>
+                s.UserId == sponsorUserId &&
+                _db.DriverUsers.Any(d =>
+                    d.Id == driverId &&
+                    d.SponsorOrgs.Contains(s.SponsorOrg)));
+    }
+
+    private async Task<bool> IsDriverInOrg(int driverId, int orgId)
+    {
         return await _db.DriverUsers
             .AsNoTracking()
-            .Where(d => d.UserId == userId)
-            .Select(d => (int?)d.Id)
-            .FirstOrDefaultAsync();
+            .AnyAsync(d =>
+                d.Id == driverId &&
+                d.SponsorOrgs.Any(o => o.Id == orgId));
     }
-
-    private async Task<int?> GetCurrentSponsorOrgId()
-    {
-        var userId = _userManager.GetUserId(User);
-        if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
-        {
-            return await _db.SponsorUsers
-                .AsNoTracking()
-                .Where(s => s.UserId == userId)
-                .Select(s => (int?)s.SponsorOrgId)
-                .FirstOrDefaultAsync();
-        }
-        else if (User.IsInRole(UserTypeRoles.Role(UserType.Driver)))
-        {
-            return await _db.DriverUsers
-                .AsNoTracking()
-                .Where(d => d.UserId == userId)
-                .Select(d => (int?)d.SponsorOrgId)
-                .FirstOrDefaultAsync();
-        }
-
-        return null;
-    }
+    #endregion
 }

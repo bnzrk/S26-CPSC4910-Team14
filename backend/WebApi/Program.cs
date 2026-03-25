@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using WebApi.Audit;
 using WebApi.Data;
+using WebApi.Data.Entities;
 using WebApi.Data.Enums;
+using WebApi.Features.DriverUsers;
 using WebApi.Features.Users;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +23,7 @@ builder.Services.AddAuthorization(options =>
    options.AddPolicy(PolicyNames.AdminOrSponsor, p => p.RequireRole(UserTypeRoles.Role(UserType.Admin), UserTypeRoles.Role(UserType.Sponsor)));
    options.AddPolicy(PolicyNames.SponsorOnly, p => p.RequireRole(UserTypeRoles.Role(UserType.Sponsor)));
    options.AddPolicy(PolicyNames.DriverOnly, p => p.RequireRole(UserTypeRoles.Role(UserType.Driver)));
+   options.AddPolicy(PolicyNames.AdminOrDriver, p => p.RequireRole(UserTypeRoles.Role(UserType.Admin), UserTypeRoles.Role(UserType.Driver)));
 });
 AppBuilderExtensions.ConfigureAppCookie(builder);
 
@@ -29,10 +33,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
    options.UseMySQL(connectionString);
 });
+builder.Services.AddDbContext<AuditDbContext>(options =>
+{
+   options.UseMySQL(connectionString);
+});
 
 // Our services
 // .NET handles injecting all other services specified in the constructor for us
 builder.Services.AddScoped<IUsersService, UsersService>();
+builder.Services.AddScoped<IDriverUsersService, DriverUsersService>();
+builder.Services.AddScoped<IAuditLogger, AuditLogger>();
 
 var app = builder.Build();
 
