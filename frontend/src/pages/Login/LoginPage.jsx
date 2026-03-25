@@ -3,6 +3,7 @@ import { API_URL } from '../../config';
 import { queryClient } from '../../api/queryClient';
 import { useNavigate } from "react-router-dom";
 import styles from './LoginPage.module.scss';
+import { USER_TYPES } from '../../constants/userTypes';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -36,8 +37,15 @@ export default function LoginPage() {
         return;
       }
 
-      await queryClient.invalidateQueries(["currentUser"]);
-      navigate("/about");
+      const meRes = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+      const meData = await meRes.json();
+      const user = meData.user ?? null;
+      queryClient.setQueryData(["currentUser"], user);
+
+      const userType = user?.userType;
+      if (userType === USER_TYPES.SPONSOR) navigate("/org");
+      else if (userType === USER_TYPES.ADMIN) navigate("/admin");
+      else navigate("/points");
 
     } catch (err) {
       setErrorMsg('Unable to connect to the server. Please try again.');

@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useCurrentUser } from "./api/currentUser";
 import { USER_TYPES } from './constants/userTypes';
 import { OrgProvider } from './contexts/OrgContext/OrgContext';
@@ -21,15 +21,77 @@ import Navbar from './components/Navbar/NavBar';
 import ProfilePage from './pages/Profile/ProfilePage';
 import DriverApplicationPage from "./pages/DriverApplication/DriverApplicationPage";
 import SponsorDriverApplicationsPage from './pages/SponsorOrg/Applications/SponsorDriverApplicationsPage';
+import DriverLayout from './components/DriverLayout/DriverLayout';
 import './App.scss';
+
+function AppContent({ user, orgs })
+{
+  const location = useLocation();
+  const hideNavbar = location.pathname === '/points';
+
+  return (
+    <OrgProvider user={user} orgs={orgs}>
+      {!hideNavbar && <Navbar />}
+      <Routes>
+        <Route path="/" element={<AboutPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/login" element={
+          <GuestRoute>
+            <LoginPage />
+          </GuestRoute>
+        } />
+        <Route path="/register" element={
+          <GuestRoute>
+            <RegisterPage />
+          </GuestRoute>
+        } />
+        <Route path="/driver-application" element={
+          <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+            <DriverApplicationPage />
+          </ProtectedRoute>
+        } />
+        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/points" element={
+          <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+            <DriverLayout>
+              <PointsPage />
+            </DriverLayout>
+          </ProtectedRoute>
+        } />
+        <Route path='/org' element={
+          <ProtectedRoute allowedUserTypes={[USER_TYPES.SPONSOR]}>
+            <SponsorOrgLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<SponsorOrgPage />} />
+          <Route path="point-rules" element={<PointRulesPage />} />
+          <Route path="users" element={<SponsorUsersPage />} />
+          <Route path="drivers" element={<SponsorDriversPage />} />
+          <Route path="drivers/:driverId" element={<SponsorDriverPage />} />
+          <Route path="applications" element={<SponsorDriverApplicationsPage />} />
+        </Route>
+        <Route path="/admin" element={
+          <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
+            <AdminToolsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/profile" element={
+          <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER, USER_TYPES.SPONSOR, USER_TYPES.ADMIN]}>
+            <ProfilePage />
+          </ProtectedRoute>
+        } />
+      </Routes>
+    </OrgProvider>
+  );
+}
 
 export default function App()
 {
   const { data: user, isLoading } = useCurrentUser();
   const isDriver = user?.userType == USER_TYPES.DRIVER;
   const isSponsor = user?.userType == USER_TYPES.SPONSOR;
-  const { data: driverOrgs, isLoading: isDriverOrgsLoading, isError: isDriverOrgsError } = useDriverOrgs();
-  const { data: sponsorOrg, isLoading: isSponsorOrgLoading, isError: isSponsorOrgError } = useSponsorOrg();
+  const { data: driverOrgs } = useDriverOrgs();
+  const { data: sponsorOrg } = useSponsorOrg();
 
   const orgs = isDriver
     ? driverOrgs ?? []
@@ -40,58 +102,5 @@ export default function App()
   if (!isLoading)
     console.log(`Current user: ${JSON.stringify(user)}`);
 
-  return (
-    <>
-      <OrgProvider user={user} orgs={orgs}>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<AboutPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/login" element={
-            <GuestRoute>
-              <LoginPage />
-            </GuestRoute>
-          } />
-          <Route path="/register" element={
-            <GuestRoute>
-              <RegisterPage />
-            </GuestRoute>
-          } />
-          <Route path="/driver-application" element={
-            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
-              <DriverApplicationPage />
-            </ProtectedRoute>
-          } />
-          <Route path="*" element={<Navigate to="/" replace />} />
-          <Route path="/points" element={
-            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
-              <PointsPage />
-            </ProtectedRoute>
-          } />
-          <Route path='/org' element={
-            <ProtectedRoute allowedUserTypes={[USER_TYPES.SPONSOR]}>
-              <SponsorOrgLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<SponsorOrgPage />} />
-            <Route path="point-rules" element={<PointRulesPage />} />
-            <Route path="users" element={<SponsorUsersPage />} />
-            <Route path="drivers" element={<SponsorDriversPage />} />
-            <Route path="drivers/:driverId" element={<SponsorDriverPage />} />
-            <Route path="applications" element={<SponsorDriverApplicationsPage />} />
-          </Route>
-          <Route path="/admin" element={
-            <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
-              <AdminToolsPage />
-            </ProtectedRoute>
-          } />
-          <Route path="/profile" element={
-            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER, USER_TYPES.SPONSOR, USER_TYPES.ADMIN]}>
-              <ProfilePage />
-            </ProtectedRoute>
-          } />
-        </Routes>
-      </OrgProvider>
-    </>
-  );
+  return <AppContent user={user} orgs={orgs} />;
 }

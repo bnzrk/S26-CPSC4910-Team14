@@ -1,5 +1,5 @@
 .sidebar {
-  width: 260px;
+  width: 268px;
   min-height: 100vh;
   background: var(--color-sidebar-driver);
   display: flex;
@@ -8,22 +8,31 @@
   overflow-y: auto;
 }
 
+/* ── Logo ──────────────────────────────────── */
 .logoArea {
-  padding: 20px 20px 16px;
+  padding: 22px 20px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .logo {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.4px;
 }
 
+.logoDrive {
+  color: #fff;
+}
+
+.logoPoints {
+  color: var(--green-400);
+}
+
+/* ── Profile ───────────────────────────────── */
 .profile {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 10px;
   padding: 16px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -31,12 +40,12 @@
 .profileInfo {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   min-width: 0;
 }
 
 .profileName {
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: #fff;
   white-space: nowrap;
@@ -46,24 +55,40 @@
 
 .profileOrg {
   font-size: 0.75rem;
-  color: var(--color-sidebar-text);
+  color: rgba(255, 255, 255, 0.5);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+.rankBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--green-400);
+  background: var(--green-700);
+  padding: 2px 8px;
+  border-radius: 50px;
+  margin-top: 2px;
+  width: fit-content;
+}
+
+/* ── Points card area ─────────────────────── */
 .pointsArea {
-  padding: 16px 20px;
+  padding: 14px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* ── Navigation ───────────────────────────── */
 .nav {
   flex: 1;
-  padding: 12px 0;
+  padding: 10px 0;
 }
 
 .group {
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .groupLabel {
@@ -72,23 +97,26 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: var(--color-sidebar-text);
-  padding: 12px 20px 6px;
+  color: rgba(255, 255, 255, 0.3);
+  padding: 10px 16px 5px;
 }
 
 .navItem {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 9px 20px;
-  font-size: 0.875rem;
+  height: 38px;
+  padding: 0 16px;
+  font-size: 0.88rem;
   font-weight: 500;
-  color: var(--color-sidebar-text);
+  color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
+  border-radius: 8px;
+  margin: 0 8px;
   transition: background 0.15s, color 0.15s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.06);
     color: #fff;
   }
 
@@ -97,4 +125,17 @@
     color: #fff;
     font-weight: 600;
   }
+}
+
+.navItemInner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navIcon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  opacity: 0.8;
 }
