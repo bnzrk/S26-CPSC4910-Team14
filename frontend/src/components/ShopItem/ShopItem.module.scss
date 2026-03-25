@@ -90,6 +90,10 @@
     }
 }
 
+.unavailable .points {
+    opacity: 50%;
+}
+
 .footer {
     margin-top: auto;
     display: flex;

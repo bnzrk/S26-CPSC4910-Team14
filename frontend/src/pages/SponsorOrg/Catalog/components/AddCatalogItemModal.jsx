@@ -9,7 +9,6 @@ import AsyncButton from '@/components/AsyncButton/AsyncButton';
 import PointBadge from '@/components/PointBadge/PointBadge';
 import UsdInput from '@/components/UsdInput/UsdInput';
 import ImageErrorIcon from '@/assets/icons/image-off.svg?react';
-import StarIcon from '@/assets/icons/star.svg?react';
 import styles from './AddCatalogItemModal.module.scss';
 import clsx from 'clsx';
 
@@ -30,11 +29,15 @@ export default function AddCatalogItemModal({ item, showPlaceholder, onClose, is
 
     useEffect(() =>
     {
-        if (item)
+        if (!isOpen)
+        {
+            setPrice(null);
+        }
+        if (isOpen && item)
         {
             setPrice(numberToDecimalString(item.price));
         }
-    }, [item]);
+    }, [isOpen, item]);
 
     const priceToPoints = (decimalString) =>
     {
@@ -103,10 +106,10 @@ export default function AddCatalogItemModal({ item, showPlaceholder, onClose, is
                                     </div>
                                 </div>
                             </div>
-                            <UsdInput 
+                            <UsdInput
                                 className={styles.priceInput}
                                 value={price}
-                                label='Catalog Price' 
+                                label='Catalog Price'
                                 onChange={(e) => setPrice(e.target.value)}
                                 onValidChange={(v) => setIsPriceValid(v)}
                             />

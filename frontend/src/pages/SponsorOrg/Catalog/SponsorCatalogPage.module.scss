@@ -17,6 +17,7 @@
 .itemWarning {
     width: 100%;
     padding: $grid-half $grid-1x;
+    margin-top: $grid-half;
 }
 
 .catalogButton {
@@ -37,5 +38,9 @@
     .grid {
         display: flex;
         flex-direction: column;
+    }
+
+    .itemWarning {
+        margin-top: 0;
     }
 }

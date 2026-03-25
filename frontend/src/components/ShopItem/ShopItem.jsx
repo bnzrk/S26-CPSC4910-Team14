@@ -69,7 +69,7 @@ export default function ShopItem({ title, category, imageUrl, alt, price, points
                     </div>
                     <div className={styles.price}>
                         {formatUsd(price)}
-                        {points && <PointBadge points={points} />}
+                        {points && <PointBadge className={styles.points} points={points} />}
                     </div>
                 </div>
             </div>
