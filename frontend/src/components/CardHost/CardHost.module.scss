@@ -17,4 +17,10 @@
     margin: 0;
     color: var(--color-text-secondary)
   }
+
+  .hostHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
 }

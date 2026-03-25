@@ -1,0 +1,82 @@
+@use '@/styles/globals' as *;
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: $grid-2x;
+  padding: $grid-1x 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $grid-2x;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: $grid-half;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.input {
+  height: $grid-5x;
+  padding: 0 $grid-1x;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-surface);
+  width: 100%;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-accent);
+  }
+}
+
+.fieldError {
+  font-size: 0.8rem;
+  color: var(--color-warn);
+  margin: 0;
+}
+
+.successBlock {
+  display: flex;
+  flex-direction: column;
+  gap: $grid-2x;
+  padding: $grid-2x 0;
+}
+
+.successText {
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.textarea {
+  padding: $grid-1x;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-family: var(--font-body);  // ADD THIS
+  color: var(--color-text);
+  background: var(--color-surface);
+  width: 100%;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-accent);
+  }
+}
