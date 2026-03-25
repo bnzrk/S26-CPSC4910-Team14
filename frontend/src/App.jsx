@@ -15,6 +15,7 @@ import SponsorOrgPage from '@/pages/SponsorOrg/Index/SponsorOrgPage';
 import SponsorUsersPage from './pages/SponsorOrg/Users/SponsorUsersPage';
 import SponsorDriversPage from './pages/SponsorOrg/Drivers/Index/SponsorDriversPage';
 import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPage';
+import ShopPage from './pages/Shop/ShopPage';
 import RegisterPage from './pages/Register/RegisterPage';
 import AdminToolsPage from './pages/Admin/Tools/AdminToolsPage';
 import Navbar from './components/Navbar/NavBar';
@@ -67,6 +68,11 @@ export default function App()
           <Route path="/points" element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
               <PointsPage />
+            </ProtectedRoute>
+          } />
+          <Route path='/shop' element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+              <ShopPage />
             </ProtectedRoute>
           } />
           <Route path='/org' element={

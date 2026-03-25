@@ -63,12 +63,12 @@
     height: auto;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
 
     .title {
         font-family: var(--font-body);
         font-size: $grid-2x;
         font-weight: bold;
+        overflow: hidden;
     }
 
     .subtitle {

@@ -4,7 +4,7 @@ import PointBadge from "@/components/PointBadge/PointBadge";
 import styles from "./ShopItem.module.scss";
 import clsx from 'clsx';
 
-export default function ShopItem({ title, category, imageUrl, alt, price, points, available, className, children, onClick, ...other })
+export default function ShopItem({ title, category, imageUrl, alt, price, points, available = true, className, children, onClick, ...other })
 {
     const formatUsd = (price) =>
         new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
