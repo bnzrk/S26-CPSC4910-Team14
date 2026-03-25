@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useProducts } from '@/api/store';
 import { useCatalog } from '@/api/catalog';
 import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
+import { useSponsorOrg } from '@/api/sponsorOrg';
 import { useRemoveCatalogItem } from '@/api/catalog';
 import { useToast } from '@/components/Toast/ToastContext';
 import { useDebounce } from '@/helpers/debounce';
@@ -28,6 +29,7 @@ export default function SponsorCatalogPage()
     const { push } = useToast();
 
     const { data: catalog, isLoading: isCatalogLoading, isError: isCatalogError } = useCatalog(selectedOrgId);
+    const { data: org, isLoading: isOrgLoading, isError: isOrgError } = useSponsorOrg();
 
     const removeCatalogItemMutation = useRemoveCatalogItem(selectedOrgId);
 
@@ -116,6 +118,7 @@ export default function SponsorCatalogPage()
                                 category={item.categoryTitle}
                                 price={item.price}
                                 available={item.isAvailable}
+                                points={org ? item.price / org.pointRatio : undefined}
                             >
                                 {!item.isAvailable && <InlineInfo className={styles.itemWarning} messages={['Unavailable']} type='warning' />}
                                 <div className={styles.itemButtons}>

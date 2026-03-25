@@ -79,6 +79,10 @@
     .price {
         font-weight: bold;
         color: var(--color-accent);
+        display: flex;
+        flex-direction: row;
+        gap: $grid-1x;
+        align-items: center;
 
         .unavailable & {
             color: var(--color-text-tertiary);

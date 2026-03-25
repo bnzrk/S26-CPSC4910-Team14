@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import InlineInfo from '@/components/InlineInfo/InlineInfo';
 import ImageErrorIcon from "@/assets/icons/image-off.svg?react";
+import PointBadge from "@/components/PointBadge/PointBadge";
 import styles from "./ShopItem.module.scss";
 import clsx from 'clsx';
 
-export default function ShopItem({ title, category, imageUrl, alt, price, available, className, children, onClick, ...other })
+export default function ShopItem({ title, category, imageUrl, alt, price, points, available, className, children, onClick, ...other })
 {
     const formatUsd = (price) =>
         new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
@@ -67,7 +67,10 @@ export default function ShopItem({ title, category, imageUrl, alt, price, availa
                         <div className={styles.title}>{title}</div>
                         <div className={styles.subtitle}>{category}</div>
                     </div>
-                    <div className={styles.price}>{formatUsd(price)}</div>
+                    <div className={styles.price}>
+                        {formatUsd(price)}
+                        {points && <PointBadge points={points} />}
+                    </div>
                 </div>
             </div>
             <div className={styles.footer}>
