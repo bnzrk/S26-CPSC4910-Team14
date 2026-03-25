@@ -1,0 +1,224 @@
+.section {
+  background: var(--white);
+  padding: 96px 6%;
+}
+
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+}
+
+/* Left: mockup */
+.mockupWrap {
+  /* nothing extra needed */
+}
+
+.mockup {
+  background: var(--gray-100);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.userRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.userName {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.userMeta {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+}
+
+.pointsBanner {
+  background: linear-gradient(163deg, var(--green-700) 0%, var(--green-500) 100%);
+  border-radius: var(--radius-md);
+  padding: 28px;
+  text-align: center;
+  color: #fff;
+}
+
+.ptsValue {
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.ptsLabel {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+.ptsSub {
+  font-size: 0.75rem;
+  opacity: 0.65;
+}
+
+.actList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.actRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0 16px;
+  height: 64px;
+}
+
+.actIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 17px;
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.actInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.actRoute {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.actMeta {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.actPts {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+/* Right: text */
+.right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sectionLabel {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-accent);
+  margin: 0;
+}
+
+.heading {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: var(--color-text);
+  margin: 0;
+  font-family: inherit;
+  line-height: 1.12;
+}
+
+.subhead {
+  font-size: 1.05rem;
+  color: var(--color-text-secondary);
+  line-height: 1.68;
+  margin: 0;
+}
+
+.bulletList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bulletItem {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.checkIcon {
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.bulletBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bulletTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.bulletDesc {
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}

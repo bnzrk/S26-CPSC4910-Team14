@@ -1,0 +1,21 @@
+.card {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.value {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: var(--green-400);
+  line-height: 1;
+}
+
+.label {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.7);
+}

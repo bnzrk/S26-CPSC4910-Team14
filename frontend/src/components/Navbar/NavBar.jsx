@@ -52,20 +52,18 @@ export default function Navbar()
         </Link>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         {!isLoading && (
           isLoggedIn ? (
             <>
               <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>{currentUser.email}</span>
 
-              {/* Adding the role title to navbar */}
               {roleBadge && (
                 <span className={clsx(styles.roleBadge, roleBadge.style)}>
                   {roleBadge.label}
                 </span>
               )}
 
-              {/* Only driver users should show points */}
               {isDriver && (
                 <span
                   className={styles.points}
@@ -87,8 +85,8 @@ export default function Navbar()
             </>
           ) : (
             <>
-              <Button className={styles.button} onClick={() => navigate("/login")} text='Login' />
-              <Button className={styles.button} onClick={() => navigate("/register")} text='Register' color='primary' />
+              <Button className={styles.button} onClick={() => navigate("/login")} text='Sign In' color='pill' />
+              <Button className={styles.button} onClick={() => navigate("/register")} text='Get Started' color='pillWhite' />
             </>
           )
         )}

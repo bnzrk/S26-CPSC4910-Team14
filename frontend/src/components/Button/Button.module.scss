@@ -28,7 +28,7 @@
         color: var(--color-surface);
 
         &:hover:not(:disabled) {
-            background-color: #075338;
+            background-color: var(--green-700);
         }
     }
 
@@ -48,6 +48,56 @@
 
         &:hover:not(:disabled) {
             background-color: #9d2a36;
+        }
+    }
+
+    /* Pill shape modifier — applies to pill* variants */
+    &.pill,
+    &.pillWhite,
+    &.outline,
+    &.ghost {
+        border-radius: var(--radius-pill);
+        height: 41px;
+    }
+
+    &.pill {
+        background-color: var(--color-accent);
+        color: var(--color-surface);
+
+        &:hover:not(:disabled) {
+            background-color: var(--green-700);
+        }
+    }
+
+    &.pillWhite {
+        background: var(--white);
+        color: var(--color-accent-dark);
+        box-shadow: var(--shadow-cta);
+        border: none;
+
+        &:hover:not(:disabled) {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+    }
+
+    &.outline {
+        background: transparent;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        color: #fff;
+
+        &:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    }
+
+    &.ghost {
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        color: #fff;
+
+        &:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.28);
         }
     }
 

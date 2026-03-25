@@ -1,24 +1,4 @@
-:root {
-  --color-bg: #FAFBFC;
-  --color-text: #0C1117;
-  --color-text-secondary: #57606A;
-  --color-text-tertiary: #8B949E;
-  --color-accent: #0A6847;
-  --color-caution: #e6b11f;
-  --color-warn: #c94552;
-  --color-success: #3FB180;
-  --color-accent-light: #E6F4ED;
-  --color-surface: #FFFFFF;
-  --color-border: #D1D9E0;
-  --font-heading: 'Playfair Display', Georgia, serif;
-  --font-body: 'DM Sans', system-ui, sans-serif;
-
-  font-family: var(--font-body);
-  line-height: 1.5;
-  font-weight: 400;
-  color: var(--color-text);
-  background-color: var(--color-bg);
-}
+@use './styles/tokens';
 
 *,
 *::before,
@@ -26,12 +6,19 @@
   box-sizing: border-box;
 }
 
+:root {
+  font-family: var(--font-body);
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+}
+
 body {
   margin: 0;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
   line-height: 1.2;
 }
 
