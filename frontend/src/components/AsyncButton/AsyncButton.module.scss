@@ -40,6 +40,15 @@
         }
     }
 
+    &.warn {
+        background: var(--color-warn);
+        color: var(--color-surface);
+
+        &:hover:not(:disabled) {
+            background-color: #9d2a36;
+        }
+    }
+
     &.failed {
         background: var(--color-warn);
         color: var(--color-surface);
@@ -50,7 +59,8 @@
         }
     }
 
-    &.failed svg, .loader {
+    &.failed svg,
+    .loader {
         position: absolute;
         left: 50%;
         top: 50%;

@@ -77,6 +77,15 @@ export default function Navbar()
                   {isDriver && (
                     <>
                       <OrgSelector />
+
+                    {/*Link to points page will always be visible, even if not connected to a sponsor */}
+                      <Button
+                        className={styles.button}
+                        onClick={() => navigate("/points")}
+                        text='Points'
+                        icon={StarIcon}
+                      />
+
                       {points &&
                         <span
                           className={styles.points}

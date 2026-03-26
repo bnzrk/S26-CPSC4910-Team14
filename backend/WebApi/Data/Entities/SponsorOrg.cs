@@ -12,4 +12,5 @@ public class SponsorOrg
     public ICollection<PointRule> PointRules { get; set; } = new List<PointRule>();
     [Precision(18, 4)]
     public decimal PointRatio { get; set; } = 0.01m;
+    public Catalog Catalog { get; set; } = null!;
 }

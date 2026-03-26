@@ -1,0 +1,14 @@
+@use '@/styles/globals' as *;
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: $grid-2x;
+}
+
+@media only screen and (max-width : $small-width) {
+    .grid {
+        display: flex;
+        flex-direction: column;
+    }
+}

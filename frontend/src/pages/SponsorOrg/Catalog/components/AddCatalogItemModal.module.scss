@@ -1,0 +1,94 @@
+@use '@/styles/globals' as *;
+
+.item {
+    display: flex;
+    flex-direction: row;
+    gap: $grid-2x;
+    margin-top: $grid-2x;
+    padding-left: $grid-2x;
+}
+
+.placeholder {
+    background: var(--color-border);
+    border-radius: $grid-1x;
+    aspect-ratio: 1 / 1;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: var(--color-text-secondary);
+
+    opacity: 60%;
+}
+
+.details {
+    display: flex;
+    flex-direction: column;
+    gap: $grid-1x;
+
+    .title {
+        font-family: var(--font-body);
+        font-size: $grid-2x;
+        font-weight: bold;
+        color: var(--color-text);
+    }
+
+    .subtitle {
+        font-size: calc($grid-1x + $grid-half);
+        color: var(--color-text-tertiary);
+    }
+}
+
+.prices {
+    display: flex;
+    flex-direction: row;
+    gap: $grid-2x;
+
+    .catalog {
+        color: var(--color-accent);
+        font-weight: bold;
+    }
+
+    .row {
+        display: flex;
+        flex-direction: row;
+        gap: $grid-1x;
+    }
+
+    .points {
+        background: var(--color-accent);
+        color: var(--color-surface);
+        padding: 0 calc($grid-1x + $grid-half);
+        border-radius: 999px;
+        display: flex;
+        flex-direction: row;
+        gap: $grid-half;
+        align-items: center;
+
+        svg {
+            width: calc($grid-1x + $grid-half);
+            height: calc($grid-1x + $grid-half);
+        }
+    }
+}
+
+.priceInput {
+    margin-top: $grid-2x;
+}
+
+.thumbnail {
+    position: relative;
+    display: block;
+    width: 100%;
+    max-width: calc($grid-1x * 13);
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+
+    img {
+        aspect-ratio: 1 / 1;
+        border-radius: $grid-1x;
+        width: 100%;
+        height: auto;
+    }
+}
