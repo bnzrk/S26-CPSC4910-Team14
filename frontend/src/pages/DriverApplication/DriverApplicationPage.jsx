@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "@/api/apiFetch";
 import CardHost from "@/components/CardHost/CardHost";
 import Card from "@/components/Card/Card";
@@ -7,8 +7,16 @@ import Button from "@/components/Button/Button";
 import InlineErrors from "@/components/InlineErrors/InlineErrors";
 import styles from "./DriverApplicationPage.module.scss";
 
+const COMPANY_TRUCK = {
+  truckMake: "Company",
+  truckModel: "Fleet Vehicle",
+  truckYear: new Date().getFullYear().toString(),
+  licensePlate: "COMPANY"
+};
+
 export default function DriverApplicationPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [formData, setFormData] = useState({
     orgId: "",
@@ -22,15 +30,46 @@ export default function DriverApplicationPage() {
     truckMake: "",
     truckModel: "",
     truckYear: "",
-    licensePlate: ""
+    licensePlate: "",
+    isCompanyTruck: false
   });
 
   const [formErrors, setFormErrors] = useState({});
   const [submitStatus, setSubmitStatus] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Pre-fill orgId from URL if present
+  useEffect(() => {
+    const orgIdFromUrl = searchParams.get("orgId");
+    if (orgIdFromUrl) {
+      updateField("orgId", orgIdFromUrl);
+    }
+  }, []);
+
   function updateField(field, value) {
     setFormData(prev => ({ ...prev, [field]: value }));
+  }
+
+  function handleCompanyTruckToggle(checked) {
+    if (checked) {
+      setFormData(prev => ({
+        ...prev,
+        isCompanyTruck: true,
+        truckMake: COMPANY_TRUCK.truckMake,
+        truckModel: COMPANY_TRUCK.truckModel,
+        truckYear: COMPANY_TRUCK.truckYear,
+        licensePlate: COMPANY_TRUCK.licensePlate
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        isCompanyTruck: false,
+        truckMake: "",
+        truckModel: "",
+        truckYear: "",
+        licensePlate: ""
+      }));
+    }
   }
 
   function validateForm() {
@@ -46,12 +85,14 @@ export default function DriverApplicationPage() {
     if (!/^\d{10}$/.test(formData.phoneNumber))
       errors.phoneNumber = "Phone number must be 10 digits";
 
-    const year = parseInt(formData.truckYear, 10);
-    if (isNaN(year) || year < 1980 || year > new Date().getFullYear())
-      errors.truckYear = "Please enter a valid truck year";
+    if (!formData.isCompanyTruck) {
+      const year = parseInt(formData.truckYear, 10);
+      if (isNaN(year) || year < 1980 || year > new Date().getFullYear())
+        errors.truckYear = "Please enter a valid truck year";
 
-    if (formData.licensePlate.length < 5 || formData.licensePlate.length > 8)
-      errors.licensePlate = "License plate must be 5–8 characters";
+      if (formData.licensePlate.length < 5 || formData.licensePlate.length > 8)
+        errors.licensePlate = "License plate must be 5–8 characters";
+    }
 
     if (formData.birthday) {
       const birthDate = new Date(formData.birthday);
@@ -80,12 +121,10 @@ export default function DriverApplicationPage() {
       phoneNumber: formData.phoneNumber || null,
       birthday: formData.birthday || null,
       previousEmployee: formData.previousEmployee,
-      previousEmployeeDuration: formData.previousEmployeeDuration || null,
-      previousDrivingExperience: formData.previousDrivingExperience || null,
       truckMake: formData.truckMake || null,
       truckModel: formData.truckModel || null,
       truckYear: formData.truckYear ? parseInt(formData.truckYear, 10) : null,
-      licensePlate: formData.licensePlate || null
+      licensePlate: formData.isCompanyTruck ? null : (formData.licensePlate || null)
     };
 
     try {
@@ -102,7 +141,7 @@ export default function DriverApplicationPage() {
         orgId: "", firstName: "", lastName: "", phoneNumber: "",
         birthday: "", previousEmployee: false, previousEmployeeDuration: "",
         previousDrivingExperience: "", truckMake: "",
-        truckModel: "", truckYear: "", licensePlate: ""
+        truckModel: "", truckYear: "", licensePlate: "", isCompanyTruck: false
       });
       setFormErrors({});
     } catch (err) {
@@ -221,7 +260,6 @@ export default function DriverApplicationPage() {
         {/* Previous Experience */}
         <Card title="Previous Experience">
           <div className={styles.fieldGroup}>
-
             <div className={styles.field}>
               <label className={styles.checkboxLabel}>
                 <input
@@ -262,61 +300,82 @@ export default function DriverApplicationPage() {
                 rows={3}
               />
             </div>
-
           </div>
         </Card>
 
         {/* Truck Information */}
         <Card title="Truck Information">
           <div className={styles.fieldGroup}>
-            <div className={styles.row}>
-              <div className={styles.field}>
-                <label className={styles.label}>Make</label>
+            <div className={styles.field}>
+              <label className={styles.checkboxLabel}>
                 <input
-                  className={styles.input}
-                  type="text"
-                  value={formData.truckMake}
-                  onChange={e => updateField("truckMake", e.target.value)}
-                  placeholder="Freightliner"
+                  type="checkbox"
+                  className={styles.checkbox}
+                  checked={formData.isCompanyTruck}
+                  onChange={e => handleCompanyTruckToggle(e.target.checked)}
                 />
-              </div>
-              <div className={styles.field}>
-                <label className={styles.label}>Model</label>
-                <input
-                  className={styles.input}
-                  type="text"
-                  value={formData.truckModel}
-                  onChange={e => updateField("truckModel", e.target.value)}
-                  placeholder="Cascadia"
-                />
-              </div>
+                This is a company provided truck
+              </label>
             </div>
 
-            <div className={styles.row}>
-              <div className={styles.field}>
-                <label className={styles.label}>Year</label>
-                <input
-                  className={styles.input}
-                  type="text"
-                  value={formData.truckYear}
-                  onChange={e => updateField("truckYear", e.target.value)}
-                  placeholder="2020"
-                />
-                {formErrors.truckYear && <p className={styles.fieldError}>{formErrors.truckYear}</p>}
-              </div>
-              <div className={styles.field}>
-                <label className={styles.label}>License Plate</label>
-                <input
-                  className={styles.input}
-                  type="text"
-                  maxLength={8}
-                  value={formData.licensePlate}
-                  onChange={e => updateField("licensePlate", e.target.value)}
-                  placeholder="ABC1234"
-                />
-                {formErrors.licensePlate && <p className={styles.fieldError}>{formErrors.licensePlate}</p>}
-              </div>
-            </div>
+            {!formData.isCompanyTruck && (
+              <>
+                <div className={styles.row}>
+                  <div className={styles.field}>
+                    <label className={styles.label}>Make</label>
+                    <input
+                      className={styles.input}
+                      type="text"
+                      value={formData.truckMake}
+                      onChange={e => updateField("truckMake", e.target.value)}
+                      placeholder="Freightliner"
+                    />
+                  </div>
+                  <div className={styles.field}>
+                    <label className={styles.label}>Model</label>
+                    <input
+                      className={styles.input}
+                      type="text"
+                      value={formData.truckModel}
+                      onChange={e => updateField("truckModel", e.target.value)}
+                      placeholder="Cascadia"
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.row}>
+                  <div className={styles.field}>
+                    <label className={styles.label}>Year</label>
+                    <input
+                      className={styles.input}
+                      type="text"
+                      value={formData.truckYear}
+                      onChange={e => updateField("truckYear", e.target.value)}
+                      placeholder="2020"
+                    />
+                    {formErrors.truckYear && <p className={styles.fieldError}>{formErrors.truckYear}</p>}
+                  </div>
+                  <div className={styles.field}>
+                    <label className={styles.label}>License Plate</label>
+                    <input
+                      className={styles.input}
+                      type="text"
+                      maxLength={8}
+                      value={formData.licensePlate}
+                      onChange={e => updateField("licensePlate", e.target.value)}
+                      placeholder="ABC1234"
+                    />
+                    {formErrors.licensePlate && <p className={styles.fieldError}>{formErrors.licensePlate}</p>}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {formData.isCompanyTruck && (
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
+                Truck information will be provided by the company.
+              </p>
+            )}
           </div>
         </Card>
 

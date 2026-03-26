@@ -135,7 +135,7 @@ public class DriverApplicationsController : ControllerBase
 
     [HttpPost("{applicationId}/reject")]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
-    public async Task<ActionResult> RejectApplication(int applicationId)
+    public async Task<ActionResult> RejectApplication(int applicationId, [FromBody] RejectApplicationModel? request)
     {
         var authResult = await GetAuthorizedApplication(applicationId);
         if (authResult.Result is not null)
@@ -145,6 +145,7 @@ public class DriverApplicationsController : ControllerBase
 
         application.Status = ApplicationStatus.Rejected;
         application.IsActive = false;
+        application.RejectionReason = request?.Reason;
 
         await _db.SaveChangesAsync();
 
