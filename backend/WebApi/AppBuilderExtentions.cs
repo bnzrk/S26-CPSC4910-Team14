@@ -8,12 +8,14 @@ public static class AppBuilderExtensions
     // Allow cross site requests with our frontend.
     public static void AddCors(WebApplicationBuilder builder, string devCorsPolicyName, string releaseCorsPolicyName)
     {
+        var externalStoreApi = builder.Configuration["ExternalStore:BaseUrl"] ?? "";
+
         builder.Services.AddCors(options =>
         {
             options.AddPolicy(releaseCorsPolicyName, policy =>
             {
                 policy
-                .WithOrigins("https://team14.cpsc4911.com", "https://api.escuelajs.co")
+                .WithOrigins("https://team14.cpsc4911.com", externalStoreApi)
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
@@ -21,7 +23,7 @@ public static class AppBuilderExtensions
             options.AddPolicy(devCorsPolicyName, policy =>
             {
                 policy
-                .WithOrigins("http://localhost:5173", "https://api.escuelajs.co")
+                .WithOrigins("http://localhost:5173", externalStoreApi)
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();

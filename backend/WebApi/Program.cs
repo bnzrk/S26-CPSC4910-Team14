@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WebApi.Audit;
 using WebApi.Data;
-using WebApi.Data.Entities;
 using WebApi.Data.Enums;
 using WebApi.Features.Catalogs;
 using WebApi.Features.DriverUsers;
@@ -41,7 +40,7 @@ builder.Services.AddDbContext<AuditDbContext>(options =>
 });
 
 // External store client
-var externalStoreApi = "https://api.escuelajs.co/api/v1/";
+var externalStoreApi = builder.Configuration["ExternalStore:BaseUrl"] ?? "";
 builder.Services.AddHttpClient<IStoreClient, StoreClient>(client =>
 {
     client.BaseAddress = new Uri(externalStoreApi);
