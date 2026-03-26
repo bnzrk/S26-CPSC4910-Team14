@@ -20,4 +20,5 @@ public class DriverApplication
     public string? LicensePlate { get; set; }
     public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
     public bool IsActive { get; set; }
+    public string? RejectionReason { get; set; }
 }
