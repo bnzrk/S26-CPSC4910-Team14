@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApi.Data;
 
@@ -10,9 +11,11 @@ using WebApi.Data;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260318211543_RequiredCatalogOrgId")]
+    partial class RequiredCatalogOrgId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -234,61 +237,6 @@ namespace WebApi.Migrations
                         .IsUnique();
 
                     b.ToTable("Catalogs");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.CatalogItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CachedAtUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("CatalogId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("CatalogPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CategoryTitle")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("ExternalId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("ExternalPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Images")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<bool>("IsAvailable")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("Slug")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CatalogId", "ExternalId")
-                        .IsUnique();
-
-                    b.ToTable("CatalogItems");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.DriverApplication", b =>
@@ -891,17 +839,6 @@ namespace WebApi.Migrations
                     b.Navigation("SponsorOrg");
                 });
 
-            modelBuilder.Entity("WebApi.Data.Entities.CatalogItem", b =>
-                {
-                    b.HasOne("WebApi.Data.Entities.Catalog", "Catalog")
-                        .WithMany("Items")
-                        .HasForeignKey("CatalogId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Catalog");
-                });
-
             modelBuilder.Entity("WebApi.Data.Entities.DriverApplication", b =>
                 {
                     b.HasOne("WebApi.Data.Entities.DriverUser", "DriverUser")
@@ -1019,11 +956,6 @@ namespace WebApi.Migrations
                     b.Navigation("TeamMembers");
 
                     b.Navigation("TechStackItems");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.Catalog", b =>
-                {
-                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.DriverUser", b =>

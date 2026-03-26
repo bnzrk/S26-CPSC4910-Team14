@@ -1,0 +1,46 @@
+@use '@/styles/globals' as *;
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: $grid-2x;
+}
+
+.itemButtons {
+    margin-top: $grid-half;
+    display: flex;
+    flex-direction: row;
+    gap: $grid-half;
+    color: black;
+}
+
+.itemWarning {
+    width: 100%;
+    padding: $grid-half $grid-1x;
+    margin-top: $grid-half;
+}
+
+.catalogButton {
+    width: fit-content;
+    padding: 0;
+    height: 
+
+    svg {
+        padding-left: $grid-1x;
+    }
+}
+
+.productSearch {
+    margin-bottom: $grid-2x;
+}
+
+@media only screen and (max-width : $small-width) {
+    .grid {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .itemWarning {
+        margin-top: 0;
+    }
+}

@@ -1,0 +1,17 @@
+@use '@/styles/globals' as *;
+
+.badge {
+    background: var(--color-accent);
+    color: var(--color-surface);
+    padding: 0 calc($grid-1x + $grid-half);
+    border-radius: 999px;
+    display: flex;
+    flex-direction: row;
+    gap: $grid-half;
+    align-items: center;
+}
+
+.icon {
+    width: calc($grid-1x + $grid-half);
+    height: calc($grid-1x + $grid-half);
+}

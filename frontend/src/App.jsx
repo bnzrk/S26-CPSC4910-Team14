@@ -15,12 +15,14 @@ import SponsorOrgPage from '@/pages/SponsorOrg/Index/SponsorOrgPage';
 import SponsorUsersPage from './pages/SponsorOrg/Users/SponsorUsersPage';
 import SponsorDriversPage from './pages/SponsorOrg/Drivers/Index/SponsorDriversPage';
 import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPage';
+import ShopPage from './pages/Shop/ShopPage';
 import RegisterPage from './pages/Register/RegisterPage';
 import AdminToolsPage from './pages/Admin/Tools/AdminToolsPage';
 import Navbar from './components/Navbar/NavBar';
 import ProfilePage from './pages/Profile/ProfilePage';
 import DriverApplicationPage from "./pages/DriverApplication/DriverApplicationPage";
 import SponsorDriverApplicationsPage from './pages/SponsorOrg/Applications/SponsorDriverApplicationsPage';
+import SponsorCatalogPage from './pages/SponsorOrg/Catalog/SponsorCatalogPage';
 import './App.scss';
 
 export default function App()
@@ -68,6 +70,11 @@ export default function App()
               <PointsPage />
             </ProtectedRoute>
           } />
+          <Route path='/shop' element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+              <ShopPage />
+            </ProtectedRoute>
+          } />
           <Route path='/org' element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.SPONSOR]}>
               <SponsorOrgLayout />
@@ -79,6 +86,7 @@ export default function App()
             <Route path="drivers" element={<SponsorDriversPage />} />
             <Route path="drivers/:driverId" element={<SponsorDriverPage />} />
             <Route path="applications" element={<SponsorDriverApplicationsPage />} />
+            <Route path="catalog" element={<SponsorCatalogPage />} />
           </Route>
           <Route path="/admin" element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>

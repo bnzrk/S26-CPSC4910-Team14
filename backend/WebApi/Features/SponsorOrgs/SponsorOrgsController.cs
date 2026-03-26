@@ -103,6 +103,8 @@ public class SponsorOrgsController : ControllerBase
         if (request.PointRatio is not null)
             org.PointRatio = request.PointRatio.Value;
 
+        org.Catalog = new Catalog();
+        
         _db.SponsorOrgs.Add(org);
         _db.SaveChanges();
 

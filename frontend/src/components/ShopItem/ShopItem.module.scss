@@ -1,0 +1,135 @@
+@use '@/styles/globals' as *;
+
+.itemBody {
+    display: flex;
+    flex-direction: column;
+    gap: $grid-half;
+    cursor: pointer;
+}
+
+.shopItem {
+    background: var(--color-surface);
+    color: var(--color-text);
+    padding: 0;
+    min-width: calc($grid-1x * 15);
+    max-width: calc($grid-1x * 24);
+
+    display: flex;
+    flex-direction: column;
+
+    &.unavailable {
+        color: var(--color-text-tertiary);
+
+        .itemBody {
+            cursor: default;
+        }
+    }
+}
+
+.placeholder {
+    background: var(--color-border);
+    border-radius: $grid-1x;
+    aspect-ratio: 1 / 1;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: var(--color-text-secondary);
+
+    opacity: 60%;
+}
+
+.thumbnail {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+
+    .unavailable & {
+        opacity: 60%;
+    }
+
+    img {
+        aspect-ratio: 1 / 1;
+        border-radius: $grid-1x;
+        width: 100%;
+        height: auto;
+    }
+}
+
+.details {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+
+    .title {
+        font-family: var(--font-body);
+        font-size: $grid-2x;
+        font-weight: bold;
+        overflow: hidden;
+    }
+
+    .subtitle {
+        font-size: calc($grid-1x + $grid-half);
+        color: var(--color-text-tertiary);
+    }
+
+    .price {
+        font-weight: bold;
+        color: var(--color-accent);
+        display: flex;
+        flex-direction: row;
+        gap: $grid-1x;
+        align-items: center;
+
+        .unavailable & {
+            color: var(--color-text-tertiary);
+        }
+    }
+}
+
+.unavailable .points {
+    opacity: 50%;
+}
+
+.footer {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+@media only screen and (max-width : $small-width) {
+    .shopItem {
+        width: 100%;
+        max-width: none;
+
+        &:not(:last-child) {
+            padding-bottom: $grid-1x;
+            border-bottom: 1px solid var(--color-border);
+        }
+    }
+
+    .itemBody {
+        max-width: none;
+        aspect-ratio: auto;
+        flex-direction: row;
+        gap: $grid-2x;
+        margin-bottom: $grid-1x;
+    }
+
+    .thumbnail {
+        max-width: calc($grid-1x * 13);
+    }
+
+    .details {
+        width: 100%;
+    }
+
+    .footer {
+        margin-top: 0;
+        align-items: flex-end;
+    }
+}
