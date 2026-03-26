@@ -219,13 +219,85 @@ namespace WebApi.Migrations
                     b.ToTable("AdminUsers");
                 });
 
+            modelBuilder.Entity("WebApi.Data.Entities.Catalog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("SponsorOrgId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SponsorOrgId")
+                        .IsUnique();
+
+                    b.ToTable("Catalogs");
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.CatalogItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CachedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("CatalogId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("CatalogPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CategoryTitle")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("ExternalId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("ExternalPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Images")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CatalogId", "ExternalId")
+                        .IsUnique();
+
+                    b.ToTable("CatalogItems");
+                });
+
             modelBuilder.Entity("WebApi.Data.Entities.DriverApplication", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<DateOnly?>("Birthday")
+                    b.Property<DateTime?>("Birthday")
                         .HasColumnType("date");
 
                     b.Property<int?>("DriverUserId")
@@ -808,6 +880,28 @@ namespace WebApi.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("WebApi.Data.Entities.Catalog", b =>
+                {
+                    b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
+                        .WithOne("Catalog")
+                        .HasForeignKey("WebApi.Data.Entities.Catalog", "SponsorOrgId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SponsorOrg");
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.CatalogItem", b =>
+                {
+                    b.HasOne("WebApi.Data.Entities.Catalog", "Catalog")
+                        .WithMany("Items")
+                        .HasForeignKey("CatalogId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Catalog");
+                });
+
             modelBuilder.Entity("WebApi.Data.Entities.DriverApplication", b =>
                 {
                     b.HasOne("WebApi.Data.Entities.DriverUser", "DriverUser")
@@ -927,6 +1021,11 @@ namespace WebApi.Migrations
                     b.Navigation("TechStackItems");
                 });
 
+            modelBuilder.Entity("WebApi.Data.Entities.Catalog", b =>
+                {
+                    b.Navigation("Items");
+                });
+
             modelBuilder.Entity("WebApi.Data.Entities.DriverUser", b =>
                 {
                     b.Navigation("PointTransactions");
@@ -934,6 +1033,9 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Data.Entities.SponsorOrg", b =>
                 {
+                    b.Navigation("Catalog")
+                        .IsRequired();
+
                     b.Navigation("PointRules");
 
                     b.Navigation("SponsorUsers");

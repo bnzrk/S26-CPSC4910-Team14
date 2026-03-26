@@ -32,7 +32,7 @@ export default function Button({ children, text = '', color, icon: Icon, size, d
 
   return <button {...other} type={type} className={clsx(className, styles.buttonSimple, colorClass, sizeClass)} disabled={disabled} onClick={onClick}>
     {Icon && <Icon className={styles.icon}/>}
-    <span>{text}</span>
+    {text && <span>{text}</span>}
     {children}
   </button>
 }

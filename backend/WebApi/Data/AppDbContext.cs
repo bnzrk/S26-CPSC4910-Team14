@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Data.Entities;
+using System.Text.Json;
 
 namespace WebApi.Data;
 
@@ -32,16 +34,48 @@ public class AppDbContext : IdentityDbContext<User>
     // Applications
     public DbSet<DriverApplication> DriverApplications { get; set; }
 
+    // Catalogs
+    public DbSet<Catalog> Catalogs { get; set; }
+    public DbSet<CatalogItem> CatalogItems { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Table relationships
+        modelBuilder.Entity<SponsorOrg>()
+                .HasOne(s => s.Catalog)
+                .WithOne(c => c.SponsorOrg)
+                .HasForeignKey<Catalog>(c => c.SponsorOrgId);
+
+        modelBuilder.Entity<CatalogItem>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(i => new { i.CatalogId, i.ExternalId })
+                .IsUnique();
+            e.Property(x => x.CatalogPrice)
+                .HasColumnType("decimal(18,2)");
+            e.Property(x => x.ExternalPrice)
+                .HasColumnType("decimal(18,2)");
+            e.Property(i => i.Images)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, default(JsonSerializerOptions)),
+                    v => JsonSerializer.Deserialize<List<string>>(v, default(JsonSerializerOptions))!
+                )
+                .Metadata.SetValueComparer(
+                    new ValueComparer<List<string>>(
+                        (c1, c2) => c1!.SequenceEqual(c2!),
+                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                        c => c.ToList()
+                    )
+                );
+        });
 
         modelBuilder.Entity<User>(u =>
         {
             u.Property(e => e.CreatedDateUtc).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
         });
 
-        // Table relationships
         modelBuilder.Entity<AdminUser>(b =>
         {
             b.HasKey(a => a.Id);

@@ -85,7 +85,7 @@ export default function SponsorOrgPage()
                 </Card>
                 <Card title='Manage Organization'>
                     <ListItem icon={UsersIcon} label='Users' showChevron={true} onClick={() => navigate("users")}></ListItem>
-                    <ListItem icon={HandbagIcon} label='Catalog' showChevron={true}></ListItem>
+                    <ListItem icon={HandbagIcon} label='Catalog' showChevron={true} onClick={() => navigate("catalog")}></ListItem>
                     <ListItem icon={ListChecksIcon} label='Point Rules' showChevron={true} onClick={() => navigate("point-rules")}></ListItem>
                     <ListItem icon={TruckIcon} label='Drivers' showChevron={true} onClick={() => navigate("drivers")}></ListItem>
                     <ListItem icon={FileIcon} label='Driver Applications' showChevron={true} onClick={() => navigate("applications")}></ListItem>
