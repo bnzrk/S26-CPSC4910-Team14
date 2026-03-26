@@ -24,6 +24,8 @@ import DriverApplicationPage from "./pages/DriverApplication/DriverApplicationPa
 import SponsorDriverApplicationsPage from './pages/SponsorOrg/Applications/SponsorDriverApplicationsPage';
 import DriverLayout from './components/DriverLayout/DriverLayout';
 import SponsorCatalogPage from './pages/SponsorOrg/Catalog/SponsorCatalogPage';
+import ManageDriversPage from './pages/SponsorOrg/ManageDrivers/ManageDriversPage';
+import OrganizationsPage from './pages/Organizations/OrganizationsPage';
 import './App.scss';
 
 function AppContent({ user, orgs })
@@ -32,6 +34,7 @@ function AppContent({ user, orgs })
   const hideNavbar =
     location.pathname === '/points' ||
     location.pathname === '/shop' ||
+    location.pathname === '/organizations' ||
     location.pathname.startsWith('/org');
 
   return (
@@ -70,6 +73,13 @@ function AppContent({ user, orgs })
             </DriverLayout>
           </ProtectedRoute>
         } />
+        <Route path='/organizations' element={
+          <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+            <DriverLayout>
+              <OrganizationsPage />
+            </DriverLayout>
+          </ProtectedRoute>
+        } />
         <Route path='/org' element={
           <ProtectedRoute allowedUserTypes={[USER_TYPES.SPONSOR]}>
             <SponsorOrgLayout />
@@ -82,6 +92,7 @@ function AppContent({ user, orgs })
           <Route path="drivers/:driverId" element={<SponsorDriverPage />} />
           <Route path="applications" element={<SponsorDriverApplicationsPage />} />
           <Route path="catalog" element={<SponsorCatalogPage />} />
+          <Route path="manage-drivers" element={<ManageDriversPage />} />
         </Route>
         <Route path="/admin" element={
           <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>

@@ -10,11 +10,13 @@ import PointRulesSection from './sections/PointRulesSection';
 import styles from './SponsorDashboardPage.module.scss';
 
 export default function SponsorDashboardPage() {
-  const { data: drivers = [] } = useSponsorOrgDrivers();
+  const { data: driversPage } = useSponsorOrgDrivers();
+  const drivers = driversPage?.items ?? [];
+  const driverCount = driversPage?.totalCount ?? drivers.length;
 
   return (
     <div className={styles.dashboard}>
-      <SponsorStatCards driverCount={drivers.length} />
+      <SponsorStatCards driverCount={driverCount} />
 
       <div className={styles.mainGrid}>
         <div className={styles.leftCol}>

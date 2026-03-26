@@ -1,9 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import Avatar from '../Avatar/Avatar';
 import BudgetWidget from '../BudgetWidget/BudgetWidget';
 import NavBadge from '../NavBadge/NavBadge';
-import { useSponsorOrg, useSponsorOrgDrivers } from '@/api/sponsorOrg';
+import { useSponsorOrg } from '@/api/sponsorOrg';
 import { useCurrentUser } from '@/api/currentUser';
+import { apiFetch } from '@/api/apiFetch';
 import styles from './SponsorSidebar.module.scss';
 import clsx from 'clsx';
 
@@ -12,13 +14,13 @@ const NAV_GROUPS = [
     label: 'Overview',
     items: [
       { label: 'Dashboard', to: '/org' },
-      { label: 'Analytics', to: '/org/analytics' },
     ],
   },
   {
     label: 'Fleet',
     items: [
-      { label: 'Drivers', to: '/org/drivers', badgeKey: 'driverCount' },
+      { label: 'Manage Drivers', to: '/org/manage-drivers', badgeKey: 'pendingApps' },
+      { label: 'Manage Employees', to: '/org/users' },
       { label: 'Deliveries', to: '/org/deliveries' },
       { label: 'Routes', to: '/org/routes' },
     ],
@@ -27,7 +29,6 @@ const NAV_GROUPS = [
     label: 'Rewards',
     items: [
       { label: 'Point Rules', to: '/org/point-rules', badge: 8 },
-      { label: 'Challenges', to: '/org/challenges' },
       { label: 'Redemptions', to: '/org/redemptions' },
     ],
   },
@@ -44,8 +45,6 @@ export default function SponsorSidebar() {
   const { pathname } = useLocation();
   const { data: org } = useSponsorOrg();
   const { data: user } = useCurrentUser();
-  const { data: drivers } = useSponsorOrgDrivers();
-
   const orgInitials = org?.sponsorName
     ? org.sponsorName.slice(0, 2).toUpperCase()
     : 'SP';
@@ -53,7 +52,15 @@ export default function SponsorSidebar() {
   const userName = user?.firstName && user?.lastName
     ? `${user.firstName} ${user.lastName}`
     : user?.email ?? '';
-  const driverCount = drivers?.length ?? 0;
+  const { data: applications = [] } = useQuery({
+    queryKey: ['sponsor-applications'],
+    queryFn: () => apiFetch('/applications').then(r => r.json()),
+    staleTime: 30_000,
+  });
+  const pendingApps = applications.filter(a => {
+    const s = a.status;
+    return s === 0 || (typeof s === 'string' && s.toLowerCase() === 'pending');
+  }).length;
 
   return (
     <aside className={styles.sidebar}>
@@ -76,7 +83,7 @@ export default function SponsorSidebar() {
           <div key={group.label} className={styles.group}>
             <span className={styles.groupLabel}>{group.label}</span>
             {group.items.map(item => {
-              const count = item.badgeKey === 'driverCount' ? driverCount : item.badge;
+              const count = item.badgeKey === 'pendingApps' ? pendingApps : item.badge ?? 0;
               const isActive = pathname === item.to ||
                 (item.to !== '/org' && pathname.startsWith(item.to));
               return (

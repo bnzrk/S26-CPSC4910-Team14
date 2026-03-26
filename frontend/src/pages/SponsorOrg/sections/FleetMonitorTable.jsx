@@ -29,7 +29,9 @@ function getDriverId(driver) {
 
 export default function FleetMonitorTable() {
   const [activeTab, setActiveTab] = useState('All');
-  const { data: drivers = [] } = useSponsorOrgDrivers();
+  const { data: driversPage } = useSponsorOrgDrivers();
+  const drivers = driversPage?.items ?? [];
+  const driverCount = driversPage?.totalCount ?? drivers.length;
 
   const rows = drivers.slice(0, 6).map((driver, i) => ({
     driver,
@@ -45,7 +47,7 @@ export default function FleetMonitorTable() {
       <div className={styles.header}>
         <div>
           <h3 className={styles.title}>Fleet Monitor</h3>
-          <p className={styles.subtitle}>{drivers.length} drivers · live activity</p>
+          <p className={styles.subtitle}>{driverCount} drivers · live activity</p>
         </div>
         <div className={styles.headerRight}>
           <div className={styles.tabs}>
@@ -118,8 +120,8 @@ export default function FleetMonitorTable() {
       </div>
 
       <div className={styles.footer}>
-        <span className={styles.showing}>Showing {filtered.length} of {drivers.length} drivers</span>
-        <Link to="/org/drivers" className={styles.viewAll}>View all {drivers.length} →</Link>
+        <span className={styles.showing}>Showing {filtered.length} of {driverCount} drivers</span>
+        <Link to="/org/drivers" className={styles.viewAll}>View all {driverCount} →</Link>
       </div>
     </div>
   );

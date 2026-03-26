@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Avatar from '../Avatar/Avatar';
 import PointCard from '../PointCard/PointCard';
 import NavBadge from '../NavBadge/NavBadge';
@@ -14,6 +14,7 @@ const NAV_GROUPS = [
     label: 'Main',
     items: [
       { label: 'Dashboard', to: '/points', icon: 'grid' },
+      { label: 'Organizations', to: '/organizations', icon: 'building' },
       { label: 'My Points', to: '/points', icon: 'coins' },
       { label: 'Deliveries', to: '/points', icon: 'truck', badge: 3 },
       { label: 'Challenges', to: '/points', icon: 'zap' },
@@ -93,11 +94,18 @@ function NavIcon({ name }) {
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
       </svg>
     ),
+    building: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="4" y="2" width="16" height="20"/><path d="M9 22v-4h6v4"/>
+        <path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01"/>
+      </svg>
+    ),
   };
   return icons[name] ?? null;
 }
 
 export default function DriverSidebar() {
+  const { pathname } = useLocation();
   const { data: user } = useCurrentUser();
   const { selectedOrgId } = useOrgContext();
   const { data: points } = usePoints(selectedOrgId);
@@ -154,7 +162,7 @@ export default function DriverSidebar() {
               <Link
                 key={item.label}
                 to={item.to}
-                className={clsx(styles.navItem, item.label === 'Dashboard' && styles.active)}
+                className={clsx(styles.navItem, pathname === item.to && styles.active)}
               >
                 <span className={styles.navItemInner}>
                   <span className={styles.navIcon}><NavIcon name={item.icon} /></span>
