@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { usePoints, usePointHistory } from '../../api/points';
 import { useDriverOrgs } from '@/api/driver';
 import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
@@ -7,6 +8,7 @@ import PointCard from '@/components/PointCard/PointCard';
 import CardHost from '@/components/CardHost/CardHost';
 import InlineErrors from '@/components/InlineErrors/InlineErrors';
 import InlineInfo from '@/components/InlineInfo/InlineInfo';
+import Button from '@/components/Button/Button';
 import styles from './PointsPage.module.scss';
 import clsx from 'clsx';
 
@@ -28,6 +30,7 @@ function normalizeDateTimeLocal(value)
 
 export default function PointsPage()
 {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const pageSize = 5;
 
@@ -85,7 +88,18 @@ export default function PointsPage()
 
   return (
     <main className={styles.page}>
-      <CardHost title={'Points'} subtitle={'Point balance and history'}>
+      {/* headerRight prop with apply button */}
+      <CardHost
+        title={'Points'}
+        subtitle={'Point balance and history'}
+        headerRight={
+          <Button color="primary" onClick={() => navigate('/driver-application')}
+          style={{ fontFamily: 'var(--font-heading)' }}
+          >
+            + Apply to a Sponsor
+          </Button>
+        }
+      >
         <PointCard points={points ? points.balance : 0}></PointCard>
 
         {hasError && (
