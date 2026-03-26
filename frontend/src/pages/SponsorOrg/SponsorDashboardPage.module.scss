@@ -1,0 +1,34 @@
+@use '@/styles/globals' as *;
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: $grid-3x;
+}
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: $grid-3x;
+  align-items: start;
+
+  @media (max-width: 1280px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.leftCol {
+  display: flex;
+  flex-direction: column;
+  gap: $grid-3x;
+}
+
+.rightCol {
+  display: flex;
+  flex-direction: column;
+  gap: $grid-3x;
+}
+
+.bottomRow {
+  width: 100%;
+}

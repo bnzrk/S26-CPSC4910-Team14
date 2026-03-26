@@ -11,7 +11,7 @@ import LoginPage from './pages/Login/LoginPage';
 import PointRulesPage from './pages/SponsorOrg/PointsRules/PointRulesPage';
 import PointsPage from './pages/Points/PointsPage'
 import SponsorOrgLayout from './pages/SponsorOrg/SponsorOrgLayout';
-import SponsorOrgPage from '@/pages/SponsorOrg/Index/SponsorOrgPage';
+import SponsorDashboardPage from '@/pages/SponsorOrg/SponsorDashboardPage';
 import SponsorUsersPage from './pages/SponsorOrg/Users/SponsorUsersPage';
 import SponsorDriversPage from './pages/SponsorOrg/Drivers/Index/SponsorDriversPage';
 import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPage';
@@ -27,7 +27,7 @@ import './App.scss';
 function AppContent({ user, orgs })
 {
   const location = useLocation();
-  const hideNavbar = location.pathname === '/points';
+  const hideNavbar = location.pathname === '/points' || location.pathname.startsWith('/org');
 
   return (
     <OrgProvider user={user} orgs={orgs}>
@@ -63,7 +63,7 @@ function AppContent({ user, orgs })
             <SponsorOrgLayout />
           </ProtectedRoute>
         }>
-          <Route index element={<SponsorOrgPage />} />
+          <Route index element={<SponsorDashboardPage />} />
           <Route path="point-rules" element={<PointRulesPage />} />
           <Route path="users" element={<SponsorUsersPage />} />
           <Route path="drivers" element={<SponsorDriversPage />} />
