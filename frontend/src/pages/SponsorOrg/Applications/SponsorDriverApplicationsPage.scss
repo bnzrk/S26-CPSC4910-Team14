@@ -252,4 +252,73 @@
   .details-grid {
     grid-template-columns: 1fr;
   }
+
+  .invite-section {
+    margin-bottom: 2rem;
+    padding: 1.25rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #f9f9f9;
+  }
+  
+  .invite-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 1rem;
+  }
+  
+  .invite-block {
+    margin-bottom: 1rem;
+  }
+  
+  .invite-label {
+    font-weight: 500;
+    margin: 0 0 0.4rem;
+    font-size: 0.9rem;
+  }
+  
+  .invite-hint {
+    font-size: 0.8rem;
+    color: #666;
+    margin: 0 0 0.4rem;
+  }
+  
+  .invite-link-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .invite-link-input {
+    flex: 1;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    background: white;
+  }
+  
+  .invite-emails {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    resize: vertical;
+    box-sizing: border-box;
+  }
+  
+  .copy-btn {
+  padding: 0.4rem 0.9rem;
+  background: #17643a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.copy-btn:hover {
+  background: #14532d;
+}
 }
