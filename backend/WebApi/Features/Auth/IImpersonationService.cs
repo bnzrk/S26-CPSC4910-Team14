@@ -8,4 +8,6 @@ public interface IImpersonationService
     public Task StopImpersonationAsync();
 
     public bool IsImpersonating(ClaimsPrincipal user);
+    public int? GetSponsorOrgScopeId(ClaimsPrincipal user);
+    public string? GetImpersonatingUserId(ClaimsPrincipal user);
 }

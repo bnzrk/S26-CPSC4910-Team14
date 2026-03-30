@@ -27,6 +27,20 @@ public class ImpersonationService : IImpersonationService
         return user.HasClaim(c => c.Type == "OriginalUserId");
     }
 
+    public int? GetSponsorOrgScopeId(ClaimsPrincipal user)
+    {
+        var scopeIdString = user.FindFirstValue(ImpersonationOrgScopeClaimType);
+        var parsed = Int32.TryParse(scopeIdString, out int orgId);
+        if (!parsed)
+            throw new Exception("Could not parse org scope id from claim");
+        return orgId;
+    }
+
+    public string? GetImpersonatingUserId(ClaimsPrincipal user)
+    {
+        return user.FindFirstValue(OriginalUserIdClaimType);
+    }
+
     public async Task StartImpersonationAsync(string targetUserId, int? orgScopeId = null)
     {
         var context = _http.HttpContext!;

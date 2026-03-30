@@ -147,9 +147,9 @@ public class AuthController : ControllerBase
         return Ok();
     }
 
-    [HttpPost("impersonation/end")]
+    [HttpPost("impersonation/stop")]
     [Authorize]
-    public async Task<ActionResult> EndImpersonation()
+    public async Task<ActionResult> StopImpersonation()
     {
         if (!_impersonationService.IsImpersonating(User))
             return BadRequest("Not currently impersonating");
