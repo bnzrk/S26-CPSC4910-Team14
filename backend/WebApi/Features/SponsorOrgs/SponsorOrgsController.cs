@@ -180,6 +180,7 @@ public class SponsorOrgsController : ControllerBase
             .Select(d => new DriverModel
             {
                 Id = d.Id,
+                UserId = d.User.Id,
                 Email = d.User.Email!,
                 FirstName = d.User.FirstName,
                 LastName = d.User.LastName,
@@ -226,6 +227,7 @@ public class SponsorOrgsController : ControllerBase
             .Select(d => new DriverModel
             {
                 Id = d.Id,
+                UserId = d.User.Id,
                 Email = d.User.Email!,
                 FirstName = d.User.FirstName,
                 LastName = d.User.LastName,
