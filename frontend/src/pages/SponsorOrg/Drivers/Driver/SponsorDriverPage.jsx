@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { useParams, Navigate } from "react-router-dom";
-import { useSponsorOrgDriver } from "@/api/sponsorOrg";
-import { useUpdateDriver } from "@/api/driver";
-import Loader from "@/components/Loader/Loader";
+import { useSponsorOrgDriver } from "@/api/sponsorOrg"
+import { useStartImpersonation } from "@/api/auth";
+import { useCurrentUser } from "./currentUser";
 import CardHost from "@/components/CardHost/CardHost";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
-import PointCard from "@/components/PointCard/PointCard";
 import EditDriverProfileModal from "./components/EditDriverProfileModal";
 import ManageDriverPointsModal from "./components/ManageDriverPointsModal";
 import StarIcon from "@/assets/icons/star.svg?react";
 import UserStarIcon from "@/assets/icons/user-star.svg?react";
 import UserEditIcon from "@/assets/icons/user-pen.svg?react";
 import UserRemoveIcon from "@/assets/icons/user-x.svg?react";
+import LoginIcon from "@/assets/icons/log-in.svg?react";
 import styles from './SponsorDriverPage.module.scss';
 import clsx from "clsx";
 
@@ -27,9 +27,13 @@ export default function SponsorDriverPage()
     const modals = {
         editProfile: 'editProfile',
         removeDriver: 'removeDriver',
+        impersonateDriver: 'impersonateDriver',
         managePoints: 'managePoints',
     }
     const [currentModal, setCurrentModal] = useState(null);
+
+    const { data: user } = useCurrentUser();
+    const { mutate: impersonate, isPending } = useStartImpersonation();
 
     const { driverId: paramId } = useParams();
     const driverId = Number(paramId);
@@ -37,6 +41,18 @@ export default function SponsorDriverPage()
     if (driverError && error?.status === 404)
     {
         return <Navigate to="/org/drivers" replace />;
+    }
+
+    async function startImpersonation()
+    {
+        try
+        {
+            await startImpersonationMutation.mutateAsync();
+        }
+        catch (err)
+        {
+            push({ type: 'error', message: 'Failed to impersonate driver.' });
+        }
     }
 
     return (
@@ -71,6 +87,13 @@ export default function SponsorDriverPage()
                                 <div>Last Login: {(driver.DateCreatedUtc) ? formatDate(driver?.lastLoginUtc, true) : 'Never'}</div>
                             </div>
                             <div className={styles.buttonGroup}>
+                                <Button
+                                    className={clsx(styles.editButton, styles.button)}
+                                    icon={LoginIcon}
+                                    text='Login-As'
+                                    disabled={impersonate.isPending}
+                                    onClick={() => impersonate({ targetUserId: driver.userId })}
+                                />
                                 <Button
                                     className={clsx(styles.editButton, styles.button)}
                                     icon={UserEditIcon}

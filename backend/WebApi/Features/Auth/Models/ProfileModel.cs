@@ -8,4 +8,5 @@ public class ProfileModel
     public int? SponsorId { get; set;}
     public int? DriverId { get; set; }
     public int? SponsorOrgId { get; set; }
+    public bool IsImpersonating { get; set; } = false;
 }

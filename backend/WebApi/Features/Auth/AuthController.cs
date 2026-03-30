@@ -65,7 +65,11 @@ public class AuthController : ControllerBase
     [Authorize]
     public async Task<ActionResult> Logout()
     {
-        await _signInManager.SignOutAsync();
+        if (_impersonationService.IsImpersonating(User))
+            await _impersonationService.StopImpersonationAsync();
+        else
+            await _signInManager.SignOutAsync();
+
         return Ok();
     }
 
@@ -86,6 +90,7 @@ public class AuthController : ControllerBase
         return Ok(new ProfileModel
         {
             IsAuthenticated = true,
+            IsImpersonating = _impersonationService.IsImpersonating(User),
             User = new UserModel
             {
                 Id = user.Id,
