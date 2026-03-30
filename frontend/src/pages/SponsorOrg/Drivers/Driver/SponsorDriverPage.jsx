@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { useSponsorOrgDriver } from "@/api/sponsorOrg"
 import { useStartImpersonation } from "@/api/auth";
-import { useCurrentUser } from "./currentUser";
 import CardHost from "@/components/CardHost/CardHost";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
@@ -32,7 +31,6 @@ export default function SponsorDriverPage()
     }
     const [currentModal, setCurrentModal] = useState(null);
 
-    const { data: user } = useCurrentUser();
     const { mutate: impersonate, isPending } = useStartImpersonation();
 
     const { driverId: paramId } = useParams();
