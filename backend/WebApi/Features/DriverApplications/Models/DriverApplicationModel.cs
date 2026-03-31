@@ -18,4 +18,5 @@ public class DriverApplicationModel
     public string? LicensePlate { get; set; }
     public ApplicationStatus Status { get; set; }
     public bool IsActive { get; set; }
+    public string? RejectionReason { get; set; }
 }
