@@ -26,6 +26,7 @@ import DriverLayout from './components/DriverLayout/DriverLayout';
 import SponsorCatalogPage from './pages/SponsorOrg/Catalog/SponsorCatalogPage';
 import ManageDriversPage from './pages/SponsorOrg/ManageDrivers/ManageDriversPage';
 import OrganizationsPage from './pages/Organizations/OrganizationsPage';
+import ComingSoonPage from './pages/ComingSoon/ComingSoonPage';
 import './App.scss';
 
 function AppContent({ user, orgs })
@@ -92,7 +93,11 @@ function AppContent({ user, orgs })
           <Route path="drivers/:driverId" element={<SponsorDriverPage />} />
           <Route path="applications" element={<SponsorDriverApplicationsPage />} />
           <Route path="catalog" element={<SponsorCatalogPage />} />
+          <Route path="redemptions" element={<SponsorCatalogPage />} />
           <Route path="manage-drivers" element={<ManageDriversPage />} />
+          <Route path="settings"   element={<ComingSoonPage title="Settings" />} />
+          <Route path="deliveries" element={<ComingSoonPage title="Deliveries" />} />
+          <Route path="routes"     element={<ComingSoonPage title="Routes" />} />
         </Route>
         <Route path="/admin" element={
           <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
