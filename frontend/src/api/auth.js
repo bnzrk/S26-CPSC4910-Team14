@@ -25,3 +25,22 @@ export function useStartImpersonation()
         },
     });
 }
+
+export function useLogout()
+{
+    const queryClient = useQueryClient();
+    const navigate = useNavigate();
+
+    return useMutation({
+        mutationFn: async () =>
+        {
+            const response = await apiFetch("/auth/logout", { method: "POST" });
+            if (!response.ok) throw new Error('Failed to logout');
+        },
+        onSuccess: () =>
+        {
+            queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+            navigate('/');
+        },
+    });
+}

@@ -80,24 +80,24 @@ public class AuthController : ControllerBase
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
         {
-            return Ok(new ProfileModel
+            return Ok(new AuthModel
             {
                 IsAuthenticated = false,
                 User = null
             });
         }
 
-        return Ok(new ProfileModel
+        return Ok(new AuthModel
         {
             IsAuthenticated = true,
-            IsImpersonating = _impersonationService.IsImpersonating(User),
             User = new UserModel
             {
                 Id = user.Id,
                 Email = user.Email!,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                UserType = user.UserType.ToString()
+                UserType = user.UserType.ToString(),
+                IsImpersonating = _impersonationService.IsImpersonating(User),
             }
         });
     }
