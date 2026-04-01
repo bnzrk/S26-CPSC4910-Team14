@@ -88,7 +88,7 @@ export default function AdminToolsPage()
 
     return (
         <>
-            <CardHost title='Admin Tools' subtitle='Admin tools to create and edit data'>
+            <CardHost>
                 <Card title='Create Organization'>
                     <form className={styles.form}>
                         <div className={styles.field}>

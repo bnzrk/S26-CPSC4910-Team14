@@ -1,4 +1,4 @@
-import { Trophy, Store, BarChart3, ShieldCheck } from 'lucide-react';
+import { Trophy, Store, BarChart3, ShieldCheck, Bell, Star } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import styles from './FeatureCards.module.scss';
 
@@ -7,6 +7,8 @@ const iconMap = {
   store: Store,
   'bar-chart-3': BarChart3,
   'shield-check': ShieldCheck,
+  bell: Bell,
+  star: Star,
 };
 
 export default function FeatureCards({ features }) {
@@ -14,10 +16,11 @@ export default function FeatureCards({ features }) {
 
   return (
     <section ref={ref} className={styles.section}>
-      <h2 className={styles.heading}>Platform Features</h2>
+      <p className={styles.sectionLabel}>Platform Features</p>
+      <h2 className={styles.heading}>Everything You Need to Run Rewards</h2>
       <div className={styles.grid}>
         {features.map((feature, i) => {
-          const Icon = iconMap[feature.icon];
+          const Icon = iconMap[feature.icon] ?? Trophy;
           return (
             <div
               key={feature.title}

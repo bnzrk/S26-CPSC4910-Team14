@@ -11,6 +11,18 @@ export default function Button({ children, text = '', color, icon: Icon, size, d
     case "warn":
       colorClass = styles.warn;
       break;
+    case "pill":
+      colorClass = styles.pill;
+      break;
+    case "pillWhite":
+      colorClass = styles.pillWhite;
+      break;
+    case "outline":
+      colorClass = styles.outline;
+      break;
+    case "ghost":
+      colorClass = styles.ghost;
+      break;
     default:
       colorClass = styles.secondary;
       break;

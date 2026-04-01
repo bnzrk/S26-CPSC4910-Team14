@@ -1,70 +1,223 @@
 .hero {
   position: relative;
-  min-height: 70vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
-  background:
-    radial-gradient(ellipse at 20% 50%, rgba(10, 104, 71, 0.35) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(16, 185, 129, 0.25) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 80%, rgba(6, 78, 59, 0.3) 0%, transparent 50%),
-    linear-gradient(135deg, #064e3b 0%, #0a6847 40%, #047857 70%, #065f46 100%);
-  background-size: 200% 200%;
-  animation: gradientShift 20s ease infinite;
+  background: linear-gradient(135deg, var(--green-900), var(--green-700) 55%, var(--green-500));
 }
 
-@keyframes gradientShift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  25% {
-    background-position: 50% 0%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  75% {
-    background-position: 50% 100%;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero {
-    animation: none;
-  }
+.heroInner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 96px 6%;
 }
 
 .content {
-  text-align: center;
-  max-width: 720px;
-  padding: 3rem 1.5rem;
   color: #fff;
 }
 
 .badge {
   display: inline-block;
   padding: 0.35rem 1rem;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--green-100);
   margin-bottom: 1.5rem;
 }
 
 .title {
   margin: 0 0 1rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: clamp(2.4rem, 5vw, 3.8rem);
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -1.5px;
+  font-family: inherit;
+  color: #fff;
+}
+
+.highlight {
+  color: var(--green-400);
 }
 
 .description {
-  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-size: clamp(1rem, 2vw, 1.05rem);
   line-height: 1.7;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.75);
   margin: 0;
+  max-width: 480px;
+}
+
+.btnGroup {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+
+.btnPrimary {
+  display: inline-block;
+  background: var(--white);
+  color: var(--color-accent-dark);
+  padding: 16px 28px;
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  box-shadow: var(--shadow-cta);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
+}
+
+.btnOutline {
+  display: inline-block;
+  background: transparent;
+  color: #fff;
+  padding: 16px 28px;
+  border-radius: var(--radius-pill);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Right card */
+.heroCard {
+  background: var(--gray-100);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  color: var(--color-text);
+}
+
+.heroCardBadge {
+  display: inline-block;
+  background: var(--color-accent);
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 16px;
+}
+
+.heroCardInner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pointsBanner {
+  background: linear-gradient(163deg, var(--green-700) 0%, var(--green-500) 100%);
+  border-radius: var(--radius-md);
+  padding: 28px;
+  text-align: center;
+  color: #fff;
+}
+
+.pointsValue {
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.pointsLabel {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+.pointsSub {
+  font-size: 0.75rem;
+  opacity: 0.65;
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activityRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0 16px;
+  height: 64px;
+}
+
+.activityIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 17px;
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.activityInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.activityRoute {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.activityMeta {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.activityPts {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .heroInner {
+    grid-template-columns: 1fr;
+    padding: 72px 6%;
+    gap: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .heroCard {
+    display: none;
+  }
 }
