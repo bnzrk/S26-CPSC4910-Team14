@@ -107,7 +107,7 @@ export default function SponsorCatalogPage()
                 onClose={() => setCurrentModal(null)}
                 item={products ? products.find((p) => p.id == selectedExternalItemId) : null}
             />
-            <CardHost title='Catalog' subtitle="Manage your orgnization's product catalog.">
+            <CardHost>
                 <Card title='Catalog'>
                     <div className={styles.grid}>
                         {catalog && catalog.sort((a, b) => b.isAvailable - a.isAvailable).map((item) => (

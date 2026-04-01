@@ -54,7 +54,7 @@ async function handleLogout()
   navigate("/login");
 }
 
-export default function SponsorSidebar()
+export default function SponsorSidebar({ className })
 {
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -79,7 +79,7 @@ export default function SponsorSidebar()
   }).length;
 
   return (
-    <aside className={styles.sidebar}>
+    <aside className={clsx(className, styles.sidebar)}>
       <div className={styles.logoArea}>
         <span className={styles.logo} onClick={() => navigate("/")}>DrivePoints</span>
         <span className={styles.portalBadge}>Sponsor Portal</span>

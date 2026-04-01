@@ -9,7 +9,7 @@
 
 .mainGrid {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: 1fr 420px;
   gap: $grid-3x;
   align-items: start;
 
@@ -31,5 +31,12 @@
 }
 
 .bottomRow {
-  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $grid-3x;
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
 }

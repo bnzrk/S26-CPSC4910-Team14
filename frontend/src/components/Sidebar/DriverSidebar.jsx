@@ -13,26 +13,25 @@ const NAV_GROUPS = [
   {
     label: 'Main',
     items: [
-      { label: 'Dashboard', to: '/points', icon: 'grid' },
+      { label: 'Dashboard', to: '/driver', icon: 'grid' },
+      { label: 'My Points', to: '/driver/points', icon: 'star' },
       { label: 'Organizations', to: '/organizations', icon: 'building' },
-      { label: 'My Points', to: '/points', icon: 'coins' },
-      { label: 'Deliveries', to: '/points', icon: 'truck', badge: 3 },
-      { label: 'Challenges', to: '/points', icon: 'zap' },
-      { label: 'Leaderboard', to: '/points', icon: 'trophy' },
+      { label: 'Deliveries', to: '/deliveries', icon: 'truck', badge: 3 },
+      { label: 'Challenges', to: '/challenges', icon: 'zap' },
+      { label: 'Leaderboard', to: '/leaderboard', icon: 'trophy' },
     ],
   },
   {
     label: 'Rewards',
     items: [
-      { label: 'Redeem Points', to: '/points', icon: 'gift' },
-      { label: 'My Rewards', to: '/points', icon: 'star' },
+      { label: 'Redeem Points', to: '/shop', icon: 'gift' },
     ],
   },
   {
     label: 'Account',
     items: [
       { label: 'Profile', to: '/profile', icon: 'user' },
-      { label: 'Settings', to: '/profile', icon: 'settings' },
+      { label: 'Settings', to: '/settings', icon: 'settings' },
     ],
   },
 ];
@@ -104,8 +103,9 @@ function NavIcon({ name }) {
   return icons[name] ?? null;
 }
 
-export default function DriverSidebar() {
+export default function DriverSidebar({ className }) {
   const { pathname } = useLocation();
+  console.log(pathname);
   const { data: user } = useCurrentUser();
   const { selectedOrgId } = useOrgContext();
   const { data: points } = usePoints(selectedOrgId);
@@ -124,7 +124,7 @@ export default function DriverSidebar() {
     : fullName.slice(0, 2).toUpperCase();
 
   return (
-    <aside className={styles.sidebar}>
+    <aside className={clsx(className, styles.sidebar)}>
       {/* Logo */}
       <div className={styles.logoArea}>
         <span className={styles.logo}>

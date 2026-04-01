@@ -11,7 +11,7 @@ export default function GuestRoute({ children }) {
     const dashboardRoute =
       user.userType === USER_TYPES.SPONSOR ? "/org" :
       user.userType === USER_TYPES.ADMIN   ? "/admin" :
-      "/points";
+      "/driver";
     return <Navigate to={dashboardRoute} replace />;
   }
 

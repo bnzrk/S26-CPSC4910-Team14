@@ -1,11 +1,14 @@
 .sidebar {
-  width: 268px;
+  width: 260px;
   min-height: 100vh;
   background: var(--color-sidebar-driver);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   overflow-y: auto;
+  position: fixed;
+  top: 0;
+  left: 0;
 }
 
 /* ── Logo ──────────────────────────────────── */

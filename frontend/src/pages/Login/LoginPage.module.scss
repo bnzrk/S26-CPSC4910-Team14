@@ -5,6 +5,12 @@
     justify-content: center;
     background-color: var(--color-bg);
   }
+
+  .rememberMe label {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+  }
   
   .card {
     background: var(--color-surface);

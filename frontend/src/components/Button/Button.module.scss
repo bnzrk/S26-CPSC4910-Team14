@@ -13,7 +13,7 @@
     align-items: center;
     justify-content: center;
     text-wrap: nowrap;
-    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    transition: background-color 0.2s, border-color 0.2s, outline-color 0.2s, color 0.2s;
     padding: 0 $grid-2x;
 
     &.small {
@@ -73,13 +73,15 @@
 
     &.pillWhite {
         background: var(--white);
+        outline: 1px solid var(--white);
         color: var(--color-accent-dark);
         box-shadow: var(--shadow-cta);
         border: none;
 
         &:hover:not(:disabled) {
-            opacity: 0.92;
-            transform: translateY(-1px);
+            outline: 1px solid var(--green-500);
+            border-color: var(--color-accent);
+            color: var(--color-accent);
         }
     }
 

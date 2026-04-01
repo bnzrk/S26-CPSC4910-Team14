@@ -222,7 +222,7 @@ export default function PointRulesPage()
           <AsyncButton className={styles.button} text='Save' color='primary' action={confirmSavePointValue} />
         </Modal.Buttons>
       </Modal>
-      <CardHost title={'Point Rules'} subtitle={'Manage the rules that award or deduct points from drivers.'}>
+      <CardHost>
         <Card title='Point Value'>
           <InlineInfo className={styles.info} type='info' messages={['Modifying the point value affects all users and drivers in this organization']} />
           <div className={styles.pointValueRow}>

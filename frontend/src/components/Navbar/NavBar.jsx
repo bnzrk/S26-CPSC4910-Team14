@@ -57,7 +57,7 @@ export default function Navbar()
     <>
       <nav className={styles.navbar}>
         <div className={styles.left}>
-          {!isLoggedIn &&
+          {(!isLoggedIn || isAdmin) &&
             <Link to="/" className={styles.home}>
               DrivePoints
             </Link>
@@ -81,7 +81,7 @@ export default function Navbar()
                     <OrgSelector />
                     <span
                       className={styles.points}
-                      onClick={() => navigate("/points")}
+                      onClick={() => navigate("/driver/points")}
                     >
                       {isPointsLoading ? '…' : (points?.balance ?? 0)}
                       <StarIcon />

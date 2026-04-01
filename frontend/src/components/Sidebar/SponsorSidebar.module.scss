@@ -131,9 +131,3 @@
   border-radius: var(--radius-pill);
   white-space: nowrap;
 }
-
-@media only screen and (max-width : $small-width) {
-  .sidebar {
-    display: none;
-  }
-}

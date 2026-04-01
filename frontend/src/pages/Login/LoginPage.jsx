@@ -43,7 +43,7 @@ export default function LoginPage() {
       const userType = user?.userType;
       if (userType === USER_TYPES.SPONSOR) navigate("/org");
       else if (userType === USER_TYPES.ADMIN) navigate("/admin");
-      else navigate("/points");
+      else navigate("/driver");
 
     } catch (err) {
       setErrorMsg('Unable to connect to the server. Please try again.');

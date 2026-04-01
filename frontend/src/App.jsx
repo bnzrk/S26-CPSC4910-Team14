@@ -18,7 +18,6 @@ import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPa
 import ShopPage from './pages/Shop/ShopPage';
 import RegisterPage from './pages/Register/RegisterPage';
 import AdminToolsPage from './pages/Admin/Tools/AdminToolsPage';
-import Navbar from './components/Navbar/NavBar';
 import ProfilePage from './pages/Profile/ProfilePage';
 import DriverApplicationPage from "./pages/DriverApplication/DriverApplicationPage";
 import SponsorDriverApplicationsPage from './pages/SponsorOrg/Applications/SponsorDriverApplicationsPage';
@@ -28,20 +27,13 @@ import ManageDriversPage from './pages/SponsorOrg/ManageDrivers/ManageDriversPag
 import OrganizationsPage from './pages/Organizations/OrganizationsPage';
 import ComingSoonPage from './pages/ComingSoon/ComingSoonPage';
 import AppLayout from './pages/AppLayout';
+import DriverDashboardPage from './pages/DriverDashboard/DriverDashboardPage';
 import './App.scss';
 
 function AppContent({ user, orgs })
 {
-  const location = useLocation();
-  const hideNavbar =
-    location.pathname === '/points' ||
-    location.pathname === '/shop' ||
-    location.pathname === '/organizations' ||
-    location.pathname.startsWith('/org');
-
   return (
     <OrgProvider user={user} orgs={orgs}>
-      {/* {!hideNavbar && <Navbar />} */}
       <AppLayout>
         <Routes>
           <Route path="/" element={<AboutPage />} />
@@ -62,18 +54,9 @@ function AppContent({ user, orgs })
             </ProtectedRoute>
           } />
           <Route path="*" element={<Navigate to="/" replace />} />
-          <Route path="/points" element={
-            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
-              <DriverLayout>
-                <PointsPage />
-              </DriverLayout>
-            </ProtectedRoute>
-          } />
           <Route path='/shop' element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
-              <DriverLayout>
-                <ShopPage />
-              </DriverLayout>
+              <ShopPage />
             </ProtectedRoute>
           } />
           <Route path='/organizations' element={
@@ -83,6 +66,14 @@ function AppContent({ user, orgs })
               </DriverLayout>
             </ProtectedRoute>
           } />
+          <Route path='/driver' element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+              <DriverLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<DriverDashboardPage />} />
+            <Route path="points" element={<PointsPage />} />
+          </Route>
           <Route path='/org' element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.SPONSOR]}>
               <SponsorOrgLayout />

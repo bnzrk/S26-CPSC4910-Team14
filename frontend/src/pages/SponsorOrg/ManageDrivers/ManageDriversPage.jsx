@@ -130,8 +130,7 @@ export default function ManageDriversPage() {
 
   return (
     <main className={styles.page}>
-      <CardHost title="Manage Drivers" subtitle="Review applications and manage current drivers">
-
+      <CardHost>
         {/* Applications Section */}
         <Card
           title="Incoming Applications"
