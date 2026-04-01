@@ -52,9 +52,9 @@ export default function PointsPage()
     data: history,
     isLoading: historyLoading,
     isError: historyError,
-  } = usePointHistory({ 
+  } = usePointHistory({
     orgId: selectedOrgId,
-    page, 
+    page,
     pageSize,
     sign: sign || undefined,
     from,
@@ -88,18 +88,7 @@ export default function PointsPage()
 
   return (
     <main className={styles.page}>
-      {/* headerRight prop with apply button */}
-      <CardHost
-        title={'Points'}
-        subtitle={'Point balance and history'}
-        headerRight={
-          <Button color="primary" onClick={() => navigate('/driver-application')}
-          style={{ fontFamily: 'var(--font-heading)' }}
-          >
-            + Apply to a Sponsor
-          </Button>
-        }
-      >
+      <CardHost>
         <PointCard points={points ? points.balance : 0}></PointCard>
 
         {hasError && (
@@ -253,6 +242,11 @@ export default function PointsPage()
             </span>
           </div>
         </Card>
+        <Button color="primary" onClick={() => navigate('/driver-application')}
+          style={{ fontFamily: 'var(--font-heading)' }}
+        >
+          + Apply to a Sponsor
+        </Button>
       </CardHost>
     </main>
   );

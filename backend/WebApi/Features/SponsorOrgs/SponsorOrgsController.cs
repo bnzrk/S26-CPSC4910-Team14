@@ -489,6 +489,36 @@ public class SponsorOrgsController : ControllerBase
 
         return Created();
     }
+
+    [HttpDelete("{orgId}/users/{userId}")]
+    [HttpDelete("me/users/{userId}")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<ActionResult> RemoveOrgUser(int? orgId, int userId)
+    {
+        var resolvedOrgId = await GetCurrentSponsorOrgId();
+
+        if (User.IsInRole(UserTypeRoles.Role(UserType.Sponsor)))
+        {
+            if (orgId is not null && resolvedOrgId != orgId)
+                return BadRequest("Cannot edit an organization you are not a sponsor for.");
+        }
+
+        resolvedOrgId = resolvedOrgId ?? orgId;
+        if (resolvedOrgId is null)
+            return BadRequest("Could not resolve sponsor organization.");
+
+        var sponsorUser = await _db.SponsorUsers
+            .Include(s => s.User)
+            .FirstOrDefaultAsync(s => s.Id == userId && s.SponsorOrgId == resolvedOrgId);
+
+        if (sponsorUser is null)
+            return NotFound();
+
+        sponsorUser.User.IsActive = false;
+        await _db.SaveChangesAsync();
+
+        return NoContent();
+    }
     #endregion
 
     private async Task<int?> GetCurrentSponsorOrgId()

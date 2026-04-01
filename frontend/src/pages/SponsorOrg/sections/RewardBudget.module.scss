@@ -1,0 +1,120 @@
+@use '@/styles/globals' as *;
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: $grid-3x;
+  box-shadow: var(--shadow-sm);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: $grid-3x;
+}
+
+.title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 4px;
+}
+
+.subtitle {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+.adjustBtn {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+
+  &:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+}
+
+.bar {
+  display: flex;
+  height: 12px;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  gap: 2px;
+  margin-bottom: $grid-3x;
+}
+
+.barSegment {
+  border-radius: 2px;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: $grid-1x;
+  margin-bottom: $grid-3x;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendText {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+}
+
+.legendLabel {
+  color: var(--color-text-secondary);
+  min-width: 70px;
+}
+
+.legendAmount {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.legendPct {
+  color: var(--color-text-tertiary);
+}
+
+.footer {
+  border-top: 1px solid var(--color-border);
+  padding-top: $grid-2x;
+}
+
+.usedPill {
+  display: inline-block;
+  background: var(--green-100);
+  color: var(--green-700);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+}

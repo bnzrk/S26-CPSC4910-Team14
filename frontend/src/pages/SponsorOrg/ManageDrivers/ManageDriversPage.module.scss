@@ -1,0 +1,150 @@
+@use '@/styles/globals' as *;
+
+.page {
+  // flex child of SponsorOrgLayout — no additional wrapper needed
+}
+
+/* Application rows */
+.appRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $grid-2x;
+  padding: $grid-2x 0;
+  border-bottom: 1px solid var(--color-border, rgba(0, 0, 0, 0.08));
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.appMain {
+  display: flex;
+  flex-direction: column;
+  gap: $grid-half;
+  min-width: 0;
+}
+
+.appName {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appDate {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.appSide {
+  display: flex;
+  align-items: center;
+  gap: $grid-2x;
+  flex-shrink: 0;
+}
+
+.appActions {
+  display: flex;
+  gap: $grid-1x;
+}
+
+/* Status badge */
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.badge_pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge_accepted {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.badge_rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.badge_unknown {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* Action buttons */
+.actionBtn {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.acceptBtn {
+  background: var(--color-accent, #16a34a);
+  color: #fff;
+
+  &:not(:disabled):hover {
+    opacity: 0.85;
+  }
+}
+
+.rejectBtn {
+  background: #ef4444;
+  color: #fff;
+
+  &:not(:disabled):hover {
+    opacity: 0.85;
+  }
+}
+
+/* Driver email sub-label */
+.driverEmail {
+  margin: 0 $grid-1x;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+/* Footer link */
+.viewAll {
+  display: inline-block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-accent, #16a34a);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* Utility */
+.empty {
+  color: var(--color-text-secondary, #6b7280);
+  font-size: 0.9375rem;
+  padding: $grid-1x 0;
+}
+
+.error {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-bottom: $grid-1x;
+}

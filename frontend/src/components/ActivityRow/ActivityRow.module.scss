@@ -1,0 +1,48 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  height: 66px;
+  padding: 0 16px;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.route {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.positive {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--green-400);
+  flex-shrink: 0;
+}
+
+.negative {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--red-500);
+  flex-shrink: 0;
+}
