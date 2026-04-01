@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Avatar from '../Avatar/Avatar';
 import BudgetWidget from '../BudgetWidget/BudgetWidget';
@@ -20,28 +20,43 @@ const NAV_GROUPS = [
     label: 'Fleet',
     items: [
       { label: 'Manage Drivers', to: '/org/manage-drivers', badgeKey: 'pendingApps' },
-      { label: 'Manage Employees', to: '/org/users' },
-      { label: 'Deliveries', to: '/org/deliveries' },
-      { label: 'Routes', to: '/org/routes' },
+      { label: 'Manage Users', to: '/org/users' },
+      // { label: 'Deliveries', to: '/org/deliveries' },
+      // { label: 'Routes', to: '/org/routes' },
     ],
   },
   {
     label: 'Rewards',
     items: [
       { label: 'Point Rules', to: '/org/point-rules', badge: 8 },
-      { label: 'Redemptions', to: '/org/redemptions' },
+      { label: 'Catalog', to: '/org/catalog' },
     ],
   },
   {
     label: 'Account',
     items: [
-      { label: 'Settings', to: '/org/settings' },
       { label: 'My Profile', to: '/profile' },
+      { label: 'Settings', to: '/org/settings' }
     ],
   },
 ];
 
-export default function SponsorSidebar() {
+async function handleLogout()
+{
+  try
+  {
+    await apiFetch("/auth/logout", { method: "POST" });
+  } catch (err)
+  {
+    console.error("Logout failed:", err);
+  }
+  queryClient.setQueryData(["currentUser"], null);
+  navigate("/login");
+}
+
+export default function SponsorSidebar()
+{
+  const navigate = useNavigate();
   const { pathname } = useLocation();
   const { data: org } = useSponsorOrg();
   const { data: user } = useCurrentUser();
@@ -57,7 +72,8 @@ export default function SponsorSidebar() {
     queryFn: () => apiFetch('/applications').then(r => r.json()),
     staleTime: 30_000,
   });
-  const pendingApps = applications.filter(a => {
+  const pendingApps = applications.filter(a =>
+  {
     const s = a.status;
     return s === 0 || (typeof s === 'string' && s.toLowerCase() === 'pending');
   }).length;
@@ -65,7 +81,7 @@ export default function SponsorSidebar() {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.logoArea}>
-        <span className={styles.logo}>DrivePoints</span>
+        <span className={styles.logo} onClick={() => navigate("/")}>DrivePoints</span>
         <span className={styles.portalBadge}>Sponsor Portal</span>
       </div>
 
@@ -82,7 +98,8 @@ export default function SponsorSidebar() {
         {NAV_GROUPS.map(group => (
           <div key={group.label} className={styles.group}>
             <span className={styles.groupLabel}>{group.label}</span>
-            {group.items.map(item => {
+            {group.items.map(item =>
+            {
               const count = item.badgeKey === 'pendingApps' ? pendingApps : item.badge ?? 0;
               const isActive = pathname === item.to ||
                 (item.to !== '/org' && pathname.startsWith(item.to));

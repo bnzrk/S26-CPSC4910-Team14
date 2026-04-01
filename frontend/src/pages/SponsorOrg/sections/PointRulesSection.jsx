@@ -34,10 +34,7 @@ export default function PointRulesSection() {
         </div>
         <div className={styles.actions}>
           <button className={styles.importBtn} onClick={() => navigate('/org/point-rules')}>
-            Import Rules
-          </button>
-          <button className={styles.newBtn} onClick={() => navigate('/org/point-rules')}>
-            New Rule
+            Manage Rules
           </button>
         </div>
       </div>
@@ -50,7 +47,7 @@ export default function PointRulesSection() {
           </button>
         </div>
       ) : (
-        <div className={styles.columns}>
+        <div className={styles.column}>
           {Object.entries(grouped).map(([category, catRules]) => {
             const cfg = getCategoryConfig(category);
             return (

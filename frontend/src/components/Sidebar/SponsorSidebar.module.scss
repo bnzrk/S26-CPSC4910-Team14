@@ -1,3 +1,5 @@
+@use '@/styles/globals' as *;
+
 .sidebar {
   width: 260px;
   min-height: 100vh;
@@ -6,6 +8,9 @@
   flex-direction: column;
   flex-shrink: 0;
   overflow-y: auto;
+  position: fixed;
+  top: 0;
+  left: 0;
 }
 
 .logoArea {
@@ -21,6 +26,7 @@
   font-weight: 800;
   color: #fff;
   letter-spacing: -0.5px;
+  cursor: pointer;
 }
 
 .portalBadge {
@@ -124,4 +130,10 @@
   padding: 2px 7px;
   border-radius: var(--radius-pill);
   white-space: nowrap;
+}
+
+@media only screen and (max-width : $small-width) {
+  .sidebar {
+    display: none;
+  }
 }

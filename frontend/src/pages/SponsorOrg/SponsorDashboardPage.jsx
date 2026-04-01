@@ -22,6 +22,7 @@ export default function SponsorDashboardPage() {
         <div className={styles.leftCol}>
           <FleetChart />
           <FleetMonitorTable />
+          <PointRulesSection />
         </div>
         <div className={styles.rightCol}>
           <RewardBudget />
@@ -32,7 +33,6 @@ export default function SponsorDashboardPage() {
       </div>
 
       <div className={styles.bottomRow}>
-        <PointRulesSection />
       </div>
     </div>
   );

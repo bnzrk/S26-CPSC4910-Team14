@@ -20,3 +20,9 @@
   padding: $grid-4x;
   overflow-y: auto;
 }
+
+@media only screen and (max-width : $small-width) {
+  .layout {
+    margin-left: 0;
+  }
+}
