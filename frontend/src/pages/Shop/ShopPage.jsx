@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useOrgContext } from "@/contexts/OrgContext/OrgContext";
 import { useCatalog } from "@/api/catalog";
 import CardHost from "@/components/CardHost/CardHost";
@@ -9,16 +10,25 @@ export default function ShopPage()
 {
     const { selectedOrgId, driverOrgs } = useOrgContext();
     var org = driverOrgs && selectedOrgId ? driverOrgs[selectedOrgId] : null;
-    
+
     const { data: catalog, isLoading: isCatalogLoading, isError: isCatalogError } = useCatalog(selectedOrgId);
 
+    console.log(catalog);
+
+    const availableItems = useMemo(
+        () => catalog ? catalog.sort((a, b) => b.isAvailable - a.isAvailable)
+            .filter((item) => item.isAvailable) : [],
+        [catalog]);
+
     return (
-        <CardHost title='Shop' subtitle="Spend points on your organization's catalog">
+        <CardHost>
             <Card title='Catalog'>
+                {(!availableItems || availableItems.length < 1) &&
+                    <p className={styles.noItems}>No items currently available</p>
+                }
                 <div className={styles.grid}>
-                    {catalog && catalog.length > 0 && catalog.sort((a, b) => b.isAvailable - a.isAvailable)
-                        .filter((item) => item.isAvailable)
-                        .map((item) => (
+                    {availableItems && availableItems.length > 0 &&
+                        availableItems.map((item) => (
                             <ShopItem
                                 key={item.id}
                                 imageUrl={item.images[0]}
@@ -28,9 +38,6 @@ export default function ShopPage()
                                 points={org ? item.price / org.pointRatio : undefined}
                             />
                         ))}
-                    {(!catalog || catalog.length < 1) &&
-                        <p>No items available</p>
-                    }
                 </div>
             </Card>
         </CardHost>

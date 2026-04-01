@@ -5,6 +5,7 @@ import { queryClient } from "../../api/queryClient";
 import { useNavigate, Link } from 'react-router-dom';
 import { useOrgContext } from "@/contexts/OrgContext/OrgContext";
 import Button from "../Button/Button";
+import Avatar from "../Avatar/Avatar";
 import OrgSelector from "../OrgSelector/OrgSelector";
 import BuildingIcon from "@/assets/icons/building-2.svg?react";
 import StarIcon from "@/assets/icons/star.svg?react";
@@ -13,7 +14,7 @@ import UserIcon from '@/assets/icons/user-person.svg?react';
 import styles from './NavBar.module.scss';
 import clsx from "clsx";
 
-export default function Navbar()
+export default function Navbar({ toggleSidebar })
 {
   const navigate = useNavigate();
   const { data: currentUser, isLoading } = useCurrentUser();
@@ -24,6 +25,10 @@ export default function Navbar()
   const isDriver = currentUser?.userType === 'Driver';
   const isSponsor = currentUser?.userType === 'Sponsor';
   const isAdmin = currentUser?.userType === 'Admin';
+
+  const userInitials = currentUser?.firstName && currentUser?.lastName
+    ? `${currentUser.firstName[0]}${currentUser.lastName[0]}`
+    : currentUser?.email?.slice(0, 2)?.toUpperCase() ?? 'SP';
 
   function getRoleBadge()
   {
@@ -52,48 +57,34 @@ export default function Navbar()
     <>
       <nav className={styles.navbar}>
         <div className={styles.left}>
-          <Link to="/" className={styles.home}>
-            DrivePoints
-          </Link>
+          {(!isLoggedIn || isAdmin) &&
+            <Link to="/" className={styles.home}>
+              DrivePoints
+            </Link>
+          }
         </div>
 
         <div className={styles.right}>
           {!isLoading && (
             isLoggedIn ? (
               <>
-                <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>{currentUser.email}</span>
-
-                {roleBadge && (
-                  <span className={clsx(styles.roleBadge, roleBadge.style)}>
-                    {roleBadge.label}
-                  </span>
-                )}
-
                 {isDriver && (
                   <>
                     <OrgSelector />
                     <span
                       className={styles.points}
-                      onClick={() => navigate("/points")}
+                      onClick={() => navigate("/driver/points")}
                     >
                       {isPointsLoading ? '…' : (points?.balance ?? 0)}
                       <StarIcon />
                     </span>
                   </>
                 )}
-                {isSponsor && (
-                  <Button className={styles.button} onClick={() => navigate("/org")} text='Organization' color='primary' icon={BuildingIcon} />
-                )}
-
                 {isAdmin && (
                   <Button className={styles.button} onClick={() => navigate("/admin")} text='Tools' icon={ToolsIcon} />
                 )}
-                <button type="button" className={styles.profile} onClick={() => navigate("/profile")}>
-                  <div className={styles.profileIconWrapper}>
-                    <UserIcon />
-                  </div>
-                </button>
-                <Button className={styles.button} onClick={handleLogout} text='Logout' />
+                {userInitials && <Avatar className={styles.profile} initials={userInitials} size="md" onClick={() => navigate("/profile")} />}
+                {userInitials && <Avatar className={styles.mobileMenu} initials={userInitials} size="md" onClick={toggleSidebar} />}
               </>
             ) : (
               <>

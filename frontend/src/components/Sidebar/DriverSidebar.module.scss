@@ -1,5 +1,7 @@
+@use '@/styles/globals' as *;
+
 .sidebar {
-  width: 268px;
+  width: 260px;
   min-height: 100vh;
   background: var(--color-sidebar-driver);
   display: flex;
@@ -12,6 +14,19 @@
 .logoArea {
   padding: 22px 20px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.close {
+  color: var(--white);
+  cursor: pointer;
+  display: none;
+
+  @media only screen and (max-width : $small-width) {
+    display: flex;
+  }
 }
 
 .logo {
@@ -138,4 +153,8 @@
   align-items: center;
   flex-shrink: 0;
   opacity: 0.8;
+}
+
+.points {
+  cursor: pointer;
 }

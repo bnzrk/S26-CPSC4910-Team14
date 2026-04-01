@@ -25,7 +25,7 @@ export default function DashStatCards({ totalPoints, deliveriesThisMonth, fleetR
         }
         trend="+12%"
         value={totalPoints?.toLocaleString() ?? '0'}
-        label="Total Points Earned"
+        label="Total Points"
       />
       <StatCard
         iconBg="var(--amber-100)"

@@ -18,7 +18,6 @@ import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPa
 import ShopPage from './pages/Shop/ShopPage';
 import RegisterPage from './pages/Register/RegisterPage';
 import AdminToolsPage from './pages/Admin/Tools/AdminToolsPage';
-import Navbar from './components/Navbar/NavBar';
 import ProfilePage from './pages/Profile/ProfilePage';
 import DriverApplicationPage from "./pages/DriverApplication/DriverApplicationPage";
 import SponsorDriverApplicationsPage from './pages/SponsorOrg/Applications/SponsorDriverApplicationsPage';
@@ -27,90 +26,85 @@ import SponsorCatalogPage from './pages/SponsorOrg/Catalog/SponsorCatalogPage';
 import ManageDriversPage from './pages/SponsorOrg/ManageDrivers/ManageDriversPage';
 import OrganizationsPage from './pages/Organizations/OrganizationsPage';
 import ComingSoonPage from './pages/ComingSoon/ComingSoonPage';
+import AppLayout from './pages/AppLayout';
+import DriverDashboardPage from './pages/DriverDashboard/DriverDashboardPage';
 import './App.scss';
 
 function AppContent({ user, orgs })
 {
-  const location = useLocation();
-  const hideNavbar =
-    location.pathname === '/points' ||
-    location.pathname === '/shop' ||
-    location.pathname === '/organizations' ||
-    location.pathname.startsWith('/org');
-
   return (
     <OrgProvider user={user} orgs={orgs}>
-      {!hideNavbar && <Navbar />}
-      <Routes>
-        <Route path="/" element={<AboutPage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/login" element={
-          <GuestRoute>
-            <LoginPage />
-          </GuestRoute>
-        } />
-        <Route path="/register" element={
-          <GuestRoute>
-            <RegisterPage />
-          </GuestRoute>
-        } />
-        <Route path="/driver-application" element={
-          <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
-            <DriverApplicationPage />
-          </ProtectedRoute>
-        } />
-        <Route path="*" element={<Navigate to="/" replace />} />
-        <Route path="/points" element={
-          <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
-            <DriverLayout>
-              <PointsPage />
-            </DriverLayout>
-          </ProtectedRoute>
-        } />
-        <Route path='/shop' element={
-          <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
-            <DriverLayout>
+      <AppLayout>
+        <Routes>
+          <Route path="/" element={<AboutPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/login" element={
+            <GuestRoute>
+              <LoginPage />
+            </GuestRoute>
+          } />
+          <Route path="/register" element={
+            <GuestRoute>
+              <RegisterPage />
+            </GuestRoute>
+          } />
+          <Route path="/driver-application" element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+              <DriverApplicationPage />
+            </ProtectedRoute>
+          } />
+          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path='/shop' element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
               <ShopPage />
-            </DriverLayout>
-          </ProtectedRoute>
-        } />
-        <Route path='/organizations' element={
-          <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
-            <DriverLayout>
-              <OrganizationsPage />
-            </DriverLayout>
-          </ProtectedRoute>
-        } />
-        <Route path='/org' element={
-          <ProtectedRoute allowedUserTypes={[USER_TYPES.SPONSOR]}>
-            <SponsorOrgLayout />
-          </ProtectedRoute>
-        }>
-          <Route index element={<SponsorDashboardPage />} />
-          <Route path="point-rules" element={<PointRulesPage />} />
-          <Route path="users" element={<SponsorUsersPage />} />
-          <Route path="drivers" element={<SponsorDriversPage />} />
-          <Route path="drivers/:driverId" element={<SponsorDriverPage />} />
-          <Route path="applications" element={<SponsorDriverApplicationsPage />} />
-          <Route path="catalog" element={<SponsorCatalogPage />} />
-          <Route path="redemptions" element={<SponsorCatalogPage />} />
-          <Route path="manage-drivers" element={<ManageDriversPage />} />
-          <Route path="settings"   element={<ComingSoonPage title="Settings" />} />
-          <Route path="deliveries" element={<ComingSoonPage title="Deliveries" />} />
-          <Route path="routes"     element={<ComingSoonPage title="Routes" />} />
-        </Route>
-        <Route path="/admin" element={
-          <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
-            <AdminToolsPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/profile" element={
-          <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER, USER_TYPES.SPONSOR, USER_TYPES.ADMIN]}>
-            <ProfilePage />
-          </ProtectedRoute>
-        } />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+            </ProtectedRoute>
+          } />
+          <Route path='/organizations' element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+              <DriverLayout>
+                <OrganizationsPage />
+              </DriverLayout>
+            </ProtectedRoute>
+          } />
+          <Route path='/driver' element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+              <DriverLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<DriverDashboardPage />} />
+            <Route path="points" element={<PointsPage />} />
+          </Route>
+          <Route path='/org' element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.SPONSOR]}>
+              <SponsorOrgLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<SponsorDashboardPage />} />
+            <Route path="point-rules" element={<PointRulesPage />} />
+            <Route path="users" element={<SponsorUsersPage />} />
+            <Route path="drivers" element={<SponsorDriversPage />} />
+            <Route path="drivers/:driverId" element={<SponsorDriverPage />} />
+            <Route path="applications" element={<SponsorDriverApplicationsPage />} />
+            <Route path="catalog" element={<SponsorCatalogPage />} />
+            <Route path="catalog" element={<SponsorCatalogPage />} />
+            <Route path="manage-drivers" element={<ManageDriversPage />} />
+            <Route path="settings" element={<ComingSoonPage title="Settings" />} />
+            <Route path="deliveries" element={<ComingSoonPage title="Deliveries" />} />
+            <Route path="routes" element={<ComingSoonPage title="Routes" />} />
+          </Route>
+          <Route path="/admin" element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
+              <AdminToolsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER, USER_TYPES.SPONSOR, USER_TYPES.ADMIN]}>
+              <ProfilePage />
+            </ProtectedRoute>
+          } />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AppLayout>
     </OrgProvider>
   );
 }

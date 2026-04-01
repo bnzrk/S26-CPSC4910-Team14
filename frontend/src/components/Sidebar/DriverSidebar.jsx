@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Avatar from '../Avatar/Avatar';
 import PointCard from '../PointCard/PointCard';
 import NavBadge from '../NavBadge/NavBadge';
@@ -6,6 +6,7 @@ import { usePoints } from '@/api/points';
 import { useCurrentUser } from '@/api/currentUser';
 import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
 import { useDriverOrgs } from '@/api/driver';
+import CloseIcon from '@/assets/icons/x.svg?react';
 import styles from './DriverSidebar.module.scss';
 import clsx from 'clsx';
 
@@ -13,26 +14,25 @@ const NAV_GROUPS = [
   {
     label: 'Main',
     items: [
-      { label: 'Dashboard', to: '/points', icon: 'grid' },
+      { label: 'Dashboard', to: '/driver', icon: 'grid' },
+      { label: 'My Points', to: '/driver/points', icon: 'star' },
       { label: 'Organizations', to: '/organizations', icon: 'building' },
-      { label: 'My Points', to: '/points', icon: 'coins' },
-      { label: 'Deliveries', to: '/points', icon: 'truck', badge: 3 },
-      { label: 'Challenges', to: '/points', icon: 'zap' },
-      { label: 'Leaderboard', to: '/points', icon: 'trophy' },
+      { label: 'Deliveries', to: '/deliveries', icon: 'truck', badge: 3 },
+      { label: 'Challenges', to: '/challenges', icon: 'zap' },
+      { label: 'Leaderboard', to: '/leaderboard', icon: 'trophy' },
     ],
   },
   {
     label: 'Rewards',
     items: [
-      { label: 'Redeem Points', to: '/points', icon: 'gift' },
-      { label: 'My Rewards', to: '/points', icon: 'star' },
+      { label: 'Redeem Points', to: '/shop', icon: 'gift' },
     ],
   },
   {
     label: 'Account',
     items: [
       { label: 'Profile', to: '/profile', icon: 'user' },
-      { label: 'Settings', to: '/profile', icon: 'settings' },
+      { label: 'Settings', to: '/settings', icon: 'settings' },
     ],
   },
 ];
@@ -104,7 +104,8 @@ function NavIcon({ name }) {
   return icons[name] ?? null;
 }
 
-export default function DriverSidebar() {
+export default function DriverSidebar({ className, onClose }) {
+  const navigate = useNavigate();
   const { pathname } = useLocation();
   const { data: user } = useCurrentUser();
   const { selectedOrgId } = useOrgContext();
@@ -124,13 +125,16 @@ export default function DriverSidebar() {
     : fullName.slice(0, 2).toUpperCase();
 
   return (
-    <aside className={styles.sidebar}>
+    <aside className={clsx(className, styles.sidebar)}>
       {/* Logo */}
       <div className={styles.logoArea}>
         <span className={styles.logo}>
           <span className={styles.logoDrive}>Drive</span>
           <span className={styles.logoPoints}>Points</span>
         </span>
+        <div className={styles.close} onClick={onClose}>
+          <CloseIcon />
+        </div>
       </div>
 
       {/* Profile */}
@@ -150,7 +154,7 @@ export default function DriverSidebar() {
 
       {/* Points card */}
       <div className={styles.pointsArea}>
-        <PointCard points={balance} dollarValue={dollarValue} ctaLabel="Redeem Points →" onCta={() => {}} />
+        <PointCard className={styles.points} points={balance} onClick={() => navigate("/driver/points")} />
       </div>
 
       {/* Nav */}

@@ -3,7 +3,7 @@
 .buttonSimple {
     width: 100%;
     border: none;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     height: var(--btn-height, $grid-5x);
     font-size: var(--font-size-medium);
     line-height: var(--line-height-medium);
@@ -13,7 +13,7 @@
     align-items: center;
     justify-content: center;
     text-wrap: nowrap;
-    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    transition: background-color 0.2s, border-color 0.2s, outline-color 0.2s, color 0.2s;
     padding: 0 $grid-2x;
 
     &.small {
@@ -37,10 +37,10 @@
     &.secondary {
         background: var(--color-surface);
         border: 1px solid var(--color-border);
-        border-radius: $grid-half;
 
         &:hover:not(:disabled) {
-            border-color: var(--color-text);
+            border-color: var(--color-accent);
+            color: var(--color-accent);
         }
     }
 
@@ -73,13 +73,15 @@
 
     &.pillWhite {
         background: var(--white);
+        outline: 1px solid var(--white);
         color: var(--color-accent-dark);
         box-shadow: var(--shadow-cta);
         border: none;
 
         &:hover:not(:disabled) {
-            opacity: 0.92;
-            transform: translateY(-1px);
+            outline: 1px solid var(--green-500);
+            border-color: var(--color-accent);
+            color: var(--color-accent);
         }
     }
 
@@ -105,6 +107,7 @@
 
     .icon {
         padding-right: $grid-1x;
+
         &:first-child:last-child {
             width: $grid-2x;
             height: $grid-2x;
