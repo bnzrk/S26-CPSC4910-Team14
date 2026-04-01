@@ -28,7 +28,9 @@ import OrganizationsPage from './pages/Organizations/OrganizationsPage';
 import ComingSoonPage from './pages/ComingSoon/ComingSoonPage';
 import AppLayout from './pages/AppLayout';
 import DriverDashboardPage from './pages/DriverDashboard/DriverDashboardPage';
+import AuditLogPage from './pages/Admin/AuditLogs/AuditLogPage';
 import './App.scss';
+
 
 function AppContent({ user, orgs })
 {
@@ -95,6 +97,11 @@ function AppContent({ user, orgs })
           <Route path="/admin" element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
               <AdminToolsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/audit-logs" element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
+              <AuditLogPage />
             </ProtectedRoute>
           } />
           <Route path="/profile" element={
