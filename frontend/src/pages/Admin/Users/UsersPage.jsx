@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useDebounce } from "@/helpers/debounce";
 import { useUsers } from "@/api/users";
 import { useStartImpersonation } from "@/api/auth";
@@ -25,8 +25,34 @@ export default function UsersPage()
     const [userQueryString, setUserQueryString] = useState(null);
     const debouncedQuery = useDebounce(userQueryString, searchDebounceMs);
 
-    const { data: users, isLoading: isUsersLoading, isError: isUsersError } = useUsers({ pageSize: 12, query: debouncedQuery });
+    const [page, setPage] = useState(1);
+    const pageSize = 10;
+
+    const { data: users, isLoading: isUsersLoading, isError: isUsersError } = useUsers({ pageSize, page, query: debouncedQuery });
     const { mutate: impersonate, isPending: isImpersonatePending } = useStartImpersonation();
+
+    const totalCount = users?.totalCount ?? 1;
+    const totalPages = useMemo(() =>
+    {
+        if (!totalCount) return 1;
+        return Math.max(1, Math.ceil(totalCount / pageSize));
+    }, [totalCount, pageSize]);
+
+    const onPrev = () => {
+        setPage(page > 1 ? page - 1 : 1);
+    }
+    
+    const onNext = () => {
+        setPage(page < totalPages ? page + 1 : totalPages);
+    }
+
+    const onStart = () => {
+        setPage(1);
+    }
+
+    const onEnd = () => {
+        setPage(totalPages);
+    }
 
     return (
         <CardHost>
@@ -35,29 +61,40 @@ export default function UsersPage()
                     placeholder="Search users..."
                     onChange={(e) => setUserQueryString(e.target.value)}
                 />
-                {users && users.items.map((user) => (
-                    <ListItem
-                        key={user.id}
-                        icon={UserIcon}
-                        label={`${user.firstName} ${user.lastName}`}
-                        right={user.userType != USER_TYPE_ENUM.ADMIN &&
-                            <Button
-                                size='small'
-                                className={clsx(styles.userItemButton)}
-                                icon={LoginIcon}
-                                text='Login-As'
-                                disabled={isImpersonatePending}
-                                onClick={() => impersonate({ targetUserId: user.id })}
-                            />
-                        }
-                    >
-                        <p className={styles.userEmail}>{user.email}</p>
-                        <UserTypeBadge type={user.userType} showIcon={true} />
-                    </ListItem>
-                ))}
-                {(!users || users.items.length == 0) &&
-                    <p>No results found</p>
-                }
+                <PageControls
+                    className={styles.userResults}
+                    showBookends={true}
+                    page={page}
+                    totalPages={totalPages}
+                    onPrev={onPrev}
+                    onNext={onNext}
+                    onStart={onStart}
+                    onEnd={onEnd}
+                >
+                    {users && users.items.map((user) => (
+                        <ListItem
+                            key={user.id}
+                            icon={UserIcon}
+                            label={`${user.firstName} ${user.lastName}`}
+                            right={user.userType != USER_TYPE_ENUM.ADMIN &&
+                                <Button
+                                    size='small'
+                                    className={clsx(styles.userItemButton)}
+                                    icon={LoginIcon}
+                                    text='Login-As'
+                                    disabled={isImpersonatePending}
+                                    onClick={() => impersonate({ targetUserId: user.id })}
+                                />
+                            }
+                        >
+                            <p className={styles.userEmail}>{user.email}</p>
+                            <UserTypeBadge type={user.userType} showIcon={true} />
+                        </ListItem>
+                    ))}
+                    {(!users || users.items.length == 0) &&
+                        <p>No results found</p>
+                    }
+                </PageControls>
             </Card>
         </CardHost>
     );

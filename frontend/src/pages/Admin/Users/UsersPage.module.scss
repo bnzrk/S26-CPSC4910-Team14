@@ -6,6 +6,10 @@
     overflow: hidden;
 }
 
+.userResults {
+    height: calc($grid-1x * 80);
+}
+
 .userItemButton {
     padding: 0 $grid-1x;
 }

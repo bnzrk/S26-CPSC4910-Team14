@@ -1,0 +1,37 @@
+@use '@/styles/globals' as *;
+
+.pageControls {
+    display: flex;
+    flex-direction: column;
+    gap: $grid-1x;
+    justify-content: space-between;
+
+    .controls {
+        display: flex;
+        flex-direction: row;
+        gap: $grid-1x;
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+
+        button {
+            padding: $grid-1x;
+        }
+    }
+
+    .content {
+        overflow-y: auto;
+
+        &.border {
+            height: 100%;
+            border: 1px solid var(--color-border);
+            padding: $grid-1x $grid-2x $grid-2x $grid-2x;
+            border-radius: $grid-1x;
+        }
+    }
+
+    .pager {
+        display: flex;
+        align-items: center;
+    }
+}
