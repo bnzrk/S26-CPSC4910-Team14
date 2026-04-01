@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import { useCurrentUser } from '@/api/currentUser';
 import { useSponsorOrg } from '@/api/sponsorOrg';
 import { USER_TYPES } from '@/constants/userTypes';
@@ -7,26 +8,65 @@ import DriverSidebar from '@/components/Sidebar/DriverSidebar';
 import styles from './AppLayout.module.scss';
 import clsx from 'clsx';
 
-export default function AppLayout({ children }) {
+export default function AppLayout({ children })
+{
   const { data: user } = useCurrentUser();
-  const { data: org } = useSponsorOrg();
 
   const isLoggedIn = !!user;
   const isDriver = user?.userType == USER_TYPES.DRIVER;
   const isSponsor = user?.userType == USER_TYPES.SPONSOR;
   const isAdmin = user?.userType == USER_TYPES.ADMIN;
 
-  const userInitials = user?.firstName && user?.lastName
-    ? `${user.firstName[0]}${user.lastName[0]}`
-    : user?.email?.slice(0, 2)?.toUpperCase() ?? 'SP';
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSideBar = () =>
+  {
+    setSidebarOpen(!sidebarOpen);
+  }
+
+  const closeSideBar = () =>
+  {
+    setSidebarOpen(false);
+  }
+
+  // Clear scroll lock and close sidebar when no longer mobile sized
+  const bodyRef = useRef(null);
+
+  useEffect(() =>
+  {
+    const mediaQuery = window.matchMedia('(max-width: 540px)');
+    const handleResize = () =>
+    {
+      if (!mediaQuery.matches)
+      {
+        setSidebarOpen(false);
+        if (bodyRef.current) bodyRef.current.style.overflow = '';
+      }
+    };
+    mediaQuery.addEventListener('change', handleResize);
+    return () => mediaQuery.removeEventListener('change', handleResize);
+  }, []);
+
+  useEffect(() =>
+  {
+    const isMobile = window.matchMedia('(max-width: 540px)').matches;
+    if (isMobile && bodyRef.current)
+    {
+      bodyRef.current.style.overflow = sidebarOpen ? 'hidden' : '';
+    }
+    return () =>
+    {
+      if (bodyRef.current) bodyRef.current.style.overflow = '';
+    };
+  }, [sidebarOpen]);
 
   return (
     <div className={styles.layout}>
-      {isDriver && <DriverSidebar className={styles.sidebar}/>}
-      {isSponsor && <SponsorSidebar className={styles.sidebar}/>}
+      {isDriver && <DriverSidebar className={clsx(styles.menu, sidebarOpen && styles.open)} onClose={closeSideBar} />}
+      {isSponsor && <SponsorSidebar className={clsx(styles.menu, sidebarOpen && styles.open)} onClose={closeSideBar} />}
       <div className={styles.body}>
-        <Navbar />
-        <main className={clsx(styles.content, (isLoggedIn && !isAdmin) && styles.withSidebar)}>{children}</main>
+        <Navbar toggleSidebar={toggleSideBar} />
+        <main className={clsx(styles.content, (isLoggedIn && !isAdmin) && styles.withMenu)}>{children}</main>
       </div>
     </div>
   );

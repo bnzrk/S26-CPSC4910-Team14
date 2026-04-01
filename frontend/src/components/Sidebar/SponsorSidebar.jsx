@@ -6,6 +6,7 @@ import NavBadge from '../NavBadge/NavBadge';
 import { useSponsorOrg } from '@/api/sponsorOrg';
 import { useCurrentUser } from '@/api/currentUser';
 import { apiFetch } from '@/api/apiFetch';
+import CloseIcon from '@/assets/icons/x.svg?react';
 import styles from './SponsorSidebar.module.scss';
 import clsx from 'clsx';
 
@@ -54,7 +55,7 @@ async function handleLogout()
   navigate("/login");
 }
 
-export default function SponsorSidebar({ className })
+export default function SponsorSidebar({ className, onClose })
 {
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -81,8 +82,13 @@ export default function SponsorSidebar({ className })
   return (
     <aside className={clsx(className, styles.sidebar)}>
       <div className={styles.logoArea}>
-        <span className={styles.logo} onClick={() => navigate("/")}>DrivePoints</span>
-        <span className={styles.portalBadge}>Sponsor Portal</span>
+        <div className={styles.left}>
+          <span className={styles.logo} onClick={() => navigate("/")}>DrivePoints</span>
+          <span className={styles.portalBadge}>Sponsor Portal</span>
+        </div>
+        <div className={styles.close} onClick={onClose}>
+          <CloseIcon />
+        </div>
       </div>
 
       <div className={styles.profile}>

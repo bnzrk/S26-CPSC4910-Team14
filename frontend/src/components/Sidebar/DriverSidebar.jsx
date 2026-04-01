@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Avatar from '../Avatar/Avatar';
 import PointCard from '../PointCard/PointCard';
 import NavBadge from '../NavBadge/NavBadge';
@@ -6,6 +6,7 @@ import { usePoints } from '@/api/points';
 import { useCurrentUser } from '@/api/currentUser';
 import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
 import { useDriverOrgs } from '@/api/driver';
+import CloseIcon from '@/assets/icons/x.svg?react';
 import styles from './DriverSidebar.module.scss';
 import clsx from 'clsx';
 
@@ -103,9 +104,9 @@ function NavIcon({ name }) {
   return icons[name] ?? null;
 }
 
-export default function DriverSidebar({ className }) {
+export default function DriverSidebar({ className, onClose }) {
+  const navigate = useNavigate();
   const { pathname } = useLocation();
-  console.log(pathname);
   const { data: user } = useCurrentUser();
   const { selectedOrgId } = useOrgContext();
   const { data: points } = usePoints(selectedOrgId);
@@ -131,6 +132,9 @@ export default function DriverSidebar({ className }) {
           <span className={styles.logoDrive}>Drive</span>
           <span className={styles.logoPoints}>Points</span>
         </span>
+        <div className={styles.close} onClick={onClose}>
+          <CloseIcon />
+        </div>
       </div>
 
       {/* Profile */}
@@ -150,7 +154,7 @@ export default function DriverSidebar({ className }) {
 
       {/* Points card */}
       <div className={styles.pointsArea}>
-        <PointCard points={balance} dollarValue={dollarValue} ctaLabel="Redeem Points →" onCta={() => {}} />
+        <PointCard className={styles.points} points={balance} onClick={() => navigate("/driver/points")} />
       </div>
 
       {/* Nav */}

@@ -89,11 +89,6 @@ export default function PointsPage()
   return (
     <main className={styles.page}>
       <CardHost>
-        <Button color="primary" onClick={() => navigate('/driver-application')}
-          style={{ fontFamily: 'var(--font-heading)' }}
-        >
-          + Apply to a Sponsor
-        </Button>
         <PointCard points={points ? points.balance : 0}></PointCard>
 
         {hasError && (
@@ -247,6 +242,11 @@ export default function PointsPage()
             </span>
           </div>
         </Card>
+        <Button color="primary" onClick={() => navigate('/driver-application')}
+          style={{ fontFamily: 'var(--font-heading)' }}
+        >
+          + Apply to a Sponsor
+        </Button>
       </CardHost>
     </main>
   );

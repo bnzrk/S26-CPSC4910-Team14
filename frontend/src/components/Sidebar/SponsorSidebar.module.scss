@@ -17,8 +17,14 @@
   padding: 20px 20px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: row;
+  justify-content: space-between;
+
+  .left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 }
 
 .logo {
@@ -130,4 +136,14 @@
   padding: 2px 7px;
   border-radius: var(--radius-pill);
   white-space: nowrap;
+}
+
+.close {
+  color: var(--white);
+  cursor: pointer;
+  display: none;
+
+  @media only screen and (max-width : $small-width) {
+    display: flex;
+  }
 }

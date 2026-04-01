@@ -83,7 +83,7 @@ export default function SponsorUsersPage()
                         </div>
                     }
                 </Modal.Body>
-                <Modal.Buttons style={{ justifyContent: 'space-between' }}>
+                <Modal.Buttons position='left'>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                         {!confirmRemove
                             ? <Button text='Remove Employee' color='warn' onClick={() => setConfirmRemove(true)} />

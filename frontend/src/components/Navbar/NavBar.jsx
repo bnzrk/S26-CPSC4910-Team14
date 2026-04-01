@@ -14,7 +14,7 @@ import UserIcon from '@/assets/icons/user-person.svg?react';
 import styles from './NavBar.module.scss';
 import clsx from "clsx";
 
-export default function Navbar()
+export default function Navbar({ toggleSidebar })
 {
   const navigate = useNavigate();
   const { data: currentUser, isLoading } = useCurrentUser();
@@ -68,14 +68,6 @@ export default function Navbar()
           {!isLoading && (
             isLoggedIn ? (
               <>
-                <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>{currentUser.email}</span>
-
-                {roleBadge && (
-                  <span className={clsx(styles.roleBadge, roleBadge.style)}>
-                    {roleBadge.label}
-                  </span>
-                )}
-
                 {isDriver && (
                   <>
                     <OrgSelector />
@@ -92,6 +84,7 @@ export default function Navbar()
                   <Button className={styles.button} onClick={() => navigate("/admin")} text='Tools' icon={ToolsIcon} />
                 )}
                 {userInitials && <Avatar className={styles.profile} initials={userInitials} size="md" onClick={() => navigate("/profile")} />}
+                {userInitials && <Avatar className={styles.mobileMenu} initials={userInitials} size="md" onClick={toggleSidebar} />}
               </>
             ) : (
               <>
