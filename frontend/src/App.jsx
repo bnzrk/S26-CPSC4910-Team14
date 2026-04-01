@@ -23,7 +23,9 @@ import ProfilePage from './pages/Profile/ProfilePage';
 import DriverApplicationPage from "./pages/DriverApplication/DriverApplicationPage";
 import SponsorDriverApplicationsPage from './pages/SponsorOrg/Applications/SponsorDriverApplicationsPage';
 import SponsorCatalogPage from './pages/SponsorOrg/Catalog/SponsorCatalogPage';
+import AuditLogPage from './pages/Admin/AuditLogs/AuditLogPage';
 import './App.scss';
+
 
 export default function App()
 {
@@ -91,6 +93,11 @@ export default function App()
           <Route path="/admin" element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
               <AdminToolsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/audit-logs" element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
+              <AuditLogPage />
             </ProtectedRoute>
           } />
           <Route path="/profile" element={

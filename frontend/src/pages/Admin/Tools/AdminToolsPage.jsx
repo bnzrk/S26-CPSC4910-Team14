@@ -6,6 +6,8 @@ import Card from "@/components/Card/Card";
 import CardHost from "@/components/CardHost/CardHost";
 import AsyncButton from "@/components/AsyncButton/AsyncButton";
 import styles from './AdminToolsPage.module.scss';
+import { useNavigate } from 'react-router-dom';
+
 
 // Will probably have a proper admin dashboard/pages later but this is fine for now
 export default function AdminToolsPage()
@@ -32,7 +34,7 @@ export default function AdminToolsPage()
     const [adminLastName, setadminLastName] = useState('');
     const [adminPassword, setadminPassword] = useState('');
     const [adminErrors, setadminErrors] = useState([]);
-
+    const navigate = useNavigate();
     async function handleCreateOrg()
     {
         if (!orgName)
@@ -102,6 +104,11 @@ export default function AdminToolsPage()
                         </div>
                         <AsyncButton type="submit" text='Create' action={handleCreateOrg} />
                     </form>
+                    <Card title='Navigation'>
+                        <button onClick={() => navigate('/admin/audit-logs')}>
+                            View Audit Logs
+                        </button>
+                        </Card>
                 </Card>
                 <Card title='Create Sponsor User'>
                     <select
