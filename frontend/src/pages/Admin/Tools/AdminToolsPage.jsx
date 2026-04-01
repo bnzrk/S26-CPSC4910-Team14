@@ -1,15 +1,20 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/Toast/ToastContext";
 import { useAllSponsorOrgs, useCreateSponsorOrg, useCreateSponsorOrgUser } from "@/api/sponsorOrg";
 import { useCreateAdminUser } from "@/api/admin";
+import ListItem from "@/components/ListItem/ListItem";
 import Card from "@/components/Card/Card";
 import CardHost from "@/components/CardHost/CardHost";
 import AsyncButton from "@/components/AsyncButton/AsyncButton";
+import UsersIcon from "@/assets/icons/users.svg?react";
 import styles from './AdminToolsPage.module.scss';
 
 // Will probably have a proper admin dashboard/pages later but this is fine for now
 export default function AdminToolsPage()
 {
+    const navigate = useNavigate();
+
     const { push } = useToast();
 
     const { data: orgs, isLoading: isOrgsLoading, isError: isOrgsError } = useAllSponsorOrgs();
@@ -235,6 +240,14 @@ export default function AdminToolsPage()
                         )}
                         <AsyncButton type="submit" text='Create' action={handleCreateAdmin} />
                     </form>
+                </Card>
+                <Card title='More'>
+                    <ListItem 
+                        icon={UsersIcon} 
+                        label='Users' 
+                        showChevron={true}
+                        onClick={() => navigate("users")}
+                    />
                 </Card>
             </CardHost>
         </>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, Navigate } from "react-router-dom";
+import { useCurrentUser } from "@/api/currentUser";
 import { useSponsorOrgDriver } from "@/api/sponsorOrg"
 import { useStartImpersonation } from "@/api/auth";
 import CardHost from "@/components/CardHost/CardHost";
@@ -32,6 +33,7 @@ export default function SponsorDriverPage()
     const [currentModal, setCurrentModal] = useState(null);
 
     const { mutate: impersonate, isPending } = useStartImpersonation();
+    const { data: user } = useCurrentUser();
 
     const { driverId: paramId } = useParams();
     const driverId = Number(paramId);
@@ -89,7 +91,7 @@ export default function SponsorDriverPage()
                                     className={clsx(styles.editButton, styles.button)}
                                     icon={LoginIcon}
                                     text='Login-As'
-                                    disabled={impersonate.isPending}
+                                    disabled={impersonate.isPending || (user && user.isImpersonating)}
                                     onClick={() => impersonate({ targetUserId: driver.userId })}
                                 />
                                 <Button

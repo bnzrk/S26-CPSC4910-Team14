@@ -57,8 +57,6 @@ export default function Navbar()
     navigate("/login");
   }
 
-  console.log(currentUser);
-
   return (
     <>
       {isImpersonationSession &&

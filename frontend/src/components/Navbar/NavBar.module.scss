@@ -1,7 +1,6 @@
 @use '@/styles/globals' as *;
 
 .navbar {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -104,8 +103,6 @@
 }
 
 .banner {
-  top: 0;
-  position: sticky;
   padding: $grid-1x;
   color: var(--color-surface);
   display: flex;

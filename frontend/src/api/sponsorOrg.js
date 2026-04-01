@@ -57,7 +57,7 @@ export function useSponsorOrg(orgId)
     return useQuery({
         queryKey: ["sponsorOrg", orgPath, user?.id],
         queryFn: async () => apiFetch(`/sponsor-orgs/${orgPath}`).then(r => r.json()),
-        enabled: !!user && (isSponsor || isAdmin),
+        enabled: !!user && (isSponsor || (isAdmin && !!orgId)),
         retry: 1
     });
 }

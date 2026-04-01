@@ -1,0 +1,11 @@
+@use '@/styles/globals' as *;
+
+.userEmail {
+    margin: 0 $grid-1x;
+    flex-shrink: 5;
+    overflow: hidden;
+}
+
+.userItemButton {
+    padding: 0 $grid-1x;
+}

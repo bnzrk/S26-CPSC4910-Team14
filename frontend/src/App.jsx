@@ -15,9 +15,11 @@ import SponsorOrgPage from '@/pages/SponsorOrg/Index/SponsorOrgPage';
 import SponsorUsersPage from './pages/SponsorOrg/Users/SponsorUsersPage';
 import SponsorDriversPage from './pages/SponsorOrg/Drivers/Index/SponsorDriversPage';
 import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPage';
+import UsersPage from './pages/Admin/Users/UsersPage';
 import ShopPage from './pages/Shop/ShopPage';
 import RegisterPage from './pages/Register/RegisterPage';
 import AdminToolsPage from './pages/Admin/Tools/AdminToolsPage';
+import AdminToolsLayout from './pages/Admin/AdminToolsLayout';
 import Navbar from './components/Navbar/NavBar';
 import ProfilePage from './pages/Profile/ProfilePage';
 import DriverApplicationPage from "./pages/DriverApplication/DriverApplicationPage";
@@ -38,9 +40,6 @@ export default function App()
     : isSponsor && sponsorOrg
       ? [sponsorOrg]
       : [];
-
-  if (!isLoading)
-    console.log(`Current user: ${JSON.stringify(user)}`);
 
   return (
     <>
@@ -90,9 +89,12 @@ export default function App()
           </Route>
           <Route path="/admin" element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
-              <AdminToolsPage />
+              <AdminToolsLayout />
             </ProtectedRoute>
-          } />
+          }>
+            <Route index element={<AdminToolsPage />} />
+            <Route path="users" element={<UsersPage />} />
+          </Route>
           <Route path="/profile" element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER, USER_TYPES.SPONSOR, USER_TYPES.ADMIN]}>
               <ProfilePage />

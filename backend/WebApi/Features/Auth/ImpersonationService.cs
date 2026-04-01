@@ -32,7 +32,7 @@ public class ImpersonationService : IImpersonationService
         var scopeIdString = user.FindFirstValue(ImpersonationOrgScopeClaimType);
         var parsed = Int32.TryParse(scopeIdString, out int orgId);
         if (!parsed)
-            throw new Exception("Could not parse org scope id from claim");
+            return null;
         return orgId;
     }
 

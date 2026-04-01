@@ -30,6 +30,12 @@
   font-size: 1.15rem;
   font-weight: 600;
   margin: 0;
+
+  svg {
+    width: $grid-2x;
+    height: $grid-2x;
+    margin-right: $grid-1x;
+  }
 }
 
 .headerRight {
