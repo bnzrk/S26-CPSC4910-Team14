@@ -1,4 +1,5 @@
 import { useCurrentUser } from "../../api/currentUser";
+import { useLogout } from "@/api/auth";
 import { usePoints } from "@/api/points";
 import { apiFetch } from "@/api/apiFetch";
 import { queryClient } from "../../api/queryClient";
@@ -7,12 +8,9 @@ import { useOrgContext } from "@/contexts/OrgContext/OrgContext";
 import Button from "../Button/Button";
 import Avatar from "../Avatar/Avatar";
 import OrgSelector from "../OrgSelector/OrgSelector";
-import BuildingIcon from "@/assets/icons/building-2.svg?react";
 import StarIcon from "@/assets/icons/star.svg?react";
 import ToolsIcon from "@/assets/icons/wrench.svg?react";
-import UserIcon from '@/assets/icons/user-person.svg?react';
 import styles from './NavBar.module.scss';
-import clsx from "clsx";
 
 export default function Navbar({ toggleSidebar })
 {
@@ -23,35 +21,11 @@ export default function Navbar({ toggleSidebar })
 
   const isLoggedIn = !!currentUser;
   const isDriver = currentUser?.userType === 'Driver';
-  const isSponsor = currentUser?.userType === 'Sponsor';
   const isAdmin = currentUser?.userType === 'Admin';
 
   const userInitials = currentUser?.firstName && currentUser?.lastName
     ? `${currentUser.firstName[0]}${currentUser.lastName[0]}`
     : currentUser?.email?.slice(0, 2)?.toUpperCase() ?? 'SP';
-
-  function getRoleBadge()
-  {
-    if (isDriver) return { label: 'Driver', style: styles.roleDriver };
-    if (isSponsor) return { label: 'Sponsor', style: styles.roleSponsor };
-    if (isAdmin) return { label: 'Admin', style: styles.roleAdmin };
-    return null;
-  }
-
-  const roleBadge = getRoleBadge();
-
-  async function handleLogout()
-  {
-    try
-    {
-      await apiFetch("/auth/logout", { method: "POST" });
-    } catch (err)
-    {
-      console.error("Logout failed:", err);
-    }
-    queryClient.setQueryData(["currentUser"], null);
-    navigate("/login");
-  }
 
   return (
     <>
@@ -68,7 +42,7 @@ export default function Navbar({ toggleSidebar })
           {!isLoading && (
             isLoggedIn ? (
               <>
-                {isDriver && (
+                {isDriver && selectedOrgId && (
                   <>
                     <OrgSelector />
                     <span

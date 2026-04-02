@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useCurrentUser } from '@/api/currentUser';
-import { useSponsorOrg } from '@/api/sponsorOrg';
 import { USER_TYPES } from '@/constants/userTypes';
+import { useLogout } from '@/api/auth';
 import Navbar from '@/components/Navbar/NavBar';
 import SponsorSidebar from '@/components/Sidebar/SponsorSidebar';
 import DriverSidebar from '@/components/Sidebar/DriverSidebar';
+import Button from '@/components/Button/Button';
+import LogOutIcon from '@/assets/icons/log-out.svg?react';
 import styles from './AppLayout.module.scss';
 import clsx from 'clsx';
 
@@ -12,12 +14,16 @@ export default function AppLayout({ children })
 {
   const { data: user } = useCurrentUser();
 
+  const { mutate: logout } = useLogout();
+
   const isLoggedIn = !!user;
   const isDriver = user?.userType == USER_TYPES.DRIVER;
   const isSponsor = user?.userType == USER_TYPES.SPONSOR;
   const isAdmin = user?.userType == USER_TYPES.ADMIN;
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const isImpersonationSession = user && user?.isImpersonating;
 
   const toggleSideBar = () =>
   {
@@ -61,13 +67,27 @@ export default function AppLayout({ children })
   }, [sidebarOpen]);
 
   return (
-    <div className={styles.layout}>
-      {isDriver && <DriverSidebar className={clsx(styles.menu, sidebarOpen && styles.open)} onClose={closeSideBar} />}
-      {isSponsor && <SponsorSidebar className={clsx(styles.menu, sidebarOpen && styles.open)} onClose={closeSideBar} />}
-      <div className={styles.body}>
-        <Navbar toggleSidebar={toggleSideBar} />
-        <main className={clsx(styles.content, (isLoggedIn && !isAdmin) && styles.withMenu)}>{children}</main>
+    <>
+      <div className={clsx(styles.layout, isImpersonationSession && styles.withBanner)}>
+        {isDriver && <DriverSidebar className={clsx(styles.menu, sidebarOpen && styles.open)} onClose={closeSideBar} />}
+        {isSponsor && <SponsorSidebar className={clsx(styles.menu, sidebarOpen && styles.open)} onClose={closeSideBar} />}
+        <div className={clsx((isLoggedIn && !isAdmin) && styles.withMenu, styles.body)}>
+          <Navbar toggleSidebar={toggleSideBar} />
+          {isImpersonationSession &&
+            <div className={styles.banner}>
+              <p>Logged in as {user?.email}</p>
+              <Button
+                className={styles.sessionButton}
+                size='small'
+                icon={LogOutIcon}
+                text='End Session'
+                onClick={logout}
+              />
+            </div>
+          }
+          <main className={clsx(styles.content)}>{children}</main>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

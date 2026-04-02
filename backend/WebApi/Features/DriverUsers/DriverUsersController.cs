@@ -9,6 +9,7 @@ using WebApi.Features.Users;
 using WebApi.Helpers.Pagination;
 using WebApi.Data.Enums;
 using WebApi.Audit;
+using WebApi.Features.Auth;
 
 namespace WebApi.Features.DriverUsers;
 
@@ -21,14 +22,22 @@ public class DriverUsersController : ControllerBase
     private readonly UserManager<User> _userManager;
     private readonly IDriverUsersService _driversService;
     private readonly IAuditLogger _auditLogger;
+    private readonly IImpersonationService _impersonationService;
 
-    public DriverUsersController(AppDbContext db, IUsersService usersService, UserManager<User> userManager, IDriverUsersService driversService, IAuditLogger auditLogger)
+    public DriverUsersController(
+        AppDbContext db,
+        IUsersService usersService,
+        UserManager<User> userManager,
+        IDriverUsersService driversService,
+        IAuditLogger auditLogger,
+        IImpersonationService impersonationService)
     {
         _db = db;
         _usersService = usersService;
         _userManager = userManager;
         _driversService = driversService;
         _auditLogger = auditLogger;
+        _impersonationService = impersonationService;
     }
 
     #region Drivers
@@ -123,8 +132,28 @@ public class DriverUsersController : ControllerBase
         if (userId is null)
             return Unauthorized();
 
-        var orgs = await _driversService.GetSponsorOrgsFromUserIdAsync(userId);
+        // Limit the returned org info if impersonating with an org scope
+        if (_impersonationService.IsImpersonating(User))
+        {
+            var scopeId = _impersonationService.GetSponsorOrgScopeId(User);
+            if (scopeId is not null)
+            {
+                var org = _db.SponsorOrgs
+                    .AsNoTracking()
+                    .Where(o => o.Id == scopeId.Value)
+                    .Select(o => new SponsorOrgModel
+                    {
+                        Id = o.Id,
+                        SponsorName = o.SponsorName,
+                        PointRatio = o.PointRatio
+                    });
+                    
+                return Ok(new List<SponsorOrgModel>(org));
+            }
+        }
 
+        // If not impersonating, return all
+        var orgs = await _driversService.GetSponsorOrgsFromUserIdAsync(userId);
         return Ok(orgs);
     }
 

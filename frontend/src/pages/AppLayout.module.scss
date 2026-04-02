@@ -23,7 +23,7 @@
   min-width: 0;
   overflow-y: auto;
   max-width: 100%;
-  height: 100vh; 
+  height: 100vh;
 }
 
 .content {
@@ -31,8 +31,37 @@
   max-width: 100%;
 }
 
+.banner {
+  width: 100%;
+  padding: $grid-1x;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $grid-2x;
+  background: var(--color-warn);
+  height: $grid-6x;
+
+  button.sessionButton {
+    width: fit-content;
+    background: none;
+    color: var(--white);
+    border: 1px solid var(--white);
+    padding: 0 $grid-1x;
+
+    &:hover:not(:disabled) {
+      color: var(--white);
+      border: 1px solid var(--white);
+    }
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
 @media only screen and (max-width : $small-width) {
-  .layout .content {
+  .layout .body {
     margin-left: 0;
   }
 

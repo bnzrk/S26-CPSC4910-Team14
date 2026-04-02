@@ -156,8 +156,8 @@ export default function ProfilePage()
     {
       console.error("Logout failed:", err);
     }
-    queryClient.setQueryData(["currentUser"], null);
-    navigate("/login");
+    queryClient.invalidateQueries(["currentUser"]);
+    navigate("/");
   }
 
   return (

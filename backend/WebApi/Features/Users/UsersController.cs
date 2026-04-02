@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
+using WebApi.Helpers.Pagination;
+using WebApi.Features.Auth.Models;
+using WebApi.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace WebApi.Features.Users;
 
@@ -9,11 +13,13 @@ namespace WebApi.Features.Users;
 [Route("/users")]
 public class UsersController : ControllerBase
 {
+    private readonly AppDbContext _db;
     private readonly IUsersService _usersService;
     private readonly UserManager<User> _userManager;
 
-    public UsersController(UserManager<User> userManager, IUsersService usersService)
+    public UsersController(AppDbContext db, UserManager<User> userManager, IUsersService usersService)
     {
+        _db = db;
         _usersService = usersService;
         _userManager = userManager;
     }
@@ -65,10 +71,36 @@ public class UsersController : ControllerBase
         {
             return BadRequest(new
             {
-                Errors = result.Errors.Select(e => e.Description).ToArray() 
+                Errors = result.Errors.Select(e => e.Description).ToArray()
             });
         }
 
         return Ok();
+    }
+
+    [HttpGet]
+    [Authorize(Policy = PolicyNames.AdminOnly)]
+    public async Task<ActionResult<PagedResult<UserModel>>> GetUsers(
+        [FromQuery] int? pageSize,
+        [FromQuery] int? page,
+        [FromQuery] string? query
+    )
+    {
+        string[] tokens = query?.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? [];
+
+        var pageQuery = _db.Users.AsNoTracking();
+        foreach (string token in tokens)
+        {
+            var t = token;
+            pageQuery = pageQuery.Where(u =>
+                EF.Functions.Like(u.FirstName, t + "%") ||
+                EF.Functions.Like(u.LastName, t + "%") ||
+                EF.Functions.Like(u.Email!, t + "%"));
+        }
+
+        var queryPage = page is not null ? page.Value : 1;
+        var queryPageSize = pageSize is not null ? pageSize.Value : 20;
+        var results = await PagedResult.ToPagedResultAsync(pageQuery, queryPage, queryPageSize);
+        return Ok(results);
     }
 }

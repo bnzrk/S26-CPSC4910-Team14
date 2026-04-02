@@ -15,9 +15,11 @@ import SponsorDashboardPage from '@/pages/SponsorOrg/SponsorDashboardPage';
 import SponsorUsersPage from './pages/SponsorOrg/Users/SponsorUsersPage';
 import SponsorDriversPage from './pages/SponsorOrg/Drivers/Index/SponsorDriversPage';
 import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPage';
+import UsersPage from './pages/Admin/Users/UsersPage';
 import ShopPage from './pages/Shop/ShopPage';
 import RegisterPage from './pages/Register/RegisterPage';
 import AdminToolsPage from './pages/Admin/Tools/AdminToolsPage';
+import AdminToolsLayout from './pages/Admin/AdminToolsLayout';
 import ProfilePage from './pages/Profile/ProfilePage';
 import DriverApplicationPage from "./pages/DriverApplication/DriverApplicationPage";
 import SponsorDriverApplicationsPage from './pages/SponsorOrg/Applications/SponsorDriverApplicationsPage';
@@ -32,13 +34,19 @@ import AuditLogPage from './pages/Admin/AuditLogs/AuditLogPage';
 import './App.scss';
 
 
-function AppContent({ user, orgs })
+function AppContent({ user, isUserLoading, orgs })
 {
   return (
     <OrgProvider user={user} orgs={orgs}>
       <AppLayout>
         <Routes>
-          <Route path="/" element={<AboutPage />} />
+          <Route path="/" element={
+            isUserLoading ? <div></div> :
+            user?.userType === USER_TYPES.DRIVER ? <Navigate to="/driver" replace /> :
+            user?.userType === USER_TYPES.SPONSOR ? <Navigate to="/org" replace /> :
+            user?.userType === USER_TYPES.ADMIN ? <Navigate to="/admin" replace /> :
+            <Navigate to="/about" replace />
+          } />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/login" element={
             <GuestRoute>
@@ -96,14 +104,13 @@ function AppContent({ user, orgs })
           </Route>
           <Route path="/admin" element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
-              <AdminToolsPage />
+              <AdminToolsLayout />
             </ProtectedRoute>
-          } />
-          <Route path="/admin/audit-logs" element={
-            <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
-              <AuditLogPage />
-            </ProtectedRoute>
-          } />
+          }>
+            <Route index element={<AdminToolsPage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="audit-logs" element={<AuditLogPage />} />
+          </Route>
           <Route path="/profile" element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER, USER_TYPES.SPONSOR, USER_TYPES.ADMIN]}>
               <ProfilePage />
@@ -133,5 +140,5 @@ export default function App()
   if (!isLoading)
     console.log(`Current user: ${JSON.stringify(user)}`);
 
-  return <AppContent user={user} orgs={orgs} />;
+  return <AppContent user={user} isUserLoading={isLoading} orgs={orgs} />;
 }

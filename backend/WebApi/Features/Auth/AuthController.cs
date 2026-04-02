@@ -7,6 +7,7 @@ using WebApi.Data;
 using WebApi.Audit;
 using WebApi.Data.Enums;
 using WebApi.Features.Users;
+using Microsoft.EntityFrameworkCore;
 
 namespace WebApi.Features.Auth;
 
@@ -17,14 +18,22 @@ public class AuthController : ControllerBase
     private readonly AppDbContext _db;
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
+    private readonly IImpersonationService _impersonationService;
     private readonly IAuditLogger _auditLogger;
     private readonly IUsersService _usersService;
 
-    public AuthController(UserManager<User> userManager, SignInManager<User> signInManager, AppDbContext db, IAuditLogger auditLogger, IUsersService usersService)
+    public AuthController(
+        AppDbContext db,
+        UserManager<User> userManager,
+        IUsersService usersService,
+        SignInManager<User> signInManager,
+        IImpersonationService impersonationService,
+        IAuditLogger auditLogger)
     {
         _db = db;
         _userManager = userManager;
         _signInManager = signInManager;
+        _impersonationService = impersonationService;
         _auditLogger = auditLogger;
         _usersService = usersService;
     }
@@ -45,7 +54,7 @@ public class AuthController : ControllerBase
         if (!result.Succeeded)
         {
             await _auditLogger.CreateLoginAuditLog(login.Email, false);
-            return BadRequest("Invalid email or password.");   
+            return BadRequest("Invalid email or password.");
         }
 
         await _auditLogger.CreateLoginAuditLog(login.Email, true);
@@ -89,7 +98,11 @@ public class AuthController : ControllerBase
     [Authorize]
     public async Task<ActionResult> Logout()
     {
-        await _signInManager.SignOutAsync();
+        if (_impersonationService.IsImpersonating(User))
+            await _impersonationService.StopImpersonationAsync();
+        else
+            await _signInManager.SignOutAsync();
+
         return Ok();
     }
 
@@ -100,14 +113,14 @@ public class AuthController : ControllerBase
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
         {
-            return Ok(new ProfileModel
+            return Ok(new AuthModel
             {
                 IsAuthenticated = false,
                 User = null
             });
         }
 
-        return Ok(new ProfileModel
+        return Ok(new AuthModel
         {
             IsAuthenticated = true,
             User = new UserModel
@@ -116,11 +129,76 @@ public class AuthController : ControllerBase
                 Email = user.Email!,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                UserType = user.UserType.ToString()
+                UserType = user.UserType.ToString(),
+                IsImpersonating = _impersonationService.IsImpersonating(User),
             }
         });
     }
 
+    #region Impersonation
+    [HttpPost("impersonation/start")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<ActionResult> StartImpersonation([FromBody] string targetUserId)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        if (_impersonationService.IsImpersonating(User))
+            return BadRequest("Already impersonating");
+
+        var targetUser = await _userManager.FindByIdAsync(targetUserId);
+        if (targetUser is null)
+            return NotFound();
+
+        // Disallow impersonation of admin users
+        if (targetUser.UserType == UserType.Admin)
+            return Forbid();
+
+        // If sponsor, validate org of target user
+        int? orgScopeId = null;
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor)
+        {
+            if (targetUser.UserType != UserType.Driver)
+                return Forbid();
+
+            var sponsorOrgId = await _db.SponsorUsers
+                .AsNoTracking()
+                .Where(s => s.User.Id == userId)
+                .Select(s => s.SponsorOrgId)
+                .SingleOrDefaultAsync();
+
+            var isDriverInOrg = await _db.DriverUsers
+                .AsNoTracking()
+                .AnyAsync(d => d.User.Id == targetUserId
+                    && d.SponsorOrgs.Any(s => s.Id == sponsorOrgId));
+
+            if (!isDriverInOrg)
+                return NotFound();
+
+            orgScopeId = sponsorOrgId;
+        }
+
+        await _impersonationService.StartImpersonationAsync(targetUserId, orgScopeId);
+
+        return Ok();
+    }
+
+    [HttpPost("impersonation/stop")]
+    [Authorize]
+    public async Task<ActionResult> StopImpersonation()
+    {
+        if (!_impersonationService.IsImpersonating(User))
+            return BadRequest("Not currently impersonating");
+
+        await _impersonationService.StopImpersonationAsync();
+
+        return Ok();
+    }
+    #endregion
+
+    #region Profile
     [HttpGet("profile")]
     [Authorize]
     public async Task<ActionResult> GetProfile()
@@ -170,25 +248,26 @@ public class AuthController : ControllerBase
         if (!result.Succeeded)
         {
             await _auditLogger.CreatePasswordChangeAuditLog(user.Id, user.Email!, PasswordChangeType.SelfUpdate, false);
-            return BadRequest(result.Errors.Select(e => e.Description));   
+            return BadRequest(result.Errors.Select(e => e.Description));
         }
 
-    await _auditLogger.CreatePasswordChangeAuditLog(user.Id, user.Email!, PasswordChangeType.SelfUpdate, true);
-    return Ok();
-}
+        await _auditLogger.CreatePasswordChangeAuditLog(user.Id, user.Email!, PasswordChangeType.SelfUpdate, true);
+        return Ok();
+    }
+    #endregion
 
-[HttpDelete("account")]
-[Authorize]
-public async Task<ActionResult> DeleteAccount()
-{
-    var user = await _userManager.GetUserAsync(User);
-    if (user is null) return Unauthorized();
+    [HttpDelete("account")]
+    [Authorize]
+    public async Task<ActionResult> DeleteAccount()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
 
-    await _signInManager.SignOutAsync();
-    var result = await _userManager.DeleteAsync(user);
-    if (!result.Succeeded)
-        return BadRequest(result.Errors.Select(e => e.Description));
+        await _signInManager.SignOutAsync();
+        var result = await _userManager.DeleteAsync(user);
+        if (!result.Succeeded)
+            return BadRequest(result.Errors.Select(e => e.Description));
 
-    return Ok();
-}
+        return Ok();
+    }
 }

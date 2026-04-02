@@ -29,8 +29,9 @@ export default function Button({ children, text = '', color, icon: Icon, size, d
   }
 
   var sizeClass = size == 'small' ? styles.small : '';
+  var iconOnlyClass = !!Icon && (!text || text == '') ? styles.iconOnly : '';
 
-  return <button {...other} type={type} className={clsx(className, styles.buttonSimple, colorClass, sizeClass)} disabled={disabled} onClick={onClick}>
+  return <button {...other} type={type} className={clsx(className, styles.buttonSimple, colorClass, sizeClass, iconOnlyClass)} disabled={disabled} onClick={onClick}>
     {Icon && <Icon className={styles.icon}/>}
     {text && <span>{text}</span>}
     {children}
