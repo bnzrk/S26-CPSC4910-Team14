@@ -1,0 +1,45 @@
+/* Dark mode token overrides */
+/* Light mode defaults live in _tokens.scss — this file only overrides for dark */
+
+html[data-theme='dark'] {
+  --color-bg: #0A0E1A;
+  --color-surface: #1A1F36;
+  --color-text: #F6F9FC;
+  --color-text-secondary: #A3ACB9;
+  --color-text-tertiary: #6b7280;
+  --color-accent: #00E4BA;
+  --color-accent-dark: #00b896;
+  --color-accent-light: #0d3d33;
+  --color-border: #2D3348;
+  --color-nav-bg: rgba(26, 31, 54, 0.92);
+  --color-sidebar-driver: #0a1f0d;
+  --color-sidebar-sponsor: #0A0E1A;
+  --color-sidebar-active-driver: #0d3320;
+  --color-sidebar-active-sponsor: #1A1F36;
+  --white: #1A1F36;
+
+  /* Gray scale overrides */
+  --gray-50:  #1e2340;
+  --gray-100: #252b45;
+  --gray-200: #2D3348;
+  --gray-300: #3a4060;
+  --gray-400: #6b7280;
+  --gray-500: #A3ACB9;
+
+  /* Keep warn/success/caution semantic colors fixed */
+  --color-warn: #f87171;
+  --color-warn-dark: #c0392b;
+  --amber-text: #d97706;
+  --color-success: #34d399;
+  --color-caution: #fbbf24;
+
+  /* Shadows are lighter in dark mode */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Smooth theme transitions (applied briefly during switch) */
+html.theme-transitioning * {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease !important;
+}

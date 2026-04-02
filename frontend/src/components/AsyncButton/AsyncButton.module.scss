@@ -26,7 +26,7 @@
         color: var(--color-surface);
 
         &:hover:not(:disabled) {
-            background-color: #075338;
+            background-color: var(--color-accent-dark);
         }
     }
 
@@ -45,7 +45,7 @@
         color: var(--color-surface);
 
         &:hover:not(:disabled) {
-            background-color: #9d2a36;
+            background-color: var(--color-warn-dark);
         }
     }
 

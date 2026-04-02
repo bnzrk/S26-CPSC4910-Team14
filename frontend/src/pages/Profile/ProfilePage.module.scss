@@ -100,19 +100,19 @@
   }
   
   .success {
-    background: #e6f4ed;
-    border: 1px solid #0a6847;
-    color: #0a6847;
+    background: var(--color-accent-light);
+    border: 1px solid var(--color-accent);
+    color: var(--color-accent);
     border-radius: 4px;
     padding: 0.5rem 0.85rem;
     font-size: 0.9rem;
     margin: 0;
   }
-  
+
   .error {
-    background: #fdecea;
+    background: var(--red-100);
     border: 1px solid #f5c6cb;
-    color: #d32f2f;
+    color: var(--color-warn);
     border-radius: 4px;
     padding: 0.5rem 0.85rem;
     font-size: 0.9rem;
@@ -126,15 +126,15 @@
 
   .buttonDelete {
     background: transparent;
-    color: #d32f2f;
+    color: var(--color-warn);
     border: 1px solid #f5c6cb;
     border-radius: 4px;
     padding: 0.65rem 1.25rem;
     font-size: 1rem;
     cursor: pointer;
-  
+
     &:hover {
-      background: #fdecea;
+      background: var(--red-100);
     }
   }
   
