@@ -111,6 +111,7 @@ function AppContent({ user, isUserLoading, orgs })
           <Route index element={<AdminDashboardPage />} />
           <Route path="tools" element={<AdminToolsPage />} />
           <Route path="audit-logs" element={<AuditLogPage />} />
+          <Route path="users" element={<UsersPage />} />
         </Route>
           <Route path="/profile" element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER, USER_TYPES.SPONSOR, USER_TYPES.ADMIN]}>
