@@ -14,7 +14,7 @@ export default function SponsorDriversPage()
 
     return (
         <main className={styles.sponsorDrivers}>
-            <CardHost title='Drivers' subtitle="Manage your organization's drivers">
+            <CardHost>
                 <Card title='Accounts'>
                     {drivers && drivers.items.map((driver) => (
                         <ListItem key={driver.id}

@@ -1,15 +1,18 @@
 .section {
   max-width: 960px;
   margin: 0 auto;
-  padding: 4rem 1.5rem;
-  border-top: 1px solid var(--color-border);
+  padding: 96px 6%;
+  border-top: 1px solid var(--gray-200);
 }
 
 .heading {
   text-align: center;
   margin: 0 0 2.5rem;
-  font-size: 1.75rem;
-  color: var(--color-text);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: var(--gray-900);
+  font-family: inherit;
 }
 
 .grid {
@@ -47,20 +50,21 @@
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-family: var(--font-heading);
+  font-family: inherit;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.02em;
 }
 
 .name {
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--gray-900);
   text-align: center;
+  font-family: inherit;
 }
 
 .role {
   font-size: 0.8rem;
-  color: var(--color-text-tertiary);
+  color: var(--gray-500);
 }

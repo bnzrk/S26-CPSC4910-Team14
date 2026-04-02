@@ -71,10 +71,7 @@ export default function SponsorDriverPage()
                 onSuccess={() => null}
                 driver={driver}
             />
-            <CardHost
-                title='Manage Driver'
-                subtitle="Manage driver profile and points"
-            >
+            <CardHost>
                 <Card title='Profile'>
                     {driver &&
                         <div className={styles.profile}>

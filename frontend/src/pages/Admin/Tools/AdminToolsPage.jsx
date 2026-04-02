@@ -8,7 +8,10 @@ import Card from "@/components/Card/Card";
 import CardHost from "@/components/CardHost/CardHost";
 import AsyncButton from "@/components/AsyncButton/AsyncButton";
 import UsersIcon from "@/assets/icons/users.svg?react";
+import AuditLogIcon from "@/assets/icons/clipboard-clock.svg?react";
 import styles from './AdminToolsPage.module.scss';
+import { useNavigate } from 'react-router-dom';
+
 
 // Will probably have a proper admin dashboard/pages later but this is fine for now
 export default function AdminToolsPage()
@@ -37,7 +40,7 @@ export default function AdminToolsPage()
     const [adminLastName, setadminLastName] = useState('');
     const [adminPassword, setadminPassword] = useState('');
     const [adminErrors, setadminErrors] = useState([]);
-
+    
     async function handleCreateOrg()
     {
         if (!orgName)
@@ -91,7 +94,7 @@ export default function AdminToolsPage()
 
     return (
         <>
-            <CardHost title='Admin Tools' subtitle='Admin tools to create and edit data'>
+            <CardHost>
                 <Card title='Create Organization'>
                     <form className={styles.form}>
                         <div className={styles.field}>
@@ -247,6 +250,12 @@ export default function AdminToolsPage()
                         label='Users' 
                         showChevron={true}
                         onClick={() => navigate("users")}
+                    />
+                    <ListItem 
+                        icon={AuditLogIcon} 
+                        label='Audit Logs' 
+                        showChevron={true}
+                        onClick={() => navigate("audit-logs")}
                     />
                 </Card>
             </CardHost>

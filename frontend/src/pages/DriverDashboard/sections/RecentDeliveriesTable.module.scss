@@ -1,0 +1,165 @@
+@use '@/styles/globals' as *;
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 22px 16px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.subtitle {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+}
+
+.viewAll {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-text-secondary);
+    padding: 8px 22px;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+  }
+
+  td {
+    padding: 12px 22px;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 0.82rem;
+    color: var(--color-text);
+    vertical-align: middle;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.right {
+  text-align: right;
+}
+
+.routeCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.routeIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconGreen {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+
+.iconAmber {
+  background: var(--amber-100);
+  color: #92400e;
+}
+
+.iconGray {
+  background: var(--gray-100);
+  color: var(--gray-500);
+}
+
+.routeName {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.routeSub {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-top: 1px;
+}
+
+.dateCell {
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 50px;
+  white-space: nowrap;
+}
+
+.statusGreen {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+
+.statusAmber {
+  background: var(--amber-100);
+  color: #92400e;
+}
+
+.statusBlue {
+  background: var(--blue-100);
+  color: #1d4ed8;
+}
+
+.statusGray {
+  background: var(--gray-100);
+  color: var(--gray-600);
+}
+
+.pointsPos {
+  font-weight: 800;
+  color: var(--color-accent);
+}
+
+.pointsNeg {
+  font-weight: 800;
+  color: var(--color-warn);
+}
+
+.pointsNeutral {
+  color: var(--color-text-secondary);
+}

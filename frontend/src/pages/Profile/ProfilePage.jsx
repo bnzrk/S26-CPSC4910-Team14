@@ -161,7 +161,7 @@ export default function ProfilePage()
   }
 
   return (
-    <CardHost className={styles.page} title='My Profile' subtitle='View and update your account information.'>
+    <CardHost className={styles.page}>
       {/* Profile Info */}
       <Card title='Profile' className={styles.card}>
         <form onSubmit={handleProfileSubmit} className={styles.form}>

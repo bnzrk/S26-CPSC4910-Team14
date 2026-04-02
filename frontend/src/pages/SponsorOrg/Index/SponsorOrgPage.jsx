@@ -63,7 +63,7 @@ export default function SponsorOrgPage()
                     <Button text='Save' color='primary' onClick={handleSaveRename}></Button>
                 </Modal.Buttons>
             </Modal>
-            <CardHost title={'Organization'} subtitle={'View and manage your sponsor organization'}>
+            <CardHost>
                 <Card variant='primary' className={styles.orgCard}>
                     {org && !orgLoading && !orgError &&
                         <div className={styles.orgInfo}>

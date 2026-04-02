@@ -1,0 +1,18 @@
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--green-400) 0%, var(--green-600) 100%);
+  color: #fff;
+  font-weight: 800;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.circle {
+  border-radius: 50%;
+}
+
+.rounded {
+  border-radius: var(--radius-sm);
+}

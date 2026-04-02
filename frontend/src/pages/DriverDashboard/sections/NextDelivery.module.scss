@@ -1,0 +1,76 @@
+.card {
+  background: linear-gradient(161.7deg, #0f5c2e 0%, #16a34a 100%);
+  border-radius: var(--radius-md);
+  padding: 22px;
+  color: #fff;
+}
+
+.label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 0.7;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.route {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 0 0 12px;
+  line-height: 1.3;
+}
+
+.details {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.detail {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  opacity: 0.75;
+}
+
+.pointsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pointsLeft {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.pointsValue {
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.pointsLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.startBtn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50px;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.28);
+  }
+}

@@ -154,6 +154,28 @@ export function useCreateSponsorOrgUser(orgId)
     });
 }
 
+export function useRemoveSponsorOrgUser(orgId)
+{
+    const { data: user } = useCurrentUser();
+    const queryClient = useQueryClient();
+    const orgPath = orgId ?? "me";
+
+    return useMutation({
+        mutationFn: async (sponsorUserId) =>
+        {
+            const res = await apiFetch(`/sponsor-orgs/${orgPath}/users/${sponsorUserId}`, {
+                method: 'DELETE',
+            });
+            if (!res.ok) throw new Error('Failed to remove employee');
+        },
+        onSuccess: () =>
+        {
+            queryClient.invalidateQueries({ queryKey: ['sponsorOrgUsers', user?.id] });
+        },
+        retry: 0,
+    });
+}
+
 export function useUpdateSponsorOrg(orgId)
 {
     const queryClient = useQueryClient();

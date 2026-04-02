@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using WebApi.Data;
 using WebApi.Audit;
 using WebApi.Data.Enums;
+using WebApi.Features.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace WebApi.Features.Auth;
@@ -19,10 +20,12 @@ public class AuthController : ControllerBase
     private readonly SignInManager<User> _signInManager;
     private readonly IImpersonationService _impersonationService;
     private readonly IAuditLogger _auditLogger;
+    private readonly IUsersService _usersService;
 
     public AuthController(
         AppDbContext db,
         UserManager<User> userManager,
+        IUsersService usersService,
         SignInManager<User> signInManager,
         IImpersonationService impersonationService,
         IAuditLogger auditLogger)
@@ -32,6 +35,7 @@ public class AuthController : ControllerBase
         _signInManager = signInManager;
         _impersonationService = impersonationService;
         _auditLogger = auditLogger;
+        _usersService = usersService;
     }
 
     [HttpPost("login")]
@@ -59,6 +63,35 @@ public class AuthController : ControllerBase
         await _db.SaveChangesAsync();
 
         return Ok();
+    }
+
+    [HttpPost("register")]
+    [AllowAnonymous]
+    public async Task<ActionResult> Register(RegisterModel request)
+    {
+        var role = request.Role?.ToLower() == "sponsor" ? UserType.Sponsor : UserType.Driver;
+        IdentityResult result;
+
+        if (role == UserType.Sponsor)
+        {
+            var org = new SponsorOrg
+            {
+                SponsorName = $"{request.FirstName} {request.LastName}",
+                DateJoined = DateTime.UtcNow
+            };
+            _db.SponsorOrgs.Add(org);
+            await _db.SaveChangesAsync();
+            result = await _usersService.CreateSponsorUser(request.Email, request.Password, request.FirstName, request.LastName, org);
+        }
+        else
+        {
+            result = await _usersService.CreateDriverUser(request.Email, request.Password, request.FirstName, request.LastName);
+        }
+
+        if (!result.Succeeded)
+            return BadRequest(new { Errors = result.Errors.Select(e => e.Description).ToArray() });
+
+        return Created();
     }
 
     [HttpPost("logout")]

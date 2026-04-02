@@ -3,11 +3,11 @@
 .host {
   max-width: $medium-width;
   margin: 0 auto;
-  padding: $grid-2x $grid-2x;
   display: flex;
   flex-direction: column;
   gap: $grid-2x;
   margin-bottom: $grid-5x;
+  padding: $grid-4x;
 
   .hostTitle {
     margin: 0;
@@ -22,5 +22,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+  }
+
+  @media only screen and (max-width : $small-width) {
+    padding: $grid-3x;
   }
 }

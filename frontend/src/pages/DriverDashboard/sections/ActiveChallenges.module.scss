@@ -1,0 +1,122 @@
+@use '@/styles/globals' as *;
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 22px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $grid-2x;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.subtitle {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+}
+
+.viewAll {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: $grid-2x;
+}
+
+.challenge {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+}
+
+.challengeTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.iconCircle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.challengeInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.challengeTitle {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 2px;
+}
+
+.challengeDesc {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.rewardBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--green-700);
+  background: var(--green-100);
+  padding: 3px 8px;
+  border-radius: 50px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.challengeFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.challengeMeta {
+  display: flex;
+  justify-content: space-between;
+}
+
+.progressLabel {
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+}
+
+.expiry {
+  font-size: 0.72rem;
+  color: var(--color-text-tertiary);
+}

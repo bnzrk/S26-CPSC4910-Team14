@@ -1,17 +1,18 @@
 .section {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 4rem 1.5rem;
-  background: var(--color-surface);
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
+  padding: 96px 6%;
+  background: var(--gray-50);
+  border-top: 1px solid var(--gray-200);
+  border-bottom: 1px solid var(--gray-200);
 }
 
 .heading {
   text-align: center;
   margin: 0 0 3rem;
-  font-size: 1.75rem;
-  color: var(--color-text);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: var(--gray-900);
+  font-family: inherit;
 }
 
 .flow {
@@ -20,6 +21,8 @@
   justify-content: center;
   gap: 3rem;
   position: relative;
+  max-width: 960px;
+  margin: 0 auto;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -35,7 +38,7 @@
   transform: translateX(-50%);
   width: 60%;
   height: 2px;
-  background: var(--color-border);
+  background: var(--gray-200);
   z-index: 0;
   opacity: 0;
   transition: opacity 0.6s ease 0.3s;
@@ -78,17 +81,17 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--color-accent-light);
-  border: 2px solid var(--color-accent);
+  background: var(--green-100);
+  border: 2px solid var(--green-600);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  color: var(--color-accent);
+  color: var(--green-600);
 }
 
 .number {
-  font-family: var(--font-heading);
+  font-family: inherit;
   font-size: 0.7rem;
   font-weight: 700;
   position: absolute;
@@ -97,7 +100,7 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--color-accent);
+  background: var(--green-600);
   color: #fff;
   display: flex;
   align-items: center;
@@ -111,6 +114,6 @@
 .label {
   font-size: 0.9rem;
   font-weight: 500;
-  color: var(--color-text);
+  color: var(--gray-700);
   text-align: center;
 }
