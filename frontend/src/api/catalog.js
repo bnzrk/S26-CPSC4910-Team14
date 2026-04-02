@@ -56,3 +56,25 @@ export function useRemoveCatalogItem(orgId)
         },
     });
 }
+
+export function useUpdateCatalogItem(orgId)
+{
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ id, price }) =>
+        {
+            const response = await apiFetch(`/sponsor-orgs/${orgId}/catalog/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ price }),
+            });
+            if (!response.ok) throw new Error('Failed to update catalog item');
+        },
+        onSuccess: () =>
+        {
+            queryClient.invalidateQueries({ queryKey: ['catalog', orgId] });
+        },
+    });
+}

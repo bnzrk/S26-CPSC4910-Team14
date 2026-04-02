@@ -121,4 +121,43 @@ public class CatalogsController : ControllerBase
 
         return BadRequest();
     }
+
+    [HttpPut("{itemId}")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<ActionResult> UpdateCatalogItem(int orgId, int itemId, [FromBody] UpdateCatalogItemModel request)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        // Ensure item exists
+        var item = await _db.Catalogs
+            .Where(c => c.SponsorOrgId == orgId)
+            .SelectMany(c => c.Items)
+            .Where(i => i.Id == itemId)
+            .SingleOrDefaultAsync();
+
+        if (item is null)
+            return NotFound();
+
+        // Ensure access allowed if sponsor user
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor)
+        {
+            var isInOrg = await _db.SponsorUsers.AnyAsync(s => s.UserId == userId && s.SponsorOrgId == orgId);
+            if (!isInOrg)
+                return NotFound();
+        }
+
+        // Try update
+        try
+        {
+            item.CatalogPrice = request.Price;
+            await _db.SaveChangesAsync();
+            return Ok();
+        }
+        catch { }
+
+        return BadRequest();
+    }
 }

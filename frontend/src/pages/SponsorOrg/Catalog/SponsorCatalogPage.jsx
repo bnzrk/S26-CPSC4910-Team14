@@ -8,6 +8,7 @@ import { useToast } from '@/components/Toast/ToastContext';
 import { useDebounce } from '@/helpers/debounce';
 import Modal from '@/components/Modal/Modal';
 import AddCatalogItemModal from './components/AddCatalogItemModal';
+import EditCatalogItemModal from './components/EditCatalogItemModal';
 import SearchInput from '@/components/SearchInput/SearchInput';
 import InlineInfo from '@/components/InlineInfo/InlineInfo';
 import CardHost from '@/components/CardHost/CardHost';
@@ -37,6 +38,7 @@ export default function SponsorCatalogPage()
         addItem: 'addItem',
         removeItem: 'removeItem',
         editItem: 'editItem',
+        updateItem: 'updateItem'
     }
     const [currentModal, setCurrentModal] = useState(null);
 
@@ -74,6 +76,12 @@ export default function SponsorCatalogPage()
         setCurrentModal(modals.removeItem);
     }
 
+    function handleItemUpdateClick(id)
+    {
+        setSelectedCatalogItemId(id);
+        setCurrentModal(modals.updateItem);
+    }
+
     async function handleRemoveCatalogItem()
     {
         var id = selectedCatalogItemId;
@@ -107,6 +115,11 @@ export default function SponsorCatalogPage()
                 onClose={() => setCurrentModal(null)}
                 item={products ? products.find((p) => p.id == selectedExternalItemId) : null}
             />
+            <EditCatalogItemModal
+                isOpen={currentModal == modals.updateItem}
+                onClose={() => setCurrentModal(null)}
+                item={catalog ? catalog.find((i) => i.id == selectedCatalogItemId) : null}
+            />
             <CardHost>
                 <Card title='Catalog'>
                     <div className={styles.grid}>
@@ -132,6 +145,7 @@ export default function SponsorCatalogPage()
                                         className={styles.catalogButton}
                                         icon={EditIcon}
                                         size='small'
+                                        onClick={() => handleItemUpdateClick(item.id)}
                                     />
                                 </div>
                             </ShopItem>

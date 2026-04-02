@@ -34,7 +34,7 @@
 .banner {
   width: 100%;
   padding: $grid-1x;
-  color: var(--color-surface);
+  color: var(--white);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -45,12 +45,13 @@
   button.sessionButton {
     width: fit-content;
     background: none;
-    color: var(--color-surface);
-    border: 1px solid var(--color-surface);
+    color: var(--white);
+    border: 1px solid var(--white);
     padding: 0 $grid-1x;
 
     &:hover:not(:disabled) {
-      border: 1px solid var(--color-surface);
+      color: var(--white);
+      border: 1px solid var(--white);
     }
   }
 

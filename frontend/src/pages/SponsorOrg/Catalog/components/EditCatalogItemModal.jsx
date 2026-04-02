@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { normalizedDecimalString } from '@/helpers/formatting';
 import { useSponsorOrg } from '@/api/sponsorOrg';
-import { useAddCatalogItem } from '@/api/catalog';
+import { useUpdateCatalogItem } from '@/api/catalog';
 import { useToast } from '@/components/Toast/ToastContext';
 import Modal from '@/components/Modal/Modal';
 import ProductDetails from '@/components/ProductDetails/ProductDetails';
@@ -9,9 +9,9 @@ import Button from '@/components/Button/Button';
 import AsyncButton from '@/components/AsyncButton/AsyncButton';
 import UsdInput from '@/components/UsdInput/UsdInput';
 import ProductImage from '@/components/ProductImage/ProductImage';
-import styles from './AddCatalogItemModal.module.scss';
+import styles from './EditCatalogItemModal.module.scss';
 
-export default function AddCatalogItemModal({ item, onClose, isOpen })
+export default function EditCatalogItemModal({ item, onClose, isOpen })
 {
     const numberToDecimalString = (number) => new Intl.NumberFormat('en-US', {
         minimumFractionDigits: 2,
@@ -22,7 +22,7 @@ export default function AddCatalogItemModal({ item, onClose, isOpen })
     const [price, setPrice] = useState(item ? numberToDecimalString(item.price) : '');
     const { data: org, isLoading: isOrgLoading, isError: isOrgError } = useSponsorOrg();
 
-    const addCatalogItemMutation = useAddCatalogItem(org ? org.id : null);
+    const updateCatalogItemMutation = useUpdateCatalogItem(org ? org.id : null);
 
     const [isPriceValid, setIsPriceValid] = useState(false);
 
@@ -52,17 +52,17 @@ export default function AddCatalogItemModal({ item, onClose, isOpen })
         onClose();
     }
 
-    async function handleAddCatalogItem()
+    async function handleUpdateCatalogItem()
     {
         try
         {
-            await addCatalogItemMutation.mutateAsync({ externalItemId: item.id, catalogPrice: Number(price) });
-            push({ type: 'success', message: 'Item added to catalog.' });
+            await updateCatalogItemMutation.mutateAsync({ id: item.id, price: Number(price) });
+            push({ type: 'success', message: 'Item successfully updated.' });
             onClose();
         }
         catch (err)
         {
-            push({ type: 'error', message: 'Failed to add catalog item.' });
+            push({ type: 'error', message: 'Failed to update item.' });
         }
     }
 
@@ -78,7 +78,7 @@ export default function AddCatalogItemModal({ item, onClose, isOpen })
                         <div className={styles.details}>
                             <ProductDetails 
                                 item={item}
-                                categoryTitle={item.category.name}
+                                categoryTitle={item.categoryTitle}
                                 price={isPriceValid ? price : 0}
                                 points={isPriceValid ? priceToPoints(normalizedDecimalString(price)) : 0}
                             />
@@ -97,9 +97,9 @@ export default function AddCatalogItemModal({ item, onClose, isOpen })
                 <Button className={styles.button} text='Cancel' onClick={handleClose} />
                 <AsyncButton
                     className={styles.button}
-                    text='Add to Catalog'
+                    text='Update'
                     color='primary'
-                    action={handleAddCatalogItem}
+                    action={handleUpdateCatalogItem}
                     disabled={!isPriceValid}
                 />
             </Modal.Buttons>
