@@ -10,8 +10,6 @@ import AsyncButton from "@/components/AsyncButton/AsyncButton";
 import UsersIcon from "@/assets/icons/users.svg?react";
 import AuditLogIcon from "@/assets/icons/clipboard-clock.svg?react";
 import styles from './AdminToolsPage.module.scss';
-import { useNavigate } from 'react-router-dom';
-
 
 // Will probably have a proper admin dashboard/pages later but this is fine for now
 export default function AdminToolsPage()
