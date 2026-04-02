@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePoints, usePointHistory } from '../../api/points';
 import { useDriverOrgs } from '@/api/driver';
 import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
+import { usePointRules } from '../../api/pointRules';
 import Card from '@/components/Card/Card';
 import PointCard from '@/components/PointCard/PointCard';
 import CardHost from '@/components/CardHost/CardHost';
@@ -62,6 +63,9 @@ export default function PointsPage()
   });
 
   const { data: orgs } = useDriverOrgs();
+  const { data: pointRules } = usePointRules(selectedOrgId);
+  const gainRules = pointRules?.filter(r => r.balanceChange > 0) ?? [];
+  const loseRules = pointRules?.filter(r => r.balanceChange < 0) ?? [];
   const org = orgs ? orgs.find((o) => o.id == selectedOrgId) : null;
 
   const items = history?.items ?? [];
