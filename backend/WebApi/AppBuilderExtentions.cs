@@ -68,6 +68,26 @@ public static class AppBuilderExtensions
                     options.ExpireTimeSpan = TimeSpan.FromDays(14);
                     options.SlidingExpiration = true;
                 }
+            })
+            .AddCookie("Impersonation", options =>
+            {
+                options.Cookie.Name = "driverpoints.impersonation";
+                options.Cookie.HttpOnly = true;
+                if (builder.Environment.IsDevelopment())
+                {
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.None;   
+                }
+                else
+                {
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                }
+                options.Cookie.SameSite = SameSiteMode.Lax;   
+                options.ExpireTimeSpan = TimeSpan.FromHours(2);
+                options.Events.OnRedirectToLogin = ctx =>
+                {
+                    ctx.Response.StatusCode = 401;
+                    return Task.CompletedTask;
+                };
             });
     }
 

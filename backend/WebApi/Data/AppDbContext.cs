@@ -74,6 +74,9 @@ public class AppDbContext : IdentityDbContext<User>
         modelBuilder.Entity<User>(u =>
         {
             u.Property(e => e.CreatedDateUtc).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+            u.HasIndex(u => u.FirstName);
+            u.HasIndex(u => u.LastName);
+            u.HasIndex(u => u.Email);
         });
 
         modelBuilder.Entity<AdminUser>(b =>

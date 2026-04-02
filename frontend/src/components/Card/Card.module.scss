@@ -3,8 +3,9 @@
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: $grid-1x;
-  color: var(--color-text);
+  border-radius: var(--radius-md);
+  padding: $grid-3x;
+  box-shadow: var(--shadow-sm);
 }
 
 .card.primary {
@@ -21,15 +22,25 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
-  padding: calc($grid-2x + $grid-half) $grid-3x $grid-2x $grid-3x;
+  gap: $grid-2x;
+  margin-bottom: $grid-3x;
   flex-wrap: wrap;
 }
 
 .title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 4px;  
   font-size: 1.15rem;
   font-weight: 600;
   margin: 0;
+
+  svg {
+    width: $grid-2x;
+    height: $grid-2x;
+    margin-right: $grid-1x;
+  }
 }
 
 .headerRight {
@@ -39,7 +50,7 @@
 }
 
 .body {
-  padding: 0 $grid-3x calc($grid-2x + $grid-half) $grid-3x;
+  // padding: 0 $grid-3x calc($grid-2x + $grid-half) $grid-3x;
   color: var(--color-text-secondary)
 }
 

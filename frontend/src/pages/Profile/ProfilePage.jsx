@@ -156,12 +156,12 @@ export default function ProfilePage()
     {
       console.error("Logout failed:", err);
     }
-    queryClient.setQueryData(["currentUser"], null);
-    navigate("/login");
+    queryClient.invalidateQueries(["currentUser"]);
+    navigate("/");
   }
 
   return (
-    <CardHost className={styles.page} title='My Profile' subtitle='View and update your account information.'>
+    <CardHost className={styles.page}>
       {/* Profile Info */}
       <Card title='Profile' className={styles.card}>
         <form onSubmit={handleProfileSubmit} className={styles.form}>

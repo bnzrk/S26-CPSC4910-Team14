@@ -1,18 +1,17 @@
 import { useState, useEffect } from 'react';
-import { formatUsd, normalizedDecimalString } from '@/helpers/formatting';
+import { normalizedDecimalString } from '@/helpers/formatting';
 import { useSponsorOrg } from '@/api/sponsorOrg';
 import { useAddCatalogItem } from '@/api/catalog';
 import { useToast } from '@/components/Toast/ToastContext';
 import Modal from '@/components/Modal/Modal';
+import ProductDetails from '@/components/ProductDetails/ProductDetails';
 import Button from '@/components/Button/Button';
 import AsyncButton from '@/components/AsyncButton/AsyncButton';
-import PointBadge from '@/components/PointBadge/PointBadge';
 import UsdInput from '@/components/UsdInput/UsdInput';
-import ImageErrorIcon from '@/assets/icons/image-off.svg?react';
+import ProductImage from '@/components/ProductImage/ProductImage';
 import styles from './AddCatalogItemModal.module.scss';
-import clsx from 'clsx';
 
-export default function AddCatalogItemModal({ item, showPlaceholder, onClose, isOpen })
+export default function AddCatalogItemModal({ item, onClose, isOpen })
 {
     const numberToDecimalString = (number) => new Intl.NumberFormat('en-US', {
         minimumFractionDigits: 2,
@@ -73,39 +72,16 @@ export default function AddCatalogItemModal({ item, showPlaceholder, onClose, is
             <Modal.Body>
                 <div className={styles.item}>
                     <div className={styles.thumbnail}>
-                        {(!showPlaceholder && item) &&
-                            <img
-                                src={item.images[0]}
-                                alt={item.title}
-                            />
-                        }
-                        {(showPlaceholder) &&
-                            <div className={styles.placeholder}>
-                                <ImageErrorIcon />
-                            </div>
-                        }
+                        {item && <ProductImage src={item.images[0]} alt={item.title} />}
                     </div>
                     {item &&
                         <div className={styles.details}>
-                            <div className={styles.header}>
-                                <div className={styles.title}>{item.title}</div>
-                                <div className={styles.subtitle}>{item.category.name}</div>
-                            </div>
-                            <div className={styles.prices}>
-                                <div className={clsx(styles.retail, styles.price)}>
-                                    <div>Retail Price</div>
-                                    <div>{formatUsd(item.price)}</div>
-                                </div>
-                                <div className={clsx(styles.catalog, styles.price)}>
-                                    <div>Catalog Price</div>
-                                    <div className={styles.row}>
-                                        <div>{isPriceValid ? formatUsd(price) : formatUsd(0)}</div>
-                                        <PointBadge
-                                            points={isPriceValid ? priceToPoints(normalizedDecimalString(price)) : 0}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
+                            <ProductDetails 
+                                item={item}
+                                categoryTitle={item.category.name}
+                                price={isPriceValid ? price : 0}
+                                points={isPriceValid ? priceToPoints(normalizedDecimalString(price)) : 0}
+                            />
                             <UsdInput
                                 className={styles.priceInput}
                                 value={price}

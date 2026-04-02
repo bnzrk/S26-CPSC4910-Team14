@@ -1,18 +1,21 @@
 import { useState } from "react";
-import { useParams, Navigate } from "react-router-dom";
-import { useSponsorOrgDriver } from "@/api/sponsorOrg";
-import { useUpdateDriver } from "@/api/driver";
-import Loader from "@/components/Loader/Loader";
+import { useParams, Navigate, useNavigate } from "react-router-dom";
+import { useCurrentUser } from "@/api/currentUser";
+import { useRemoveSponsorDriveUser, useSponsorOrgDriver } from "@/api/sponsorOrg"
+import { useStartImpersonation } from "@/api/auth";
+import { useToast } from "@/components/Toast/ToastContext";
 import CardHost from "@/components/CardHost/CardHost";
 import Card from "@/components/Card/Card";
+import Modal from "@/components/Modal/Modal";
 import Button from "@/components/Button/Button";
-import PointCard from "@/components/PointCard/PointCard";
+import AsyncButton from "@/components/AsyncButton/AsyncButton";
 import EditDriverProfileModal from "./components/EditDriverProfileModal";
 import ManageDriverPointsModal from "./components/ManageDriverPointsModal";
 import StarIcon from "@/assets/icons/star.svg?react";
 import UserStarIcon from "@/assets/icons/user-star.svg?react";
 import UserEditIcon from "@/assets/icons/user-pen.svg?react";
 import UserRemoveIcon from "@/assets/icons/user-x.svg?react";
+import LoginIcon from "@/assets/icons/log-in.svg?react";
 import styles from './SponsorDriverPage.module.scss';
 import clsx from "clsx";
 
@@ -24,12 +27,21 @@ function formatDate(dateString, includeTime = false)
 
 export default function SponsorDriverPage()
 {
+    const navigate = useNavigate();
+
+    const { push } = useToast();
+
     const modals = {
         editProfile: 'editProfile',
         removeDriver: 'removeDriver',
+        impersonateDriver: 'impersonateDriver',
         managePoints: 'managePoints',
     }
     const [currentModal, setCurrentModal] = useState(null);
+
+    const { mutate: impersonate, isPending } = useStartImpersonation();
+    const { mutate: removeDriver, isPending: isRemoveDriverPending } = useRemoveSponsorDriveUser();
+    const { data: user } = useCurrentUser();
 
     const { driverId: paramId } = useParams();
     const driverId = Number(paramId);
@@ -37,6 +49,33 @@ export default function SponsorDriverPage()
     if (driverError && error?.status === 404)
     {
         return <Navigate to="/org/drivers" replace />;
+    }
+
+    async function startImpersonation()
+    {
+        try
+        {
+            await startImpersonationMutation.mutateAsync();
+        }
+        catch (err)
+        {
+            push({ type: 'error', message: 'Failed to impersonate driver.' });
+        }
+    }
+
+    async function handleRemoveDriver()
+    {
+        try
+        {
+            await removeDriver(driver?.id);
+            push({ type: 'success', message: 'Driver removed.' });
+            navigate("/org/drivers");
+        } catch (err)
+        {
+            console.log(err);
+            push({ type: 'error', message: 'Failed to remove driver.' });
+            return Promise.reject();
+        }
     }
 
     return (
@@ -55,10 +94,24 @@ export default function SponsorDriverPage()
                 onSuccess={() => null}
                 driver={driver}
             />
-            <CardHost
-                title='Manage Driver'
-                subtitle="Manage driver profile and points"
-            >
+            <Modal isOpen={currentModal == modals.removeDriver} onClose={() => setCurrentModal(null)}>
+                <Modal.Header title='Remove Driver'/>
+                <Modal.Body>
+                    Remove this driver from your organization?
+                </Modal.Body>
+                <Modal.Buttons position='right'>
+                    <Button
+                        text='Cancel'
+                        onClick={() => setCurrentModal(null)} 
+                    />
+                    <AsyncButton 
+                        text='Remove'
+                        color='warn'
+                        action={handleRemoveDriver}
+                    />
+                </Modal.Buttons>
+            </Modal>
+            <CardHost>
                 <Card title='Profile'>
                     {driver &&
                         <div className={styles.profile}>
@@ -73,11 +126,24 @@ export default function SponsorDriverPage()
                             <div className={styles.buttonGroup}>
                                 <Button
                                     className={clsx(styles.editButton, styles.button)}
+                                    icon={LoginIcon}
+                                    text='Login-As'
+                                    disabled={impersonate.isPending || (user && user.isImpersonating)}
+                                    onClick={() => impersonate({ targetUserId: driver.userId })}
+                                />
+                                <Button
+                                    className={clsx(styles.editButton, styles.button)}
                                     icon={UserEditIcon}
                                     text='Edit Profile'
                                     onClick={() => setCurrentModal(modals.editProfile)}
                                 />
-                                <Button className={clsx(styles.editButton, styles.button)} color='warn' icon={UserRemoveIcon} text='Remove Driver' />
+                                <Button 
+                                    className={clsx(styles.editButton, styles.button)} 
+                                    color='warn' 
+                                    icon={UserRemoveIcon} 
+                                    text='Remove Driver' 
+                                    onClick={() => setCurrentModal(modals.removeDriver)}
+                                />
                             </div>
                         </div>
                     }

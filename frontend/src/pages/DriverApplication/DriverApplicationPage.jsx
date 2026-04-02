@@ -14,7 +14,8 @@ const COMPANY_TRUCK = {
   licensePlate: "COMPANY"
 };
 
-export default function DriverApplicationPage() {
+export default function DriverApplicationPage()
+{
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -39,19 +40,24 @@ export default function DriverApplicationPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   // Pre-fill orgId from URL if present
-  useEffect(() => {
+  useEffect(() =>
+  {
     const orgIdFromUrl = searchParams.get("orgId");
-    if (orgIdFromUrl) {
+    if (orgIdFromUrl)
+    {
       updateField("orgId", orgIdFromUrl);
     }
   }, []);
 
-  function updateField(field, value) {
+  function updateField(field, value)
+  {
     setFormData(prev => ({ ...prev, [field]: value }));
   }
 
-  function handleCompanyTruckToggle(checked) {
-    if (checked) {
+  function handleCompanyTruckToggle(checked)
+  {
+    if (checked)
+    {
       setFormData(prev => ({
         ...prev,
         isCompanyTruck: true,
@@ -60,7 +66,8 @@ export default function DriverApplicationPage() {
         truckYear: COMPANY_TRUCK.truckYear,
         licensePlate: COMPANY_TRUCK.licensePlate
       }));
-    } else {
+    } else
+    {
       setFormData(prev => ({
         ...prev,
         isCompanyTruck: false,
@@ -72,7 +79,8 @@ export default function DriverApplicationPage() {
     }
   }
 
-  function validateForm() {
+  function validateForm()
+  {
     const errors = {};
 
     const orgId = parseInt(formData.orgId, 10);
@@ -85,7 +93,8 @@ export default function DriverApplicationPage() {
     if (!/^\d{10}$/.test(formData.phoneNumber))
       errors.phoneNumber = "Phone number must be 10 digits";
 
-    if (!formData.isCompanyTruck) {
+    if (!formData.isCompanyTruck)
+    {
       const year = parseInt(formData.truckYear, 10);
       if (isNaN(year) || year < 1980 || year > new Date().getFullYear())
         errors.truckYear = "Please enter a valid truck year";
@@ -94,7 +103,8 @@ export default function DriverApplicationPage() {
         errors.licensePlate = "License plate must be 5–8 characters";
     }
 
-    if (formData.birthday) {
+    if (formData.birthday)
+    {
       const birthDate = new Date(formData.birthday);
       const today = new Date();
       let age = today.getFullYear() - birthDate.getFullYear();
@@ -108,7 +118,8 @@ export default function DriverApplicationPage() {
     return errors;
   }
 
-  async function submitApplication() {
+  async function submitApplication()
+  {
     const errors = validateForm();
     setFormErrors(errors);
     if (Object.keys(errors).length > 0) return;
@@ -127,7 +138,8 @@ export default function DriverApplicationPage() {
       licensePlate: formData.isCompanyTruck ? null : (formData.licensePlate || null)
     };
 
-    try {
+    try
+    {
       const response = await apiFetch("/applications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -144,15 +156,18 @@ export default function DriverApplicationPage() {
         truckModel: "", truckYear: "", licensePlate: "", isCompanyTruck: false
       });
       setFormErrors({});
-    } catch (err) {
+    } catch (err)
+    {
       console.error(err);
       setSubmitStatus("error");
-    } finally {
+    } finally
+    {
       setIsLoading(false);
     }
   }
 
-  if (submitStatus === "success") {
+  if (submitStatus === "success")
+  {
     return (
       <main>
         <CardHost title="Application Submitted">
@@ -161,7 +176,7 @@ export default function DriverApplicationPage() {
               <p className={styles.successText}>
                 Your application has been submitted successfully. The sponsor organization will review it and get back to you.
               </p>
-              <Button color="primary" onClick={() => navigate("/points")}>
+              <Button color="primary" onClick={() => navigate("/driver/points")}>
                 Back to Dashboard
               </Button>
             </div>
@@ -173,15 +188,11 @@ export default function DriverApplicationPage() {
 
   return (
     <main>
-      <CardHost
-        title="Driver Application"
-        subtitle="Apply to join a sponsor organization"
-        headerRight={
-          <Button onClick={() => navigate("/points")}>
-            Cancel
-          </Button>
-        }
-      >
+      <CardHost>
+        <Button onClick={() => navigate("/driver/points")}>
+          Cancel
+        </Button>
+
         {submitStatus === "error" && (
           <InlineErrors errors={["Submission failed. Please try again."]} />
         )}
@@ -266,7 +277,8 @@ export default function DriverApplicationPage() {
                   type="checkbox"
                   className={styles.checkbox}
                   checked={formData.previousEmployee}
-                  onChange={e => {
+                  onChange={e =>
+                  {
                     updateField("previousEmployee", e.target.checked);
                     updateField("previousEmployeeDuration", "");
                   }}

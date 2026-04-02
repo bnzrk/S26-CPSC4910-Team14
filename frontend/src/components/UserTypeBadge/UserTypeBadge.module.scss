@@ -1,0 +1,31 @@
+@use '@/styles/globals' as *;
+
+.badge {
+    display: flex;
+    flex-direction: row;
+    gap: $grid-half;
+    font-size: calc($grid-1x + $grid-half);
+    font-weight: 600;
+    padding: $grid-half calc($grid-1x + $grid-fourth);
+    color: var(--color-surface);
+    border-radius: 999px;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+        width: $grid-2x;
+        height: $grid-2x;
+    }
+
+    &.driver {
+        background-color: var(--color-accent);
+    }
+
+    &.sponsor {
+        background-color: var(--color-caution);
+    }
+
+    &.admin {
+        background-color: var(--color-warn);
+    }
+}

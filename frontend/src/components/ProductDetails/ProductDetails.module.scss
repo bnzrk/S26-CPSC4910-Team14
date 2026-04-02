@@ -1,0 +1,52 @@
+@use '@/styles/globals' as *;
+
+.details {
+    display: flex;
+    flex-direction: column;
+    gap: $grid-1x;
+
+    .title {
+        font-family: var(--font-body);
+        font-size: $grid-2x;
+        font-weight: bold;
+        color: var(--color-text);
+    }
+
+    .subtitle {
+        font-size: calc($grid-1x + $grid-half);
+        color: var(--color-text-tertiary);
+    }
+
+    .prices {
+        display: flex;
+        flex-direction: row;
+        gap: $grid-2x;
+
+        .catalog {
+            color: var(--color-accent);
+            font-weight: bold;
+        }
+
+        .row {
+            display: flex;
+            flex-direction: row;
+            gap: $grid-1x;
+        }
+
+        .points {
+            background: var(--color-accent);
+            color: var(--color-surface);
+            padding: 0 calc($grid-1x + $grid-half);
+            border-radius: 999px;
+            display: flex;
+            flex-direction: row;
+            gap: $grid-half;
+            align-items: center;
+
+            svg {
+                width: calc($grid-1x + $grid-half);
+                height: calc($grid-1x + $grid-half);
+            }
+        }
+    }
+}

@@ -4,7 +4,7 @@ import Loader from '../Loader/Loader';
 import styles from '../AsyncButton/AsyncButton.module.scss';
 import clsx from 'clsx';
 
-export default function AsyncButton({ text = '', color, disabled = false, action })
+export default function AsyncButton({ className, text = '', color, disabled = false, action })
 {
     const [flashError, setFlashError] = useState(false);
 
@@ -47,6 +47,7 @@ export default function AsyncButton({ text = '', color, disabled = false, action
     }
 
     const finalClasses = clsx(
+        className,
         styles.buttonAsync,
         colorClass,
         flashError ? styles.failed : '',

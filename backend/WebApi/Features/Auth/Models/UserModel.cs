@@ -7,4 +7,5 @@ public class UserModel
     public required string FirstName { get; set; }
     public required string LastName { get; set; }
     public required string UserType { get; set; }
+    public bool IsImpersonating { get; set; } = false;
 }

@@ -1,12 +1,82 @@
 .footer {
-  border-top: 1px solid var(--color-border);
-  padding: 2rem 1.5rem;
-  text-align: center;
+  background: var(--gray-900);
+  color: #fff;
+  padding: 48px 6% 32px;
 }
 
-.text {
+.inner {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (max-width: 540px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.logo {
+  font-size: 1.3rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: #fff;
+}
+
+.tagline {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.88rem;
+  line-height: 1.7;
   margin: 0;
+  max-width: 400px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  a, span {
+    display: block;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.88rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
+.colTitle {
   font-size: 0.85rem;
-  color: var(--color-text-tertiary);
-  letter-spacing: 0.02em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #fff;
+  margin: 0 0 4px;
+}
+
+.bottom {
+  border-top: 1px solid var(--gray-700);
+  margin-top: 48px;
+  padding-top: 24px;
+  text-align: center;
+
+  p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.8rem;
+  }
 }

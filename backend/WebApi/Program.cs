@@ -6,6 +6,7 @@ using WebApi.Features.Catalogs;
 using WebApi.Features.DriverUsers;
 using WebApi.Features.Store;
 using WebApi.Features.Users;
+using WebApi.Features.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
@@ -52,6 +53,7 @@ builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IDriverUsersService, DriverUsersService>();
 builder.Services.AddScoped<ICatalogsService, CatalogsService>();
 builder.Services.AddScoped<IAuditLogger, AuditLogger>();
+builder.Services.AddScoped<IImpersonationService, ImpersonationService>();
 
 var app = builder.Build();
 
@@ -66,6 +68,7 @@ if (app.Environment.IsDevelopment())
 }
 app.UseCors(releaseCorsPolicyName);
 app.UseAuthentication();
+app.UseMiddleware<ImpersonationMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 await AppSetupExtensions.CreateUserRoles(app.Services);

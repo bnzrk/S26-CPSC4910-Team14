@@ -1,15 +1,22 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/Toast/ToastContext";
 import { useAllSponsorOrgs, useCreateSponsorOrg, useCreateSponsorOrgUser } from "@/api/sponsorOrg";
 import { useCreateAdminUser } from "@/api/admin";
+import ListItem from "@/components/ListItem/ListItem";
 import Card from "@/components/Card/Card";
 import CardHost from "@/components/CardHost/CardHost";
 import AsyncButton from "@/components/AsyncButton/AsyncButton";
+import TextInput from "@/components/TextInput/TextInput";
+import UsersIcon from "@/assets/icons/users.svg?react";
+import AuditLogIcon from "@/assets/icons/clipboard-clock.svg?react";
 import styles from './AdminToolsPage.module.scss';
 
 // Will probably have a proper admin dashboard/pages later but this is fine for now
 export default function AdminToolsPage()
 {
+    const navigate = useNavigate();
+
     const { push } = useToast();
 
     const { data: orgs, isLoading: isOrgsLoading, isError: isOrgsError } = useAllSponsorOrgs();
@@ -86,25 +93,25 @@ export default function AdminToolsPage()
 
     return (
         <>
-            <CardHost title='Admin Tools' subtitle='Admin tools to create and edit data'>
+            <CardHost>
                 <Card title='Create Organization'>
                     <form className={styles.form}>
                         <div className={styles.field}>
-                            <label htmlFor="orgName" className={styles.label}>Name</label>
-                            <input
+                            <TextInput
                                 id="orgName"
                                 type="orgName"
-                                className={styles.input}
+                                label='Name'
                                 value={orgName}
                                 onChange={(e) => setOrgName(e.target.value)}
                                 required
                             />
                         </div>
-                        <AsyncButton type="submit" text='Create' action={handleCreateOrg} />
+                        <AsyncButton className={styles.submit} type="submit" text='Create' action={handleCreateOrg} />
                     </form>
                 </Card>
                 <Card title='Create Sponsor User'>
                     <select
+                        className={styles.orgSelect}
                         value={selectedOrgId}
                         onChange={(e) => setSelectedOrgId(e.target.value)}
                         disabled={isOrgsLoading || isOrgsError}
@@ -115,10 +122,10 @@ export default function AdminToolsPage()
                     </select>
                     <form className={styles.form}>
                         <div className={styles.field}>
-                            <label htmlFor="email" className={styles.label}>Email</label>
-                            <input
+                            <TextInput
                                 id="email"
                                 type="email"
+                                label="Email"
                                 className={styles.input}
                                 value={sponsorEmail}
                                 onChange={(e) => setSponsorEmail(e.target.value)}
@@ -129,10 +136,10 @@ export default function AdminToolsPage()
 
                         <div className={styles.names}>
                             <div className={styles.field}>
-                                <label htmlFor="firstName" className={styles.label}>First Name</label>
-                                <input
+                                <TextInput
                                     id="firstName"
                                     type="text"
+                                    label="First Name"
                                     className={styles.input}
                                     value={sponsorFirstName}
                                     onChange={(e) => setSponsorFirstName(e.target.value)}
@@ -142,10 +149,10 @@ export default function AdminToolsPage()
                             </div>
 
                             <div className={styles.field}>
-                                <label htmlFor="lastName" className={styles.label}>Last Name</label>
-                                <input
+                                <TextInput
                                     id="lastName"
                                     type="text"
+                                    label="Last Name"
                                     className={styles.input}
                                     value={sponsorLastName}
                                     onChange={(e) => setSponsorLastName(e.target.value)}
@@ -156,10 +163,10 @@ export default function AdminToolsPage()
                         </div>
 
                         <div className={styles.field}>
-                            <label htmlFor="password" className={styles.label}>Password</label>
-                            <input
+                            <TextInput
                                 id="password"
                                 type="password"
+                                label="Password"
                                 className={styles.input}
                                 value={sponsorPassword}
                                 onChange={(e) => setSponsorPassword(e.target.value)}
@@ -171,16 +178,16 @@ export default function AdminToolsPage()
                         {sponsorErrors?.length > 0 && (
                             <InlineErrors className={styles.registerErrors} errors={sponsorErrors} />
                         )}
-                        <AsyncButton type="submit" text='Create' action={handleCreateSponsor} />
+                        <AsyncButton className={styles.submit} type="submit" text='Create' action={handleCreateSponsor} />
                     </form>
                 </Card>
                 <Card title='Create Admin User'>
                     <form className={styles.form}>
                         <div className={styles.field}>
-                            <label htmlFor="email" className={styles.label}>Email</label>
-                            <input
+                            <TextInput
                                 id="email"
                                 type="email"
+                                label="Email"
                                 className={styles.input}
                                 value={adminEmail}
                                 onChange={(e) => setadminEmail(e.target.value)}
@@ -191,10 +198,10 @@ export default function AdminToolsPage()
 
                         <div className={styles.names}>
                             <div className={styles.field}>
-                                <label htmlFor="firstName" className={styles.label}>First Name</label>
-                                <input
+                                <TextInput
                                     id="firstName"
                                     type="text"
+                                    label="First Name"
                                     className={styles.input}
                                     value={adminFirstName}
                                     onChange={(e) => setadminFirstName(e.target.value)}
@@ -204,10 +211,10 @@ export default function AdminToolsPage()
                             </div>
 
                             <div className={styles.field}>
-                                <label htmlFor="lastName" className={styles.label}>Last Name</label>
-                                <input
+                                <TextInput
                                     id="lastName"
                                     type="text"
+                                    label="Last Name"
                                     className={styles.input}
                                     value={adminLastName}
                                     onChange={(e) => setadminLastName(e.target.value)}
@@ -218,10 +225,10 @@ export default function AdminToolsPage()
                         </div>
 
                         <div className={styles.field}>
-                            <label htmlFor="password" className={styles.label}>Password</label>
-                            <input
+                            <TextInput
                                 id="password"
                                 type="password"
+                                label="Password"
                                 className={styles.input}
                                 value={adminPassword}
                                 onChange={(e) => setadminPassword(e.target.value)}
@@ -233,8 +240,22 @@ export default function AdminToolsPage()
                         {adminErrors?.length > 0 && (
                             <InlineErrors className={styles.registerErrors} errors={adminErrors} />
                         )}
-                        <AsyncButton type="submit" text='Create' action={handleCreateAdmin} />
+                        <AsyncButton className={styles.submit} type="submit" text='Create' action={handleCreateAdmin} />
                     </form>
+                </Card>
+                <Card title='More'>
+                    <ListItem
+                        icon={UsersIcon}
+                        label='Users'
+                        showChevron={true}
+                        onClick={() => navigate("users")}
+                    />
+                    <ListItem
+                        icon={AuditLogIcon}
+                        label='Audit Logs'
+                        showChevron={true}
+                        onClick={() => navigate("audit-logs")}
+                    />
                 </Card>
             </CardHost>
         </>

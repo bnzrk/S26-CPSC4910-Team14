@@ -1,0 +1,15 @@
+@use '@/styles/globals' as *;
+
+.userEmail {
+    margin: 0 $grid-1x;
+    flex-shrink: 5;
+    overflow: hidden;
+}
+
+.userResults {
+    height: calc($grid-1x * 80);
+}
+
+.userItemButton {
+    padding: 0 $grid-1x;
+}
