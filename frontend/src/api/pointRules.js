@@ -9,6 +9,7 @@ export function usePointRules(orgId)
     const isSponsor = user?.userType === USER_TYPES.SPONSOR;
     const isAdmin = user?.userType === USER_TYPES.ADMIN;
     const isDriver = user?.userType === USER_TYPES.DRIVER;
+
     const orgPath = orgId ?? "me";
 
     return useQuery({

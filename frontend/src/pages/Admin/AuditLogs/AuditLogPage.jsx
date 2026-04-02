@@ -10,6 +10,8 @@ const LOG_TYPES = [
   { key: 'point-transactions', label: 'Point Transactions' },
   { key: 'driver-sponsor-changes', label: 'Driver/Sponsor Changes' },
   { key: 'password-changes', label: 'Password Changes' },
+  { key: 'application-status-changes', label: 'Application Changes' },
+  { key: 'catalog-changes', label: 'Catalog Changes' },
 ];
 
 async function fetchLogs(type, filters) {

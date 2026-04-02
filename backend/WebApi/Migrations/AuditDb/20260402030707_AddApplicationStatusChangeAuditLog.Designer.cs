@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApi.Data;
 
@@ -10,9 +11,11 @@ using WebApi.Data;
 namespace WebApi.Migrations.AuditDb
 {
     [DbContext(typeof(AuditDbContext))]
-    partial class AuditDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260402030707_AddApplicationStatusChangeAuditLog")]
+    partial class AddApplicationStatusChangeAuditLog
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,38 +52,6 @@ namespace WebApi.Migrations.AuditDb
                     b.HasKey("Id");
 
                     b.ToTable("ApplicationStatusChangeAuditLogs");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.Audit.CatalogChangeAuditLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("ActorUserEmail")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("ActorUserId")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("ChangeType")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("ExternalItemId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SponsorOrgId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("TimestampUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CatalogChangeAuditLogs");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.Audit.DriverSponsorChangeAuditLog", b =>
