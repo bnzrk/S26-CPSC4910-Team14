@@ -31,6 +31,7 @@ import ComingSoonPage from './pages/ComingSoon/ComingSoonPage';
 import AppLayout from './pages/AppLayout';
 import DriverDashboardPage from './pages/DriverDashboard/DriverDashboardPage';
 import AuditLogPage from './pages/Admin/AuditLogs/AuditLogPage';
+import AdminDashboardPage from './pages/Admin/Dashboard/AdminDashboardPage';
 import './App.scss';
 
 
@@ -103,14 +104,14 @@ function AppContent({ user, isUserLoading, orgs })
             <Route path="routes" element={<ComingSoonPage title="Routes" />} />
           </Route>
           <Route path="/admin" element={
-            <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
-              <AdminToolsLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<AdminToolsPage />} />
-            <Route path="users" element={<UsersPage />} />
-            <Route path="audit-logs" element={<AuditLogPage />} />
-          </Route>
+          <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
+            <AdminToolsLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="tools" element={<AdminToolsPage />} />
+          <Route path="audit-logs" element={<AuditLogPage />} />
+        </Route>
           <Route path="/profile" element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER, USER_TYPES.SPONSOR, USER_TYPES.ADMIN]}>
               <ProfilePage />
