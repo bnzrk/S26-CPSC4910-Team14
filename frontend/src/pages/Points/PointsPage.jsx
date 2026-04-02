@@ -63,9 +63,9 @@ export default function PointsPage()
   });
 
   const { data: orgs } = useDriverOrgs();
-  const { data: pointRules } = usePointRules(selectedOrgId);
-  const gainRules = pointRules?.filter(r => r.balanceChange > 0) ?? [];
-  const loseRules = pointRules?.filter(r => r.balanceChange < 0) ?? [];
+  const { data: rules } = usePointRules(selectedOrgId);
+  const gainRules = rules?.filter(r => r.balanceChange > 0) ?? [];
+  const loseRules = rules?.filter(r => r.balanceChange < 0) ?? [];
   const org = orgs ? orgs.find((o) => o.id == selectedOrgId) : null;
 
   const items = history?.items ?? [];
@@ -246,6 +246,36 @@ export default function PointsPage()
             </span>
           </div>
         </Card>
+
+        <Card title='Rules'>
+          {rules && rules.length === 0 && (
+            <p className={styles.muted}>No rules yet.</p>
+          )}
+
+          {rules && rules.length > 0 && (
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Reason</th>
+                  <th>Points</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rules.map((rule) => (
+                  <tr key={rule.id}>
+                    <td>{rule.reason}</td>
+                    <td>
+                      <span className={rule.balanceChange >= 0 ? styles.positive : styles.negative}>
+                        {rule.balanceChange >= 0 ? '+' : ''}{rule.balanceChange}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </Card>
+
         <Button color="primary" onClick={() => navigate('/driver-application')}
           style={{ fontFamily: 'var(--font-heading)' }}
         >

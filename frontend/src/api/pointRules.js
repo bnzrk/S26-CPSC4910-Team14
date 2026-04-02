@@ -20,7 +20,7 @@ export function usePointRules(orgId)
             return response.json();
         },
         placeholderData: keepPreviousData,
-        enabled: !!user && (isSponsor || isAdmin || isDriver),
+        enabled: !!user && (isSponsor || isAdmin || (isDriver && !!orgId)),
     });
 }
 
