@@ -104,7 +104,7 @@ public class SponsorOrgsController : ControllerBase
             org.PointRatio = request.PointRatio.Value;
 
         org.Catalog = new Catalog();
-        
+
         _db.SponsorOrgs.Add(org);
         _db.SaveChanges();
 
@@ -214,7 +214,7 @@ public class SponsorOrgsController : ControllerBase
             if (orgId.HasValue)
                 return BadRequest("Sponsors should use /me instead of an org id.");
 
-            targetOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => s.SponsorOrgId).SingleOrDefaultAsync();
+            targetOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => (int?)s.SponsorOrgId).SingleOrDefaultAsync();
         }
         if (!targetOrgId.HasValue)
             return NotFound();
@@ -273,28 +273,42 @@ public class SponsorOrgsController : ControllerBase
     }
 
     [HttpDelete("{orgId}/drivers/{driverId}")]
-    [Authorize(Policy = PolicyNames.AdminOnly)]
-    public async Task<ActionResult> RemoveDriverFromOrg(int orgId, int driverId)
+    [HttpDelete("me/drivers/{driverId}")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<ActionResult> RemoveDriverFromOrg(int? orgId, int driverId)
     {
         var userId = _userManager.GetUserId(User);
         if (userId is null)
             return Unauthorized();
-            
+
+        var targetOrgId = orgId;
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor)
+        {
+            if (orgId.HasValue)
+                return BadRequest("Sponsors should use /me instead of an org id.");
+
+            targetOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => (int?)s.SponsorOrgId).SingleOrDefaultAsync();
+        }
+        if (!targetOrgId.HasValue)
+            return NotFound();
+
         var driver = await _db.DriverUsers
             .Include(d => d.User)
-            .Include(d => d.SponsorOrgs.Where(o => o.Id == orgId))
+            .Include(d => d.SponsorOrgs.Where(o => o.Id == targetOrgId))
             .SingleOrDefaultAsync(d => d.Id == driverId);
 
         if (driver == null)
             return NotFound("Driver does not exist.");
 
-        var org = driver.SponsorOrgs.SingleOrDefault();
+        var org = driver.SponsorOrgs.FirstOrDefault(o => o.Id == targetOrgId.Value);
         if (org == null)
             return NotFound("Driver is not in specified org.");
 
         driver.SponsorOrgs.Remove(org);
         await _db.SaveChangesAsync();
-        await _auditLogger.CreateDriverSponsorChangeAuditLog(driverId, driver.User.Email!, orgId, org.SponsorName, DriverSponsorChangeType.Removed);
+        await _auditLogger.CreateDriverSponsorChangeAuditLog(driverId, driver.User.Email!, org.Id, org.SponsorName, DriverSponsorChangeType.Removed);
 
         return Ok();
     }
@@ -485,7 +499,7 @@ public class SponsorOrgsController : ControllerBase
         {
             return BadRequest(new
             {
-                Errors = result.Errors.Select(e => e.Description).ToArray() 
+                Errors = result.Errors.Select(e => e.Description).ToArray()
             });
         }
 

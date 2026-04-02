@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { useParams, Navigate } from "react-router-dom";
+import { useParams, Navigate, useNavigate } from "react-router-dom";
 import { useCurrentUser } from "@/api/currentUser";
-import { useSponsorOrgDriver } from "@/api/sponsorOrg"
+import { useRemoveSponsorDriveUser, useSponsorOrgDriver } from "@/api/sponsorOrg"
 import { useStartImpersonation } from "@/api/auth";
+import { useToast } from "@/components/Toast/ToastContext";
 import CardHost from "@/components/CardHost/CardHost";
 import Card from "@/components/Card/Card";
+import Modal from "@/components/Modal/Modal";
 import Button from "@/components/Button/Button";
+import AsyncButton from "@/components/AsyncButton/AsyncButton";
 import EditDriverProfileModal from "./components/EditDriverProfileModal";
 import ManageDriverPointsModal from "./components/ManageDriverPointsModal";
 import StarIcon from "@/assets/icons/star.svg?react";
@@ -24,6 +27,10 @@ function formatDate(dateString, includeTime = false)
 
 export default function SponsorDriverPage()
 {
+    const navigate = useNavigate();
+
+    const { push } = useToast();
+
     const modals = {
         editProfile: 'editProfile',
         removeDriver: 'removeDriver',
@@ -33,6 +40,7 @@ export default function SponsorDriverPage()
     const [currentModal, setCurrentModal] = useState(null);
 
     const { mutate: impersonate, isPending } = useStartImpersonation();
+    const { mutate: removeDriver, isPending: isRemoveDriverPending } = useRemoveSponsorDriveUser();
     const { data: user } = useCurrentUser();
 
     const { driverId: paramId } = useParams();
@@ -55,6 +63,21 @@ export default function SponsorDriverPage()
         }
     }
 
+    async function handleRemoveDriver()
+    {
+        try
+        {
+            await removeDriver(driver?.id);
+            push({ type: 'success', message: 'Driver removed.' });
+            navigate("/org/drivers");
+        } catch (err)
+        {
+            console.log(err);
+            push({ type: 'error', message: 'Failed to remove driver.' });
+            return Promise.reject();
+        }
+    }
+
     return (
         <main className={styles.sponsorDriver}>
             <EditDriverProfileModal
@@ -71,6 +94,23 @@ export default function SponsorDriverPage()
                 onSuccess={() => null}
                 driver={driver}
             />
+            <Modal isOpen={currentModal == modals.removeDriver} onClose={() => setCurrentModal(null)}>
+                <Modal.Header title='Remove Driver'/>
+                <Modal.Body>
+                    Remove this driver from your organization?
+                </Modal.Body>
+                <Modal.Buttons position='right'>
+                    <Button
+                        text='Cancel'
+                        onClick={() => setCurrentModal(null)} 
+                    />
+                    <AsyncButton 
+                        text='Remove'
+                        color='warn'
+                        action={handleRemoveDriver}
+                    />
+                </Modal.Buttons>
+            </Modal>
             <CardHost>
                 <Card title='Profile'>
                     {driver &&
@@ -97,7 +137,13 @@ export default function SponsorDriverPage()
                                     text='Edit Profile'
                                     onClick={() => setCurrentModal(modals.editProfile)}
                                 />
-                                <Button className={clsx(styles.editButton, styles.button)} color='warn' icon={UserRemoveIcon} text='Remove Driver' />
+                                <Button 
+                                    className={clsx(styles.editButton, styles.button)} 
+                                    color='warn' 
+                                    icon={UserRemoveIcon} 
+                                    text='Remove Driver' 
+                                    onClick={() => setCurrentModal(modals.removeDriver)}
+                                />
                             </div>
                         </div>
                     }

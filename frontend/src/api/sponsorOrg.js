@@ -94,6 +94,29 @@ export function useSponsorOrgDrivers(orgId)
     });
 }
 
+export function useRemoveSponsorDriveUser(orgId)
+{
+    const { data: user } = useCurrentUser();
+    const queryClient = useQueryClient();
+    const orgPath = orgId ?? "me";
+
+    return useMutation({
+        mutationFn: async (id) =>
+        {
+            const res = await apiFetch(`/sponsor-orgs/${orgPath}/drivers/${id}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            if (!res.ok) throw new Error('Failed to remove driver');
+        },
+        onSuccess: () =>
+        {
+            queryClient.invalidateQueries({ queryKey: ['sponsorOrgDrivers', user?.id] });
+        },
+        retry: 0,
+    });
+}
+
 export function useSponsorOrgDriver({ orgId, driverId })
 {
     const queryClient = useQueryClient();
