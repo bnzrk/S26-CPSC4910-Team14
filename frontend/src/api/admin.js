@@ -1,5 +1,6 @@
 
 import { useMutation } from "@tanstack/react-query";
+import { queryClient } from "./queryClient";
 import { useCurrentUser } from "./currentUser";
 import { apiFetch } from "./apiFetch";
 import { USER_TYPES } from "../constants/userTypes";
@@ -36,7 +37,6 @@ export function useCreateAdminUser()
  */
 export function useBulkUploadUsers()
 {
-    const queryClient = useQueryClient();
     const { data: user } = useCurrentUser();
     const isAdmin = user?.userType === USER_TYPES.ADMIN;
  
@@ -77,7 +77,6 @@ export function useBulkUploadUsers()
  */
 export function useBulkCreateSponsorOrgs()
 {
-    const queryClient = useQueryClient();
     const { data: user } = useCurrentUser();
     const isAdmin = user?.userType === USER_TYPES.ADMIN;
  

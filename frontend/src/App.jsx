@@ -92,12 +92,11 @@ function AppContent({ user, isUserLoading, orgs })
             <Route index element={<SponsorDashboardPage />} />
             <Route path="point-rules" element={<PointRulesPage />} />
             <Route path="users" element={<SponsorUsersPage />} />
-            <Route path="drivers" element={<SponsorDriversPage />} />
+            <Route path="drivers" element={<ManageDriversPage />} />
             <Route path="drivers/:driverId" element={<SponsorDriverPage />} />
             <Route path="applications" element={<SponsorDriverApplicationsPage />} />
             <Route path="catalog" element={<SponsorCatalogPage />} />
             <Route path="catalog" element={<SponsorCatalogPage />} />
-            <Route path="manage-drivers" element={<ManageDriversPage />} />
             <Route path="settings" element={<ComingSoonPage title="Settings" />} />
             <Route path="deliveries" element={<ComingSoonPage title="Deliveries" />} />
             <Route path="routes" element={<ComingSoonPage title="Routes" />} />

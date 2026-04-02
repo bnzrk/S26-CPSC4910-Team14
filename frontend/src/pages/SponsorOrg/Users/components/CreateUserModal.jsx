@@ -1,11 +1,12 @@
+import { useToast } from "@/components/Toast/ToastContext";
 import { useState } from "react";
 import { useCreateSponsorOrgUser } from "@/api/sponsorOrg";
 import Modal from "@/components/Modal/Modal";
 import Button from "@/components/Button/Button";
 import AsyncButton from "@/components/AsyncButton/AsyncButton";
 import InlineErrors from "@/components/InlineErrors/InlineErrors";
+import TextInput from "@/components/TextInput/TextInput";
 import styles from './CreateUserModal.module.scss';
-import { useToast } from "@/components/Toast/ToastContext";
 
 export default function CreateUserModal({ isOpen, onClose, onSuccess, ...other })
 {
@@ -61,10 +62,10 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess, ...other }
             <Modal.Body className={styles.body}>
                 <form {...other} className={styles.form}>
                     <div className={styles.field}>
-                        <label htmlFor="email" className={styles.label}>Email</label>
-                        <input
+                        <TextInput
                             id="email"
                             type="email"
+                            label="Email"
                             className={styles.input}
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -75,10 +76,10 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess, ...other }
 
                     <div className={styles.names}>
                         <div className={styles.field}>
-                            <label htmlFor="firstName" className={styles.label}>First Name</label>
-                            <input
+                            <TextInput
                                 id="firstName"
                                 type="text"
+                                label="First Name"
                                 className={styles.input}
                                 value={firstName}
                                 onChange={(e) => setFirstName(e.target.value)}
@@ -88,10 +89,10 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess, ...other }
                         </div>
 
                         <div className={styles.field}>
-                            <label htmlFor="lastName" className={styles.label}>Last Name</label>
-                            <input
+                            <TextInput
                                 id="lastName"
                                 type="text"
+                                label="Last Name"
                                 className={styles.input}
                                 value={lastName}
                                 onChange={(e) => setLastName(e.target.value)}
@@ -102,10 +103,10 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess, ...other }
                     </div>
 
                     <div className={styles.field}>
-                        <label htmlFor="password" className={styles.label}>Password</label>
-                        <input
+                        <TextInput
                             id="password"
                             type="password"
+                            label="Password"
                             className={styles.input}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -115,10 +116,10 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess, ...other }
                     </div>
 
                     <div className={styles.field}>
-                        <label htmlFor="confirmPassword" className={styles.label}>Confirm Password</label>
-                        <input
+                        <TextInput
                             id="confirmPassword"
                             type="password"
+                            label="Confirm Password"
                             className={styles.input}
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}

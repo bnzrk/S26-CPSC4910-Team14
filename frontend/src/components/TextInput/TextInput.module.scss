@@ -1,22 +1,9 @@
 @use '@/styles/globals' as *;
 
 .textInput {
+
+
     margin-bottom: $grid-2x;
-}
-
-.label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--color-text);
-    display: block;
-    margin-bottom: $grid-half;
-}
-
-/* Red asterisk for required fields */
-.required {
-    color: var(--color-error, #dc2626);
-    font-weight: 700;
-    margin-left: 1px;
 }
 
 .inputWrapper {
@@ -30,56 +17,65 @@
     align-items: center;
     gap: $grid-half;
     padding: $grid-1x;
-
+    
     font-size: var(--font-size-medium);
     background: var(--color-surface);
     color: var(--color-text);
 
     &.withLabel {
-        margin-top: $grid-half;
+        margin-top: $grid-2x;
     }
 
     &:not(.invalid):focus-within {
         border-color: var(--color-accent);
-        outline: 2px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
-        outline-offset: 1px;
+
+        svg {
+            color: var(--color-accent);
+        }
+
+        label {
+            color: var(--color-accent);
+        }
     }
 
     &.invalid {
-        border-color: var(--color-error, #dc2626);
+        border-color: var(--color-warn);
 
-        &:focus-within {
-            outline: 2px solid color-mix(in srgb, #dc2626 25%, transparent);
-            outline-offset: 1px;
+        svg {
+            color: var(--color-warn);
+        }
+
+        label {
+            color: var(--color-warn);
         }
     }
 
     input {
+        padding-left: $grid-half;
         border: none;
         outline: none;
         background: none;
-        color: inherit;
-        font-size: inherit;
-        flex: 1;
-        min-width: 0;
-        width: 100%;
-
-        &::placeholder {
-            color: var(--color-text-tertiary);
-        }
+        font-size: 1rem;
     }
-}
 
-.icon {
-    width: $grid-2x;
-    height: $grid-2x;
-    color: var(--color-text-secondary);
-    flex-shrink: 0;
-}
+    svg {
+        width: calc($grid-2x);
+        height: calc($grid-2x);
+        color: var(--color-text-secondary);
+    }
 
-.validationMessage {
-    display: block;
-    margin-top: $grid-half;
-    font-size: 0.8rem;
-    color: var(--color-error, #dc2626);
+    label {
+        position: absolute;
+        top: -10px;
+        left: 12px;
+        font-size: 12px;
+        color: #6b7280;
+        pointer-events: none;
+        background: white;
+        padding: 0 4px;
+    }
+
+    .required {
+        color: var(--color-warn);
+    }
 }
