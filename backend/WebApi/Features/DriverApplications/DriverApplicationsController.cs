@@ -8,6 +8,7 @@ using WebApi.Data.Entities;
 using WebApi.Data.Enums;
 using WebApi.Features.DriverApplications.Models;
 using WebApi.Features.Users;
+using WebApi.Audit;
 
 namespace WebApi.Features.DriverApplications;
 
@@ -17,13 +18,16 @@ public class DriverApplicationsController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly UserManager<User> _userManager;
+    private readonly IAuditLogger _auditLogger;
 
     public DriverApplicationsController(
         AppDbContext db,
-        UserManager<User> userManager)
+        UserManager<User> userManager,
+        IAuditLogger auditLogger)
     {
         _db = db;
         _userManager = userManager;
+        _auditLogger = auditLogger;
     }
 
     [HttpGet]
@@ -130,6 +134,7 @@ public class DriverApplicationsController : ControllerBase
 
         await _db.SaveChangesAsync();
 
+        await _auditLogger.CreateApplicationStatusChangeAuditLog(applicationId, "Accepted", null);
         return Ok();
     }
 
@@ -149,6 +154,7 @@ public class DriverApplicationsController : ControllerBase
 
         await _db.SaveChangesAsync();
 
+        await _auditLogger.CreateApplicationStatusChangeAuditLog(applicationId, "Rejected", request?.Reason);
         return Ok();
     }
 
