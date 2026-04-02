@@ -118,4 +118,23 @@ public class AuditLogger : IAuditLogger
         _auditDb.ApplicationStatusChangeAuditLogs.Add(log);
         await _auditDb.SaveChangesAsync();
     }
+    public async Task CreateCatalogChangeAuditLog(int sponsorOrgId, string changeType, int externalItemId)
+    {
+        var httpUser = _http.HttpContext?.User;
+        if (httpUser is null) throw new Exception("Could not resolve user from http context.");
+        var user = await _userManager.GetUserAsync(httpUser);
+        if (user is null) throw new Exception("Could not resolve user from http context.");
+
+        var log = new CatalogChangeAuditLog
+        {
+            TimestampUtc = DateTime.UtcNow,
+            ActorUserId = user.Id,
+            ActorUserEmail = user.Email!,
+            SponsorOrgId = sponsorOrgId,
+            ChangeType = changeType,
+            ExternalItemId = externalItemId
+        };
+        _auditDb.CatalogChangeAuditLogs.Add(log);
+        await _auditDb.SaveChangesAsync();
+    }
 }
