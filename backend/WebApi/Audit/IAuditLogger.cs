@@ -8,4 +8,6 @@ public interface IAuditLogger
     Task CreatePasswordChangeAuditLog(string userId, string email, PasswordChangeType type, bool successful);
     Task CreateDriverSponsorChangeAuditLog(int driverId, string driverEmail, int orgId, string orgName, DriverSponsorChangeType type);
     Task CreatePointTransactionAuditLog(int driverId, string driverEmail, int orgId, string orgName, int balanceChange, string reason);
+    Task CreateApplicationStatusChangeAuditLog(int applicationId, string newStatus, string? rejectionReason);
+    Task CreateCatalogChangeAuditLog(int sponsorOrgId, string changeType, int externalItemId);
 }

@@ -158,5 +158,38 @@ public class AuditLogsController : ControllerBase
  
         return Ok(logs);
     }
+    [HttpGet("catalog-changes")]
+    public async Task<IActionResult> GetCatalogChangeLogs(
+        [FromQuery] string? email,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to)
+    {
+        var query = _auditDb.CatalogChangeAuditLogs.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(email))
+            query = query.Where(l => l.ActorUserEmail.Contains(email));
+
+        if (from.HasValue)
+            query = query.Where(l => l.TimestampUtc >= from.Value);
+
+        if (to.HasValue)
+            query = query.Where(l => l.TimestampUtc <= to.Value);
+
+        var logs = await query
+            .OrderByDescending(l => l.TimestampUtc)
+            .Select(l => new
+            {
+                l.Id,
+                l.TimestampUtc,
+                l.ActorUserEmail,
+                l.SponsorOrgId,
+                l.ChangeType,
+                l.ExternalItemId,
+                Type = "CatalogChange"
+            })
+            .ToListAsync();
+
+        return Ok(logs);
+    }
 }
  
