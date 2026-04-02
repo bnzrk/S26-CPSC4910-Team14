@@ -34,13 +34,19 @@ import AuditLogPage from './pages/Admin/AuditLogs/AuditLogPage';
 import './App.scss';
 
 
-function AppContent({ user, orgs })
+function AppContent({ user, isUserLoading, orgs })
 {
   return (
     <OrgProvider user={user} orgs={orgs}>
       <AppLayout>
         <Routes>
-          <Route path="/" element={<AboutPage />} />
+          <Route path="/" element={
+            isUserLoading ? <div></div> :
+            user?.userType === USER_TYPES.DRIVER ? <Navigate to="/driver" replace /> :
+            user?.userType === USER_TYPES.SPONSOR ? <Navigate to="/org" replace /> :
+            user?.userType === USER_TYPES.ADMIN ? <Navigate to="/admin" replace /> :
+            <Navigate to="/about" replace />
+          } />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/login" element={
             <GuestRoute>
@@ -134,5 +140,5 @@ export default function App()
   if (!isLoading)
     console.log(`Current user: ${JSON.stringify(user)}`);
 
-  return <AppContent user={user} orgs={orgs} />;
+  return <AppContent user={user} isUserLoading={isLoading} orgs={orgs} />;
 }
