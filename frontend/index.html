@@ -10,7 +10,18 @@
     <title>DrivePoints</title>
     <script>
       (function () {
-        var stored = localStorage.getItem('drivepoints-theme');
+        var path = window.location.pathname;
+        var publicRoutes = ['/', '/about', '/login', '/register'];
+        var isPublic = false;
+        for (var i = 0; i < publicRoutes.length; i++) {
+          if (path === publicRoutes[i]) { isPublic = true; break; }
+        }
+        if (isPublic) {
+          document.documentElement.removeAttribute('data-theme');
+          return;
+        }
+        var lastUser = localStorage.getItem('drivepoints-last-user');
+        var stored = lastUser ? localStorage.getItem('drivepoints-theme-' + lastUser) : null;
         var theme;
         if (stored === 'light' || stored === 'dark') {
           theme = stored;

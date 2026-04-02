@@ -21,16 +21,16 @@ function ScrollRestore() {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <ToastProvider>
-          <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <ToastProvider>
+        <BrowserRouter>
+          <ThemeProvider>
             <ToastHost />
             <ScrollRestore />
             <App />
-          </BrowserRouter>
-        </ToastProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+          </ThemeProvider>
+        </BrowserRouter>
+      </ToastProvider>
+    </QueryClientProvider>
   </StrictMode>,
 )
