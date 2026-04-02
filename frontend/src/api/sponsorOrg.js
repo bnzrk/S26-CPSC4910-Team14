@@ -35,208 +35,279 @@ export function useCreateSponsorOrg()
                 throw await res.json();
             }
 
-            return null;
+            return res.json();
         },
         onSuccess: () =>
         {
-            queryClient.invalidateQueries({ queryKey: ["allSponsorOrgs"] });
+            queryClient.invalidateQueries({ queryKey: ['allSponsorOrgs'] });
         },
         retry: 0,
-        enabled: !!user && isAdmin,
+        enabled: isAdmin,
     });
 }
 
-export function useSponsorOrg(orgId)
+export function useSponsorOrg()
 {
     const { data: user } = useCurrentUser();
     const isSponsor = user?.userType === USER_TYPES.SPONSOR;
     const isAdmin = user?.userType === USER_TYPES.ADMIN;
 
-    const orgPath = orgId ?? "me";
-
     return useQuery({
-        queryKey: ["sponsorOrg", orgPath, user?.id],
-        queryFn: async () => apiFetch(`/sponsor-orgs/${orgPath}`).then(r => r.json()),
-        enabled: !!user && (isSponsor || (isAdmin && !!orgId)), 
+        queryKey: ["sponsorOrg"],
+        queryFn: async () => apiFetch('/sponsor-orgs/me').then(r => r.json()),
+        enabled: !!user && (isSponsor || isAdmin),
         retry: 1
     });
 }
 
-export function useSponsorOrgUsers(orgId)
+export function useUpdateSponsorOrg()
 {
-    const { data: user } = useCurrentUser();
-    const isSponsor = user?.userType === USER_TYPES.SPONSOR;
-    const isAdmin = user?.userType === USER_TYPES.ADMIN;
-
-    const orgPath = orgId ?? "me";
-
-    return useQuery({
-        queryKey: ["sponsorOrgUsers", user?.id],
-        queryFn: async () => apiFetch(`/sponsor-orgs/${orgPath}/users`).then(r => r.json()),
-        enabled: !!user && (isSponsor || isAdmin),
-        placeholderData: keepPreviousData,
-    });
-}
-
-export function useSponsorOrgDrivers(orgId)
-{
-    const { data: user } = useCurrentUser();
-    const isSponsor = user?.userType === USER_TYPES.SPONSOR;
-    const isAdmin = user?.userType === USER_TYPES.ADMIN;
-
-    const orgPath = orgId ?? "me";
-
-    return useQuery({
-        queryKey: ["sponsorOrgDrivers", user?.id],
-        queryFn: async () => apiFetch(`/sponsor-orgs/${orgPath}/drivers`).then(r => r.json()),
-        enabled: !!user && (isSponsor || isAdmin),
-        placeholderData: keepPreviousData,
-    });
-}
-
-export function useRemoveSponsorDriveUser(orgId)
-{
-    const { data: user } = useCurrentUser();
     const queryClient = useQueryClient();
-    const orgPath = orgId ?? "me";
 
     return useMutation({
-        mutationFn: async (id) =>
+        mutationFn: async ({ pointDollarValue }) =>
         {
-            const res = await apiFetch(`/sponsor-orgs/${orgPath}/drivers/${id}`, {
-                method: 'DELETE',
-                credentials: 'include'
+            const res = await apiFetch('/sponsor-orgs/me', {
+                method: 'PATCH',
+                body: JSON.stringify({ pointDollarValue }),
             });
-            if (!res.ok) throw new Error('Failed to remove driver');
+            if (!res.ok) throw await res.json();
+            return res.json();
         },
         onSuccess: () =>
         {
-            queryClient.invalidateQueries({ queryKey: ['sponsorOrgDrivers', user?.id] });
+            queryClient.invalidateQueries({ queryKey: ['sponsorOrg'] });
         },
-        retry: 0,
     });
 }
 
-export function useSponsorOrgDriver({ orgId, driverId })
+export function useSponsorOrgUsers()
+{
+    const { data: user } = useCurrentUser();
+    const isSponsor = user?.userType === USER_TYPES.SPONSOR;
+
+    return useQuery({
+        queryKey: ["sponsorOrgUsers"],
+        queryFn: async () => apiFetch('/sponsor-orgs/me/users').then(r => r.json()),
+        enabled: !!user && isSponsor,
+        retry: 1
+    });
+}
+
+export function useRemoveSponsorOrgUser()
 {
     const queryClient = useQueryClient();
-    const { data: user } = useCurrentUser();
 
-    const orgPath = orgId ?? "me";
+    return useMutation({
+        mutationFn: async ({ userId }) =>
+        {
+            const res = await apiFetch(`/sponsor-orgs/me/users/${userId}`, {
+                method: 'DELETE',
+            });
+            if (!res.ok) throw await res.json();
+        },
+        onSuccess: () =>
+        {
+            queryClient.invalidateQueries({ queryKey: ['sponsorOrgUsers'] });
+        },
+    });
+}
+
+export function useSponsorOrgDrivers()
+{
+    const { data: user } = useCurrentUser();
+    const isSponsor = user?.userType === USER_TYPES.SPONSOR;
+
+    return useQuery({
+        queryKey: ["sponsorOrgDrivers"],
+        queryFn: async () => apiFetch('/sponsor-orgs/me/drivers').then(r => r.json()),
+        enabled: !!user && isSponsor,
+        placeholderData: keepPreviousData,
+        retry: 1
+    });
+}
+
+export function useSponsorOrgDriver(driverId)
+{
+    const { data: user } = useCurrentUser();
+    const isSponsor = user?.userType === USER_TYPES.SPONSOR;
 
     return useQuery({
         queryKey: ["sponsorOrgDriver", driverId],
-        queryFn: async () =>
+        queryFn: async () => apiFetch(`/sponsor-orgs/me/drivers/${driverId}`).then(r => r.json()),
+        enabled: !!user && isSponsor && !!driverId,
+        retry: 1
+    });
+}
+
+export function useRemoveSponsorDriveUser()
+{
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ driverId }) =>
         {
-            const res = await apiFetch(`/sponsor-orgs/${orgPath}/drivers/${driverId}`);
+            const res = await apiFetch(`/sponsor-orgs/me/drivers/${driverId}`, {
+                method: 'DELETE',
+            });
+            if (!res.ok) throw await res.json();
+        },
+        onSuccess: () =>
+        {
+            queryClient.invalidateQueries({ queryKey: ['sponsorOrgDrivers'] });
+        },
+    });
+}
+
+
+export function useBulkCreateDriverUsers()
+{
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ file }) =>
+        {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const res = await apiFetch('/sponsor-orgs/me/drivers/bulk', {
+                method: 'POST',
+                headers: {},
+                body: formData,
+            });
 
             if (!res.ok)
             {
-                const err = new Error(res.status === 404 ? "Driver not found" : "Could not fetch driver");
-                err.status = res.status;
+                const err = await res.json().catch(() => ({ message: 'Bulk create failed' }));
                 throw err;
             }
 
             return res.json();
         },
-        enabled: !!user && driverId != null,
-        retry: (failureCount, error) =>
-        {
-            if (error?.status === 404 || error?.status === 401 || error?.status === 403)
-            {
-                return false;
-            }
-            return failureCount < 2;
-        },
-    });
-}
-
-export function useCreateSponsorOrgUser(orgId)
-{
-    const { data: user } = useCurrentUser();
-    const queryClient = useQueryClient();
-    const orgPath = orgId ?? "me";
-
-    return useMutation({
-        mutationFn: async ({ email, username, firstName, lastName, password }) =>
-        {
-            const path = `/sponsor-orgs/${orgPath}/users`;
-            const res = await apiFetch(path, {
-                method: "POST",
-                body: JSON.stringify({ email, username, firstName, lastName, password }),
-            });
-
-            if (!res.ok)
-                throw await res.json();
-        },
         onSuccess: () =>
         {
-            queryClient.invalidateQueries({ queryKey: ["sponsorOrgUsers", user?.id] });
-        },
-        retry: 0
-    });
-}
-
-export function useRemoveSponsorOrgUser(orgId)
-{
-    const { data: user } = useCurrentUser();
-    const queryClient = useQueryClient();
-    const orgPath = orgId ?? "me";
-
-    return useMutation({
-        mutationFn: async (sponsorUserId) =>
-        {
-            const res = await apiFetch(`/sponsor-orgs/${orgPath}/users/${sponsorUserId}`, {
-                method: 'DELETE',
-            });
-            if (!res.ok) throw new Error('Failed to remove employee');
-        },
-        onSuccess: () =>
-        {
-            queryClient.invalidateQueries({ queryKey: ['sponsorOrgUsers', user?.id] });
+            queryClient.invalidateQueries({ queryKey: ['sponsorOrgDrivers'] });
         },
         retry: 0,
     });
 }
 
-export function useUpdateSponsorOrg(orgId)
+
+export function useBulkUpdateDriverPoints()
 {
     const queryClient = useQueryClient();
-    const { data: user } = useCurrentUser();
-    const orgPath = orgId ?? "me";
 
     return useMutation({
-        mutationFn: async ({ sponsorName, pointRatio }) =>
+        mutationFn: async ({ file }) =>
         {
-            return apiFetch(`/sponsor-orgs/${orgPath}`, {
-                method: "PATCH",
-                body: JSON.stringify({ sponsorName, pointRatio }),
-            });
-        },
+            const formData = new FormData();
+            formData.append('file', file);
 
-        onMutate: async ({ sponsorName, pointRatio }) =>
-        {
-            const queryKey = ["sponsorOrg", orgPath, user?.id];
-
-            await queryClient.cancelQueries({ queryKey });
-
-            const previousOrg = queryClient.getQueryData(queryKey);
-
-            queryClient.setQueryData(queryKey, (old) =>
-            {
-                if (!old) return old;
-                return { ...old, ...{ sponsorName }, ...{ pointRatio } };
+            const res = await apiFetch('/sponsor-orgs/me/drivers/bulk-points', {
+                method: 'POST',
+                headers: {},
+                body: formData,
             });
 
-            return { previousOrg, queryKey };
-        },
-
-        onError: (_err, _vars, ctx) =>
-        {
-            if (ctx?.previousOrg)
+            if (!res.ok)
             {
-                queryClient.setQueryData(ctx.queryKey, ctx.previousOrg);
+                const err = await res.json().catch(() => ({ message: 'Bulk update failed' }));
+                throw err;
             }
+
+            return res.json();
         },
+        onSuccess: () =>
+        {
+            queryClient.invalidateQueries({ queryKey: ['sponsorOrgDrivers'] });
+        },
+        retry: 0,
     });
 }
+
+
+export function useBulkUpdateDriverInfo()
+{
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ file }) =>
+        {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const res = await apiFetch('/sponsor-orgs/me/drivers/bulk-update', {
+                method: 'POST',
+                headers: {},
+                body: formData,
+            });
+
+            if (!res.ok)
+            {
+                const err = await res.json().catch(() => ({ message: 'Bulk update failed' }));
+                throw err;
+            }
+
+            return res.json();
+        },
+        onSuccess: () =>
+        {
+            queryClient.invalidateQueries({ queryKey: ['sponsorOrgDrivers'] });
+        },
+        retry: 0,
+    });
+}
+
+export function useBulkCreateSponsorUsers()
+{
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ file }) =>
+        {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const res = await apiFetch('/sponsor-orgs/me/users/bulk', {
+                method: 'POST',
+                headers: {},
+                body: formData,
+            });
+
+            if (!res.ok)
+            {
+                const err = await res.json().catch(() => ({ message: 'Bulk create failed' }));
+                throw err;
+            }
+
+            return res.json();
+        },
+        onSuccess: () =>
+        {
+            queryClient.invalidateQueries({ queryKey: ['sponsorOrgUsers'] });
+        },
+        retry: 0,
+    });
+}
+
+export function useCreateSponsorOrgUser() {
+    const queryClient = useQueryClient();
+  
+    return useMutation({
+      mutationFn: async ({ email, firstName, lastName, password }) => {
+        const res = await apiFetch('/sponsor-orgs/me/users', {
+          method: 'POST',
+          body: JSON.stringify({ email, firstName, lastName, password }),
+        });
+  
+        if (!res.ok) {
+          throw await res.json();
+        }
+  
+        return res.json();
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['sponsorOrgUsers'] });
+      },
+    });
+  }

@@ -1,5 +1,20 @@
 @use '@/styles/globals' as *;
 
+.headerActions {
+    display: flex;
+    flex-direction: row;
+    gap: $grid-1x;
+    flex-wrap: wrap;
+}
+
 .driverEmail {
-    margin: 0 $grid-1x;
+    font-size: 0.82rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+.empty {
+    font-size: 0.9rem;
+    color: var(--color-text-tertiary);
+    margin: $grid-2x 0;
 }

@@ -1,32 +1,32 @@
 @use '@/styles/globals' as *;
 
-.userEmail {
-    margin: 0 $grid-1x;
+.headerActions {
+    display: flex;
+    flex-direction: row;
+    gap: $grid-1x;
+    flex-wrap: wrap;
 }
 
-.userModal {
-    .userHeader {
-        display: flex;
-        flex-direction: row;
-        gap: $grid-1x;
-        align-items: center;
+.userEmail {
+    font-size: 0.82rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+}
 
-        .userName {
-            font-weight: bold;
-        }
+.userDetails {
+    display: flex;
+    flex-direction: column;
+    gap: $grid-1x;
 
-        p {
-            margin: 0;
-        }
+    p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--color-text);
     }
+}
 
-    .body {
-        display: flex;
-        padding-bottom: $grid-3x;
-    }
-
-    .userDetails {
-        margin-top: $grid-half;
-        font-size: 14px;
-    }
+.empty {
+    font-size: 0.9rem;
+    color: var(--color-text-tertiary);
+    margin: $grid-2x 0;
 }

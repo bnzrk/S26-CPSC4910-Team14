@@ -1,9 +1,22 @@
 @use '@/styles/globals' as *;
 
 .textInput {
-
-
     margin-bottom: $grid-2x;
+}
+
+.label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-text);
+    display: block;
+    margin-bottom: $grid-half;
+}
+
+/* Red asterisk for required fields */
+.required {
+    color: var(--color-error, #dc2626);
+    font-weight: 700;
+    margin-left: 1px;
 }
 
 .inputWrapper {
@@ -17,61 +30,56 @@
     align-items: center;
     gap: $grid-half;
     padding: $grid-1x;
-    
+
     font-size: var(--font-size-medium);
     background: var(--color-surface);
     color: var(--color-text);
 
     &.withLabel {
-        margin-top: $grid-2x;
+        margin-top: $grid-half;
     }
 
     &:not(.invalid):focus-within {
         border-color: var(--color-accent);
-
-        svg {
-            color: var(--color-accent);
-        }
-
-        label {
-            color: var(--color-accent);
-        }
+        outline: 2px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
+        outline-offset: 1px;
     }
 
     &.invalid {
-        border-color: var(--color-warn);
+        border-color: var(--color-error, #dc2626);
 
-        svg {
-            color: var(--color-warn);
-        }
-
-        label {
-            color: var(--color-warn);
+        &:focus-within {
+            outline: 2px solid color-mix(in srgb, #dc2626 25%, transparent);
+            outline-offset: 1px;
         }
     }
 
     input {
-        padding-left: $grid-half;
         border: none;
         outline: none;
         background: none;
-        font-size: 1rem;
-    }
+        color: inherit;
+        font-size: inherit;
+        flex: 1;
+        min-width: 0;
+        width: 100%;
 
-    svg {
-        width: calc($grid-2x);
-        height: calc($grid-2x);
-        color: var(--color-text-secondary);
+        &::placeholder {
+            color: var(--color-text-tertiary);
+        }
     }
+}
 
-    label {
-        position: absolute;
-        top: -10px;
-        left: 12px;
-        font-size: 12px;
-        color: #6b7280;
-        pointer-events: none;
-        background: white;
-        padding: 0 4px;
-    }
+.icon {
+    width: $grid-2x;
+    height: $grid-2x;
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
+}
+
+.validationMessage {
+    display: block;
+    margin-top: $grid-half;
+    font-size: 0.8rem;
+    color: var(--color-error, #dc2626);
 }

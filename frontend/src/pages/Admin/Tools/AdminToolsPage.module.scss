@@ -1,9 +1,10 @@
 @use '@/styles/globals' as *;
 
-.label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--color-text);
+.headerActions {
+    display: flex;
+    flex-direction: row;
+    gap: $grid-1x;
+    flex-wrap: wrap;
 }
 
 .form {
@@ -12,15 +13,31 @@
     gap: $grid-1x;
 }
 
-.field {
+.nameRow {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    gap: $grid-2x;
+
+    > * {
+        flex: 1 1 0;
+        min-width: 0;
+    }
 }
 
-.orgSelect {
-    margin-bottom: $grid-2x;
+.helpText {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: 1.6;
 }
 
-.submit {
-    margin-top: $grid-2x;
+.orgMeta {
+    font-size: 0.82rem;
+    color: var(--color-text-tertiary);
+}
+
+.loading,
+.empty {
+    color: var(--color-text-tertiary);
+    font-size: 0.9rem;
 }

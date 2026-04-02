@@ -1,263 +1,268 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/components/Toast/ToastContext";
-import { useAllSponsorOrgs, useCreateSponsorOrg, useCreateSponsorOrgUser } from "@/api/sponsorOrg";
-import { useCreateAdminUser } from "@/api/admin";
-import ListItem from "@/components/ListItem/ListItem";
-import Card from "@/components/Card/Card";
-import CardHost from "@/components/CardHost/CardHost";
-import AsyncButton from "@/components/AsyncButton/AsyncButton";
-import TextInput from "@/components/TextInput/TextInput";
-import UsersIcon from "@/assets/icons/users.svg?react";
-import AuditLogIcon from "@/assets/icons/clipboard-clock.svg?react";
+import { useState } from 'react';
+import { useAllSponsorOrgs, useCreateSponsorOrg } from '@/api/sponsorOrg';
+import { useCreateAdminUser, useBulkUploadUsers } from '@/api/admin';
+import { useToast } from '@/components/Toast/ToastContext';
+import CardHost from '@/components/CardHost/CardHost';
+import Card from '@/components/Card/Card';
+import Button from '@/components/Button/Button';
+import Modal from '@/components/Modal/Modal';
+import AsyncButton from '@/components/AsyncButton/AsyncButton';
+import TextInput from '@/components/TextInput/TextInput';
+import ListItem from '@/components/ListItem/ListItem';
+import BulkUploadModal from '@/components/BulkUploadModal/BulkUploadModal';
+import BulkCreateOrgsModal from './BulkCreateOrgsModal';
+import OrgIcon from '@/assets/icons/building-2.svg?react';
+import AddUserIcon from '@/assets/icons/user-round-plus.svg?react';
+import UploadIcon from '@/assets/icons/upload.svg?react';
 import styles from './AdminToolsPage.module.scss';
 
-// Will probably have a proper admin dashboard/pages later but this is fine for now
-export default function AdminToolsPage()
+// Sub-component: Create Single Admin User Modal
+function CreateAdminUserModal({ isOpen, onClose, onSuccess })
 {
-    const navigate = useNavigate();
-
     const { push } = useToast();
-
-    const { data: orgs, isLoading: isOrgsLoading, isError: isOrgsError } = useAllSponsorOrgs();
-
-    const createOrg = useCreateSponsorOrg();
-    const createSponsor = useCreateSponsorOrgUser();
     const createAdmin = useCreateAdminUser();
 
-    const [orgName, setOrgName] = useState('');
-    const [selectedOrgId, setSelectedOrgId] = useState(1);
+    const [email, setEmail] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [password, setPassword] = useState('');
 
-    const [sponsorEmail, setSponsorEmail] = useState('');
-    const [sponsorFirstName, setSponsorFirstName] = useState('');
-    const [sponsorLastName, setSponsorLastName] = useState('');
-    const [sponsorPassword, setSponsorPassword] = useState('');
-    const [sponsorErrors, setSponsorErrors] = useState([]);
+    const isFormValid = email.trim() && firstName.trim() && lastName.trim() && password.trim();
 
-    const [adminEmail, setadminEmail] = useState('');
-    const [adminFirstName, setadminFirstName] = useState('');
-    const [adminLastName, setadminLastName] = useState('');
-    const [adminPassword, setadminPassword] = useState('');
-    const [adminErrors, setadminErrors] = useState([]);
-
-    async function handleCreateOrg()
+    async function handleSubmit()
     {
-        if (!orgName)
-        {
-            push({ type: 'error', message: 'Sponsor organization name empty.' });
-            return Promise.reject();
-        }
-
+        if (!isFormValid) return;
         try
         {
-            await createOrg.mutateAsync({ sponsorName: orgName });
-            push({ type: 'success', message: 'Sponsor organization successfully created.' });
+            await createAdmin.mutateAsync({ email, firstName, lastName, password, username: email });
+            push({ type: 'success', message: 'Admin user created.' });
+            onSuccess?.();
+            onClose();
         }
         catch (err)
         {
-            console.log(err);
-            push({ type: 'error', message: 'Failed to make sponsor organization.' });
-            return Promise.fail();
+            push({ type: 'error', message: err?.message ?? 'Failed to create admin.' });
         }
     }
 
-    async function handleCreateSponsor()
+    function handleClose()
     {
-        try
-        {
-            await createSponsor.mutateAsync({ orgId: selectedOrgId, email: sponsorEmail, firstName: sponsorFirstName, lastName: sponsorLastName, password: sponsorPassword });
-            push({ type: 'success', message: 'Sponsor user successfully created.' });
-        }
-        catch (err)
-        {
-            console.log(err);
-            push({ type: 'error', message: 'Failed to make sponsor user.' });
-            return Promise.fail();
-        }
+        setEmail(''); setFirstName(''); setLastName(''); setPassword('');
+        onClose();
     }
 
-    async function handleCreateAdmin()
+    return (
+        <Modal isOpen={isOpen} onClose={handleClose} closeButton>
+            <Modal.Header title="Create Admin User" />
+            <Modal.Body>
+                <div className={styles.form}>
+                    <TextInput
+                        label="Email"
+                        required
+                        type="email"
+                        value={email}
+                        onChange={setEmail}
+                        placeholder="admin@example.com"
+                    />
+                    <div className={styles.nameRow}>
+                        <TextInput
+                            label="First Name"
+                            required
+                            value={firstName}
+                            onChange={setFirstName}
+                            placeholder="Jane"
+                        />
+                        <TextInput
+                            label="Last Name"
+                            required
+                            value={lastName}
+                            onChange={setLastName}
+                            placeholder="Doe"
+                        />
+                    </div>
+                    <TextInput
+                        label="Password"
+                        required
+                        type="password"
+                        value={password}
+                        onChange={setPassword}
+                        placeholder="••••••••"
+                    />
+                </div>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button text="Cancel" color="outline" onClick={handleClose} />
+                <AsyncButton
+                    text="Create Admin"
+                    color="primary"
+                    disabled={!isFormValid}
+                    action={handleSubmit}
+                />
+            </Modal.Footer>
+        </Modal>
+    );
+}
+
+// Sub-component: Single Sponsor Org Modal
+function CreateSponsorOrgModal({ isOpen, onClose, onSuccess })
+{
+    const { push } = useToast();
+    const createOrg = useCreateSponsorOrg();
+    const [sponsorName, setSponsorName] = useState('');
+
+    async function handleSubmit()
     {
+        if (!sponsorName.trim()) return;
         try
         {
-            await createAdmin.mutateAsync({ email: adminEmail, firstName: adminFirstName, lastName: adminLastName, password: adminPassword });
-            push({ type: 'success', message: 'Admin user successfully created.' });
+            await createOrg.mutateAsync({ sponsorName });
+            push({ type: 'success', message: 'Sponsor organization created.' });
+            onSuccess?.();
+            onClose();
         }
         catch (err)
         {
-            console.log(err);
-            push({ type: 'error', message: 'Failed to make admin user.' });
-            return Promise.fail();
+            push({ type: 'error', message: err?.message ?? 'Failed to create organization.' });
         }
     }
 
     return (
+        <Modal isOpen={isOpen} onClose={() => { setSponsorName(''); onClose(); }} closeButton>
+            <Modal.Header title="Create Sponsor Organization" />
+            <Modal.Body>
+                <TextInput
+                    label="Organization Name"
+                    required
+                    value={sponsorName}
+                    onChange={setSponsorName}
+                    placeholder="Acme Freight"
+                />
+            </Modal.Body>
+            <Modal.Footer>
+                <Button text="Cancel" color="outline" onClick={() => { setSponsorName(''); onClose(); }} />
+                <AsyncButton
+                    text="Create"
+                    color="primary"
+                    disabled={!sponsorName.trim()}
+                    action={handleSubmit}
+                />
+            </Modal.Footer>
+        </Modal>
+    );
+}
+
+// Main Page
+export default function AdminToolsPage()
+{
+    const { data: orgs, isLoading: orgsLoading } = useAllSponsorOrgs();
+    const bulkUploadUsers = useBulkUploadUsers();
+
+    const modals = {
+        createAdmin: 'createAdmin',
+        bulkUsers: 'bulkUsers',
+        createOrg: 'createOrg',
+        bulkOrgs: 'bulkOrgs',
+    };
+    const [activeModal, setActiveModal] = useState(null);
+
+    return (
         <>
-            <CardHost>
-                <Card title='Create Organization'>
-                    <form className={styles.form}>
-                        <div className={styles.field}>
-                            <TextInput
-                                id="orgName"
-                                type="orgName"
-                                label='Name'
-                                value={orgName}
-                                onChange={(e) => setOrgName(e.target.value)}
-                                required
+            <CardHost title="Admin Tools" subtitle="Manage users and organizations">
+
+                {/* ── User Management ── */}
+                <Card
+                    title="User Management"
+                    headerRight={
+                        <div className={styles.headerActions}>
+                            <Button
+                                text="Create Admin"
+                                color="primary"
+                                icon={AddUserIcon}
+                                onClick={() => setActiveModal(modals.createAdmin)}
+                            />
+                            <Button
+                                text="Bulk Upload Users"
+                                color="outline"
+                                icon={UploadIcon}
+                                onClick={() => setActiveModal(modals.bulkUsers)}
                             />
                         </div>
-                        <AsyncButton className={styles.submit} type="submit" text='Create' action={handleCreateOrg} />
-                    </form>
+                    }
+                >
+                    <p className={styles.helpText}>
+                        Create individual admin users or bulk-upload users via CSV.
+                        The CSV must include: <code>email, firstName, lastName, password, role</code>
+                        &nbsp;(role: <code>admin</code> | <code>sponsor</code> | <code>driver</code>).
+                    </p>
                 </Card>
-                <Card title='Create Sponsor User'>
-                    <select
-                        className={styles.orgSelect}
-                        value={selectedOrgId}
-                        onChange={(e) => setSelectedOrgId(e.target.value)}
-                        disabled={isOrgsLoading || isOrgsError}
-                    >
-                        {orgs && orgs.length > 0 && orgs.map((org) =>
-                            <option key={org.id} value={org.id}>{org.sponsorName}</option>
-                        )}
-                    </select>
-                    <form className={styles.form}>
-                        <div className={styles.field}>
-                            <TextInput
-                                id="email"
-                                type="email"
-                                label="Email"
-                                className={styles.input}
-                                value={sponsorEmail}
-                                onChange={(e) => setSponsorEmail(e.target.value)}
-                                required
-                                autoComplete="email"
+
+                {/* ── Organization Management ── */}
+                <Card
+                    title="Sponsor Organizations"
+                    headerRight={
+                        <div className={styles.headerActions}>
+                            <Button
+                                text="Create Org"
+                                color="primary"
+                                icon={OrgIcon}
+                                onClick={() => setActiveModal(modals.createOrg)}
+                            />
+                            <Button
+                                text="Bulk Create Orgs"
+                                color="outline"
+                                icon={UploadIcon}
+                                onClick={() => setActiveModal(modals.bulkOrgs)}
                             />
                         </div>
-
-                        <div className={styles.names}>
-                            <div className={styles.field}>
-                                <TextInput
-                                    id="firstName"
-                                    type="text"
-                                    label="First Name"
-                                    className={styles.input}
-                                    value={sponsorFirstName}
-                                    onChange={(e) => setSponsorFirstName(e.target.value)}
-                                    required
-                                    autoComplete="given-name"
-                                />
-                            </div>
-
-                            <div className={styles.field}>
-                                <TextInput
-                                    id="lastName"
-                                    type="text"
-                                    label="Last Name"
-                                    className={styles.input}
-                                    value={sponsorLastName}
-                                    onChange={(e) => setSponsorLastName(e.target.value)}
-                                    required
-                                    autoComplete="family-name"
-                                />
-                            </div>
-                        </div>
-
-                        <div className={styles.field}>
-                            <TextInput
-                                id="password"
-                                type="password"
-                                label="Password"
-                                className={styles.input}
-                                value={sponsorPassword}
-                                onChange={(e) => setSponsorPassword(e.target.value)}
-                                required
-                                autoComplete="new-password"
-                            />
-                        </div>
-
-                        {sponsorErrors?.length > 0 && (
-                            <InlineErrors className={styles.registerErrors} errors={sponsorErrors} />
-                        )}
-                        <AsyncButton className={styles.submit} type="submit" text='Create' action={handleCreateSponsor} />
-                    </form>
-                </Card>
-                <Card title='Create Admin User'>
-                    <form className={styles.form}>
-                        <div className={styles.field}>
-                            <TextInput
-                                id="email"
-                                type="email"
-                                label="Email"
-                                className={styles.input}
-                                value={adminEmail}
-                                onChange={(e) => setadminEmail(e.target.value)}
-                                required
-                                autoComplete="email"
-                            />
-                        </div>
-
-                        <div className={styles.names}>
-                            <div className={styles.field}>
-                                <TextInput
-                                    id="firstName"
-                                    type="text"
-                                    label="First Name"
-                                    className={styles.input}
-                                    value={adminFirstName}
-                                    onChange={(e) => setadminFirstName(e.target.value)}
-                                    required
-                                    autoComplete="given-name"
-                                />
-                            </div>
-
-                            <div className={styles.field}>
-                                <TextInput
-                                    id="lastName"
-                                    type="text"
-                                    label="Last Name"
-                                    className={styles.input}
-                                    value={adminLastName}
-                                    onChange={(e) => setadminLastName(e.target.value)}
-                                    required
-                                    autoComplete="family-name"
-                                />
-                            </div>
-                        </div>
-
-                        <div className={styles.field}>
-                            <TextInput
-                                id="password"
-                                type="password"
-                                label="Password"
-                                className={styles.input}
-                                value={adminPassword}
-                                onChange={(e) => setadminPassword(e.target.value)}
-                                required
-                                autoComplete="new-password"
-                            />
-                        </div>
-
-                        {adminErrors?.length > 0 && (
-                            <InlineErrors className={styles.registerErrors} errors={adminErrors} />
-                        )}
-                        <AsyncButton className={styles.submit} type="submit" text='Create' action={handleCreateAdmin} />
-                    </form>
-                </Card>
-                <Card title='More'>
-                    <ListItem
-                        icon={UsersIcon}
-                        label='Users'
-                        showChevron={true}
-                        onClick={() => navigate("users")}
-                    />
-                    <ListItem
-                        icon={AuditLogIcon}
-                        label='Audit Logs'
-                        showChevron={true}
-                        onClick={() => navigate("audit-logs")}
-                    />
+                    }
+                >
+                    {orgsLoading && <p className={styles.loading}>Loading organizations…</p>}
+                    {!orgsLoading && (!orgs || orgs.length === 0) && (
+                        <p className={styles.empty}>No sponsor organizations found.</p>
+                    )}
+                    {orgs && orgs.map(org => (
+                        <ListItem
+                            key={org.id}
+                            icon={OrgIcon}
+                            label={org.sponsorName}
+                        >
+                            <span className={styles.orgMeta}>
+                                {org.userCount ?? 0} users · {org.driverCount ?? 0} drivers
+                            </span>
+                        </ListItem>
+                    ))}
                 </Card>
             </CardHost>
+
+            {/* ── Modals ── */}
+            <CreateAdminUserModal
+                isOpen={activeModal === modals.createAdmin}
+                onClose={() => setActiveModal(null)}
+                onSuccess={() => setActiveModal(null)}
+            />
+
+            <BulkUploadModal
+                isOpen={activeModal === modals.bulkUsers}
+                onClose={() => setActiveModal(null)}
+                onSuccess={() => setActiveModal(null)}
+                title="Bulk Upload Users"
+                description="Upload a CSV to create multiple users at once. Required columns: email, firstName, lastName, password, role (admin | sponsor | driver)."
+                templateCols={['email', 'firstName', 'lastName', 'password', 'role']}
+                templateName="bulk_users_template.csv"
+                mutation={bulkUploadUsers}
+            />
+
+            <CreateSponsorOrgModal
+                isOpen={activeModal === modals.createOrg}
+                onClose={() => setActiveModal(null)}
+                onSuccess={() => setActiveModal(null)}
+            />
+
+            <BulkCreateOrgsModal
+                isOpen={activeModal === modals.bulkOrgs}
+                onClose={() => setActiveModal(null)}
+                onSuccess={() => setActiveModal(null)}
+            />
         </>
-    )
+    );
 }
