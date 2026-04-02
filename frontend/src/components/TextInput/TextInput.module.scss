@@ -22,11 +22,9 @@
     background: var(--color-surface);
     color: var(--color-text);
 
-    // margin-bottom: $grid-2x $grid-3x;
-
-    // &.withLabel {
-    //     padding-top: $grid-1x;
-    // }
+    &.withLabel {
+        margin-top: $grid-2x;
+    }
 
     &:not(.invalid):focus-within {
         border-color: var(--color-accent);
@@ -64,14 +62,6 @@
         width: calc($grid-2x);
         height: calc($grid-2x);
         color: var(--color-text-secondary);
-
-        // &.left {
-        //     margin-left: $grid-1x;
-        // }
-
-        // &.right {
-        //     margin-right: $grid-1x;
-        // }
     }
 
     label {

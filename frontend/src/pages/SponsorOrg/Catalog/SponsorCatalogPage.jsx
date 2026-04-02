@@ -157,17 +157,9 @@ export default function SponsorCatalogPage()
                                     category={item.category.name}
                                     price={item.price}
                                     available={productInCatalog[item.id]}
+                                    onClick={() => !productInCatalog[item.id] ? undefined : handleItemAddClick(item.id)}
                                 >
                                     {!productInCatalog[item.id] && <InlineInfo className={styles.itemWarning} messages={['In Catalog']} />}
-                                    <div className={styles.itemButtons}>
-                                        <Button
-                                            icon={AddIcon}
-                                            color='primary'
-                                            size='small'
-                                            disabled={!productInCatalog[item.id]}
-                                            onClick={() => handleItemAddClick(item.id)}
-                                        />
-                                    </div>
                                 </ShopItem>
                             ))
                         }

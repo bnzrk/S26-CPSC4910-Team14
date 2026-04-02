@@ -11,7 +11,8 @@ export default function TextInput({
     placeholder,
     onChange,
     isValid,
-    onValidChange
+    onValidChange,
+    ...other
 })
 {
     const hasValue = value != null;
@@ -67,6 +68,7 @@ export default function TextInput({
                 defaultValue={value === undefined ? defaultValue : undefined}
                 onChange={handleChange}
                 placeholder={placeholder}
+                {...other}
             />
             {label && <label>{label}</label>}
             {(Icon && iconPosition == 'right') &&
