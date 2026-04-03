@@ -166,7 +166,7 @@ public class ReadActionsService : IReadActionsService
             return "Missing user's email.";
         if (action.PointTransactionAmount != null)
             return "Cannot specify point amount for sponsor user action.";
-        if (String.IsNullOrEmpty(action.PointTransactionReason))
+        if (!String.IsNullOrEmpty(action.PointTransactionReason))
             return "Cannot specify point change reason for sponsor user action.";
         return null;
     }

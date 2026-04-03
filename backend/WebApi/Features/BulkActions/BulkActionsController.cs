@@ -51,7 +51,7 @@ public class BulkActionsController : ControllerBase
 
         try
         {
-            await _bulkActionsService.ExecuteActions(actions, isSponsor, errors);
+            await _bulkActionsService.ExecuteActions(actions, User, errors);
         }
         catch (Exception ex)
         {
