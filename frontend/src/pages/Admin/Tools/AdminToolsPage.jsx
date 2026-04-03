@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAllSponsorOrgs, useCreateSponsorOrg } from '@/api/sponsorOrg';
 import { useCreateAdminUser, useBulkUploadUsers } from '@/api/admin';
+import { useBulkActions } from '@/api/bulk';
 import { useToast } from '@/components/Toast/ToastContext';
 import CardHost from '@/components/CardHost/CardHost';
 import Card from '@/components/Card/Card';
@@ -156,6 +157,7 @@ export default function AdminToolsPage()
 {
     const { data: orgs, isLoading: orgsLoading } = useAllSponsorOrgs();
     const bulkUploadUsers = useBulkUploadUsers();
+    const bulkActions = useBulkActions();
 
     const modals = {
         createAdmin: 'createAdmin',
@@ -172,23 +174,13 @@ export default function AdminToolsPage()
                 {/* ── User Management ── */}
                 <Card
                     title="User Management"
-                    headerRight={
-                        <div className={styles.headerActions}>
-                            <Button
-                                text="Create Admin"
-                                color="primary"
-                                icon={AddUserIcon}
-                                onClick={() => setActiveModal(modals.createAdmin)}
-                            />
-                            <Button
-                                text="Bulk Upload Users"
-                                color="outline"
-                                icon={UploadIcon}
-                                onClick={() => setActiveModal(modals.bulkUsers)}
-                            />
-                        </div>
-                    }
                 >
+                    <Button
+                        text="Bulk Actions"
+                        color="primary"
+                        icon={UploadIcon}
+                        onClick={() => setActiveModal(modals.bulkUsers)}
+                    />
                     <p className={styles.helpText}>
                         Create individual admin users or bulk-upload users via CSV.
                         The CSV must include: <code>email, firstName, lastName, password, role</code>
@@ -245,11 +237,11 @@ export default function AdminToolsPage()
                 isOpen={activeModal === modals.bulkUsers}
                 onClose={() => setActiveModal(null)}
                 onSuccess={() => setActiveModal(null)}
-                title="Bulk Upload Users"
-                description="Upload a CSV to create multiple users at once. Required columns: email, firstName, lastName, password, role (admin | sponsor | driver)."
+                title="Bulk Actions"
+                description="Upload a text file to perform actions in bulk."
                 templateCols={['email', 'firstName', 'lastName', 'password', 'role']}
                 templateName="bulk_users_template.csv"
-                mutation={bulkUploadUsers}
+                mutation={bulkActions}
             />
 
             <CreateSponsorOrgModal

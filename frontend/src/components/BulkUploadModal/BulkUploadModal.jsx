@@ -26,7 +26,7 @@ export default function BulkUploadModal({
     title,
     description,
     templateCols,
-    templateName = 'template.csv',
+    templateName = 'template.txt',
     mutation,
 })
 {
@@ -39,9 +39,9 @@ export default function BulkUploadModal({
     {
         const selected = e.target.files?.[0];
         if (!selected) return;
-        if (!selected.name.endsWith('.csv'))
+        if (!selected.name.endsWith('.txt'))
         {
-            push({ type: 'error', message: 'Please upload a .csv file.' });
+            push({ type: 'error', message: 'Please upload a .txt file.' });
             return;
         }
         setFile(selected);
@@ -97,8 +97,8 @@ export default function BulkUploadModal({
                 <div className={styles.templateRow}>
                     <span className={styles.templateLabel}>Need a template?</span>
                     <Button
-                        text="Download CSV Template"
-                        color="outline"
+                        text="Download Template"
+                        color="secondary"
                         size="small"
                         onClick={downloadTemplate}
                     />
@@ -115,9 +115,9 @@ export default function BulkUploadModal({
                         const dropped = e.dataTransfer.files?.[0];
                         if (dropped)
                         {
-                            if (!dropped.name.endsWith('.csv'))
+                            if (!dropped.name.endsWith('.txt'))
                             {
-                                push({ type: 'error', message: 'Please upload a .csv file.' });
+                                push({ type: 'error', message: 'Please upload a .txt file.' });
                                 return;
                             }
                             setFile(dropped);
@@ -128,12 +128,12 @@ export default function BulkUploadModal({
                     <UploadIcon className={styles.uploadIcon} />
                     {file
                         ? <span className={styles.fileName}>{file.name}</span>
-                        : <span className={styles.dropText}>Click or drag & drop a CSV file here</span>
+                        : <span className={styles.dropText}>Click or drag & drop a .txt file here</span>
                     }
                     <input
                         ref={fileInputRef}
                         type="file"
-                        accept=".csv"
+                        accept=".txt"
                         className={styles.hiddenInput}
                         onChange={handleFileChange}
                     />
@@ -163,7 +163,7 @@ export default function BulkUploadModal({
             <Modal.Footer>
                 <Button text="Cancel" color="outline" onClick={handleClose} />
                 <AsyncButton
-                    text={mutation.isPending ? 'Uploading…' : 'Upload'}
+                    text={'Upload'}
                     color="primary"
                     disabled={!file || mutation.isPending}
                     action={handleUpload}
