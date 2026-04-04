@@ -42,7 +42,7 @@ export default function CreateSponsorOrgModal({ isOpen, onClose, onSuccess })
                 />
             </Modal.Body>
             <Modal.Buttons>
-                <Button text="Cancel" color="outline" onClick={() => { setSponsorName(''); onClose(); }} />
+                <Button text="Cancel" color="secondary" onClick={() => { setSponsorName(''); onClose(); }} />
                 <AsyncButton
                     text="Create"
                     color="primary"

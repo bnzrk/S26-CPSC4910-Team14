@@ -6,6 +6,7 @@ using WebApi.Data.Entities;
 using WebApi.Features.Catalogs.Models;
 using WebApi.Data;
 using Microsoft.EntityFrameworkCore;
+using WebApi.Audit;
 
 namespace WebApi.Features.Catalogs;
 
@@ -16,12 +17,14 @@ public class CatalogsController : ControllerBase
     private readonly AppDbContext _db;
     private readonly ICatalogsService _catalogs;
     private readonly UserManager<User> _userManager;
+    private readonly IAuditLogger _auditLogger;
 
-    public CatalogsController(AppDbContext db, ICatalogsService catalogs, UserManager<User> userManager)
+    public CatalogsController(AppDbContext db, ICatalogsService catalogs, UserManager<User> userManager, IAuditLogger auditLogger)
     {
         _db = db;
         _catalogs = catalogs;
         _userManager = userManager;
+        _auditLogger = auditLogger;
     }
 
     [HttpGet]
@@ -78,6 +81,7 @@ public class CatalogsController : ControllerBase
         try
         {
             await _catalogs.CreateCatalogItem(orgId, request.ExternalItemId, request.CatalogPrice);
+            await _auditLogger.CreateCatalogChangeAuditLog(orgId, "Created", request.ExternalItemId);
             return Created();
         }
         catch { }
@@ -115,6 +119,7 @@ public class CatalogsController : ControllerBase
         try
         {
             await _catalogs.DeleteCatalogItem(itemId);
+            await _auditLogger.CreateCatalogChangeAuditLog(orgId, "Deleted", itemId);
             return Ok();
         }
         catch { }

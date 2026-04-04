@@ -17,7 +17,7 @@ import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPa
 import UsersPage from './pages/Admin/Users/UsersPage';
 import ShopPage from './pages/Shop/ShopPage';
 import RegisterPage from './pages/Register/RegisterPage';
-import AdminToolsPage from './pages/Admin/Tools/AdminToolsPage';
+import AdminOrgsPage from './pages/Admin/Orgs/AdminOrgsPage';
 import AdminToolsLayout from './pages/Admin/AdminToolsLayout';
 import AdminBulkActionsPage from './pages/Admin/BulkActions/AdminBulkActionsPage';
 import SponsorBulkActionsPage from './pages/SponsorOrg/BulkActions/SponsorBulkActionsPage';
@@ -32,6 +32,7 @@ import ComingSoonPage from './pages/ComingSoon/ComingSoonPage';
 import AppLayout from './pages/AppLayout';
 import DriverDashboardPage from './pages/DriverDashboard/DriverDashboardPage';
 import AuditLogPage from './pages/Admin/AuditLogs/AuditLogPage';
+import AdminDashboardPage from './pages/Admin/Dashboard/AdminDashboardPage';
 import './App.scss';
 
 
@@ -43,10 +44,10 @@ function AppContent({ user, isUserLoading, orgs })
         <Routes>
           <Route path="/" element={
             isUserLoading ? <div></div> :
-            user?.userType === USER_TYPES.DRIVER ? <Navigate to="/driver" replace /> :
-            user?.userType === USER_TYPES.SPONSOR ? <Navigate to="/org" replace /> :
-            user?.userType === USER_TYPES.ADMIN ? <Navigate to="/admin" replace /> :
-            <Navigate to="/about" replace />
+              user?.userType === USER_TYPES.DRIVER ? <Navigate to="/driver" replace /> :
+                user?.userType === USER_TYPES.SPONSOR ? <Navigate to="/org" replace /> :
+                  user?.userType === USER_TYPES.ADMIN ? <Navigate to="/admin" replace /> :
+                    <Navigate to="/about" replace />
           } />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/login" element={
@@ -108,9 +109,10 @@ function AppContent({ user, isUserLoading, orgs })
               <AdminToolsLayout />
             </ProtectedRoute>
           }>
-            <Route index element={<AdminToolsPage />} />
-            <Route path="users" element={<UsersPage />} />
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="orgs" element={<AdminOrgsPage />} />
             <Route path="audit-logs" element={<AuditLogPage />} />
+            <Route path="users" element={<UsersPage />} />
             <Route path="bulk" element={<AdminBulkActionsPage />} />
           </Route>
           <Route path="/profile" element={

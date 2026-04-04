@@ -248,37 +248,31 @@ export default function PointsPage()
           </div>
         </Card>
         {pointRules && pointRules.length > 0 && (
-          <Card title="Point Rules">
-            {gainRules.length > 0 && (
-              <>
-                <p style={{ fontWeight: 600, color: '#0a6847', marginBottom: '0.5rem' }}>Ways to earn points</p>
-                {gainRules.map(r => (
-                  <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <span>{r.reason}</span>
-                    <span style={{ color: '#0a6847', fontWeight: 600 }}>+{r.balanceChange}</span>
-                  </div>
-                ))}
-              </>
-            )}
-            {loseRules.length > 0 && (
-              <>
-                <p style={{ fontWeight: 600, color: '#d32f2f', margin: '1rem 0 0.5rem' }}>Ways to lose points</p>
-                {loseRules.map(r => (
-                  <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <span>{r.reason}</span>
-                    <span style={{ color: '#d32f2f', fontWeight: 600 }}>{r.balanceChange}</span>
-                  </div>
-                ))}
-              </>
-            )}
-          </Card>
-        )}
-        {(!selectedOrgId || !orgs) &&
-          <InlineInfo
-            type='info'
-            messages={['Join a sponsor to start earning points!']}
-          />
-        }
+        <Card title="Point Rules">
+          {gainRules.length > 0 && (
+            <>
+              <p style={{ fontWeight: 600, color: '#0a6847', marginBottom: '0.5rem' }}>Ways to earn points</p>
+              {gainRules.map(r => (
+                <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0', borderBottom: '1px solid #f0f0f0' }}>
+                  <span>{r.reason}</span>
+                  <span style={{ color: '#0a6847', fontWeight: 600 }}>+{r.balanceChange}</span>
+                </div>
+              ))}
+            </>
+          )}
+          {loseRules.length > 0 && (
+            <>
+              <p style={{ fontWeight: 600, color: '#d32f2f', margin: '1rem 0 0.5rem' }}>Ways to lose points</p>
+              {loseRules.map(r => (
+                <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0', borderBottom: '1px solid #f0f0f0' }}>
+                  <span>{r.reason}</span>
+                  <span style={{ color: '#d32f2f', fontWeight: 600 }}>{r.balanceChange}</span>
+                </div>
+              ))}
+            </>
+          )}
+        </Card>
+      )}
         <Button color="primary" onClick={() => navigate('/driver-application')}
           style={{ fontFamily: 'var(--font-heading)' }}
         >
