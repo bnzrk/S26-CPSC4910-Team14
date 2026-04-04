@@ -1,0 +1,44 @@
+@use '@/styles/globals' as *;
+
+.headerActions {
+    display: flex;
+    flex-direction: row;
+    gap: $grid-1x;
+    flex-wrap: wrap;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: $grid-1x;
+}
+
+.nameRow {
+    display: flex;
+    flex-direction: row;
+    gap: $grid-2x;
+
+    > * {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+}
+
+.helpText {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: 1.6;
+}
+
+.orgMeta {
+    margin-left: $grid-1x;
+    font-size: 0.82rem;
+    color: var(--color-text-tertiary);
+}
+
+.loading,
+.empty {
+    color: var(--color-text-tertiary);
+    font-size: 0.9rem;
+}

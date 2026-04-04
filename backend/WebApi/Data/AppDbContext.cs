@@ -43,10 +43,14 @@ public class AppDbContext : IdentityDbContext<User>
         base.OnModelCreating(modelBuilder);
 
         // Table relationships
-        modelBuilder.Entity<SponsorOrg>()
-                .HasOne(s => s.Catalog)
+        modelBuilder.Entity<SponsorOrg>(e =>
+        {
+            e.HasOne(s => s.Catalog)
                 .WithOne(c => c.SponsorOrg)
                 .HasForeignKey<Catalog>(c => c.SponsorOrgId);
+            e.HasIndex(s => s.SponsorName)
+                .IsUnique();
+        });
 
         modelBuilder.Entity<CatalogItem>(e =>
         {

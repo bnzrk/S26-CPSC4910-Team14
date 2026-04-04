@@ -12,6 +12,8 @@ import PageControls from "@/components/PageControls/PageControls";
 import SearchInput from "@/components/SearchInput/SearchInput";
 import UsersIcon from "@/assets/icons/users.svg?react";
 import LoginIcon from "@/assets/icons/log-in.svg?react";
+import CreateUserModal from "@/components/CreateUserModal/CreateUserModal";
+import PlusIcon from '@/assets/icons/plus.svg?react';
 import TruckIcon from "@/assets/icons/truck.svg?react";
 import WrenchIcon from "@/assets/icons/wrench.svg?react";
 import BuildingIcon from "@/assets/icons/building-2.svg?react";
@@ -21,6 +23,11 @@ import clsx from "clsx";
 
 export default function UsersPage()
 {
+    const modals = {
+        createUser: 'createUser',
+    };
+    const [activeModal, setActiveModal] = useState(null);
+
     const searchDebounceMs = 200;
     const [userQueryString, setUserQueryString] = useState(null);
     const debouncedQuery = useDebounce(userQueryString, searchDebounceMs);
@@ -38,64 +45,83 @@ export default function UsersPage()
         return Math.max(1, Math.ceil(totalCount / pageSize));
     }, [totalCount, pageSize]);
 
-    const onPrev = () => {
+    const onPrev = () =>
+    {
         setPage(page > 1 ? page - 1 : 1);
     }
-    
-    const onNext = () => {
+
+    const onNext = () =>
+    {
         setPage(page < totalPages ? page + 1 : totalPages);
     }
 
-    const onStart = () => {
+    const onStart = () =>
+    {
         setPage(1);
     }
 
-    const onEnd = () => {
+    const onEnd = () =>
+    {
         setPage(totalPages);
     }
 
     return (
-        <CardHost>
-            <Card title='Users' icon={UsersIcon}>
-                <SearchInput
-                    placeholder="Search users..."
-                    onChange={(e) => setUserQueryString(e.target.value)}
-                />
-                <PageControls
-                    className={styles.userResults}
-                    showBookends={true}
-                    page={page}
-                    totalPages={totalPages}
-                    onPrev={onPrev}
-                    onNext={onNext}
-                    onStart={onStart}
-                    onEnd={onEnd}
-                >
-                    {users && users.items.map((user) => (
-                        <ListItem
-                            key={user.id}
-                            icon={UserIcon}
-                            label={`${user.firstName} ${user.lastName}`}
-                            right={user.userType != USER_TYPE_ENUM.ADMIN &&
-                                <Button
-                                    size='small'
-                                    className={clsx(styles.userItemButton)}
-                                    icon={LoginIcon}
-                                    text='Login-As'
-                                    disabled={isImpersonatePending}
-                                    onClick={() => impersonate({ targetUserId: user.id })}
-                                />
-                            }
-                        >
-                            <p className={styles.userEmail}>{user.email}</p>
-                            <UserTypeBadge type={user.userType} showIcon={true} />
-                        </ListItem>
-                    ))}
-                    {(!users || users.items.length == 0) &&
-                        <p>No results found</p>
-                    }
-                </PageControls>
-            </Card>
-        </CardHost>
+        <>
+            <CreateUserModal
+                isOpen={activeModal === modals.createUser}
+                onClose={() => setActiveModal(null)}
+                onSuccess={() => setActiveModal(null)}
+            />
+            <CardHost>
+                <Card title='Users' icon={UsersIcon} headerRight={
+                    <Button
+                        text="New"
+                        color="secondary"
+                        size='small'
+                        icon={PlusIcon}
+                        onClick={() => setActiveModal(modals.createUser)}
+                    />
+                }>
+                    <SearchInput
+                        placeholder="Search users..."
+                        onChange={(e) => setUserQueryString(e.target.value)}
+                    />
+                    <PageControls
+                        className={styles.userResults}
+                        showBookends={true}
+                        page={page}
+                        totalPages={totalPages}
+                        onPrev={onPrev}
+                        onNext={onNext}
+                        onStart={onStart}
+                        onEnd={onEnd}
+                    >
+                        {users && users.items.map((user) => (
+                            <ListItem
+                                key={user.id}
+                                icon={UserIcon}
+                                label={`${user.firstName} ${user.lastName}`}
+                                right={user.userType != USER_TYPE_ENUM.ADMIN &&
+                                    <Button
+                                        size='small'
+                                        className={clsx(styles.userItemButton)}
+                                        icon={LoginIcon}
+                                        text='Login-As'
+                                        disabled={isImpersonatePending}
+                                        onClick={() => impersonate({ targetUserId: user.id })}
+                                    />
+                                }
+                            >
+                                <p className={styles.userEmail}>{user.email}</p>
+                                <UserTypeBadge type={user.userType} showIcon={true} />
+                            </ListItem>
+                        ))}
+                        {(!users || users.items.length == 0) &&
+                            <p>No results found</p>
+                        }
+                    </PageControls>
+                </Card>
+            </CardHost>
+        </>
     );
 }

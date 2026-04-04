@@ -7,6 +7,7 @@ using WebApi.Features.DriverUsers;
 using WebApi.Features.Store;
 using WebApi.Features.Users;
 using WebApi.Features.Auth;
+using WebApi.Features.BulkActions;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
@@ -44,7 +45,7 @@ builder.Services.AddDbContext<AuditDbContext>(options =>
 var externalStoreApi = builder.Configuration["ExternalStore:BaseUrl"] ?? "";
 builder.Services.AddHttpClient<IStoreClient, StoreClient>(client =>
 {
-    client.BaseAddress = new Uri(externalStoreApi);
+   client.BaseAddress = new Uri(externalStoreApi);
 });
 
 // Our services
@@ -54,6 +55,8 @@ builder.Services.AddScoped<IDriverUsersService, DriverUsersService>();
 builder.Services.AddScoped<ICatalogsService, CatalogsService>();
 builder.Services.AddScoped<IAuditLogger, AuditLogger>();
 builder.Services.AddScoped<IImpersonationService, ImpersonationService>();
+builder.Services.AddScoped<IReadActionsService, ReadActionsService>();
+builder.Services.AddScoped<IBulkActionsService, BulkActionsService>();
 
 var app = builder.Build();
 

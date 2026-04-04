@@ -1,5 +1,6 @@
 
 import { useMutation } from "@tanstack/react-query";
+import { queryClient } from "./queryClient";
 import { useCurrentUser } from "./currentUser";
 import { apiFetch } from "./apiFetch";
 import { USER_TYPES } from "../constants/userTypes";
@@ -26,5 +27,9 @@ export function useCreateAdminUser()
         },
         retry: 0,
         enabled: isAdmin,
+        onSuccess: () =>
+        {
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+        },
     });
 }

@@ -1,36 +1,7 @@
-import { useSponsorOrgDrivers } from "@/api/sponsorOrg";
-import { useNavigate } from "react-router-dom";
-import CardHost from "@/components/CardHost/CardHost";
-import Card from "@/components/Card/Card";
-import ListItem from "@/components/ListItem/ListItem";
-import TruckIcon from '@/assets/icons/truck.svg?react';
-import styles from './SponsorDriversPage.module.scss'
-
 export default function SponsorDriversPage()
 {
-    const navigate = useNavigate();
-
-    const { data: drivers, driversLoading, driversError } = useSponsorOrgDrivers();
-
     return (
-        <main className={styles.sponsorDrivers}>
-            <CardHost>
-                <Card title='Accounts'>
-                    {drivers && drivers.items.map((driver) => (
-                        <ListItem key={driver.id}
-                            icon={TruckIcon}
-                            label={`${driver.firstName} ${driver.lastName}`}
-                            onClick={() => navigate(`${driver.id}`)}
-                            showChevron={true}
-                        >
-                            <p className={styles.driverEmail}>{driver.email}</p>
-                        </ListItem>
-                    ))}
-                    {(!drivers || drivers.items.length == 0) &&
-                        <p>You organization currently has no drivers.</p>
-                    }
-                </Card>
-            </CardHost>
-        </main>
+        <>
+        </>
     );
 }
