@@ -3,15 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { usePoints, usePointHistory } from '../../api/points';
 import { useDriverOrgs } from '@/api/driver';
 import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
+import { usePointRules } from '../../api/pointRules';
 import Card from '@/components/Card/Card';
 import PointCard from '@/components/PointCard/PointCard';
 import CardHost from '@/components/CardHost/CardHost';
 import InlineErrors from '@/components/InlineErrors/InlineErrors';
 import InlineInfo from '@/components/InlineInfo/InlineInfo';
 import Button from '@/components/Button/Button';
-import Avatar from '@/components/Avatar/Avatar';
 import styles from './PointsPage.module.scss';
 import clsx from 'clsx';
+
 
 function formatDMY(dateLike)
 {
@@ -29,41 +30,24 @@ function normalizeDateTimeLocal(value)
   return value.length === 16 ? `${value}:00` : value;
 }
 
-function getOrgInitials(name)
-{
-  if (!name) return '??';
-  const words = name.trim().split(/\s+/);
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
-}
-
-function formatPointDollarValue(val)
-{
-  if (val == null) return '$0.01';
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(val);
-}
-
 export default function PointsPage()
 {
   const navigate = useNavigate();
-  const { selectedOrgId } = useOrgContext();
-  const { data: orgs } = useDriverOrgs();
-
-  const pageSize = 10;
   const [page, setPage] = useState(1);
-  const [sign, setSign] = useState(undefined);
-  const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
+  const pageSize = 5;
 
-  const selectedOrg = useMemo(() =>
-    (orgs ?? []).find(o => String(o.id) === String(selectedOrgId)) ?? null,
-    [orgs, selectedOrgId]
-  );
+  // Filters
+  const [sign, setSign] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
 
+  const from = fromDate ? `${fromDate}T00:00:00` : undefined;
+  const to = toDate ? `${toDate}T23:59:59` : undefined;
+
+  const { selectedOrgId } = useOrgContext();
   const {
     data: points,
-    isLoading: pointsLoading,
-    isError: pointsError,
+    isError: isPointsError,
   } = usePoints(selectedOrgId);
 
   const {
@@ -74,160 +58,233 @@ export default function PointsPage()
     orgId: selectedOrgId,
     page,
     pageSize,
-    sign,
-    from: normalizeDateTimeLocal(from),
-    to: normalizeDateTimeLocal(to),
+    sign: sign || undefined,
+    from,
+    to,
   });
 
-  const totalPages = history ? Math.max(1, Math.ceil(history.total / pageSize)) : 1;
+  const { data: orgs } = useDriverOrgs();
+  const { data: pointRules } = usePointRules(selectedOrgId);
+  const gainRules = pointRules?.filter(r => r.balanceChange > 0) ?? [];
+  const loseRules = pointRules?.filter(r => r.balanceChange < 0) ?? [];
+  const org = orgs ? orgs.find((o) => o.id == selectedOrgId) : null;
 
-  const pointBalance = points?.balance ?? 0;
-  const dollarValue = selectedOrg?.pointDollarValue ?? 0.01;
-  const estimatedDollarBalance = (pointBalance * dollarValue).toFixed(2);
+  const items = history?.items ?? [];
+  const totalCount = history?.totalCount ?? 0;
+
+  const totalPages = useMemo(() =>
+  {
+    if (!totalCount) return 1;
+    return Math.max(1, Math.ceil(totalCount / pageSize));
+  }, [totalCount, pageSize]);
+
+  const canPrev = page > 1;
+  const canNext = page < totalPages;
+
+  const hasError = isPointsError || historyError;
+
+  const clearFilters = () =>
+  {
+    setSign('');
+    setFromDate('');
+    setToDate('');
+    setPage(1);
+  };
 
   return (
-    <CardHost title="My Points" subtitle={selectedOrg?.sponsorName ?? 'Select an organization'}>
-      {!selectedOrgId && (
-        <InlineInfo variant="info">
-          Select a sponsor organization from the sidebar to view your points.
-        </InlineInfo>
-      )}
+    <main className={styles.page}>
+      <CardHost>
+        <PointCard points={points ? points.balance : 0}></PointCard>
 
-      {selectedOrgId && (
-        <>
-          {/* ── Point Balance Card ── */}
-          <Card title="Point Balance" icon={null}>
-            <div className={styles.balanceSection}>
-              {pointsLoading && <p className={styles.loading}>Loading balance…</p>}
-              {pointsError && <InlineErrors messages={['Failed to load points.']} />}
-              {!pointsLoading && !pointsError && (
-                <div className={styles.balanceDisplay}>
-                  <span className={styles.balancePoints}>
-                    {pointBalance.toLocaleString()} pts
-                  </span>
-                  <span className={styles.balanceDollar}>
-                    ≈ ${estimatedDollarBalance} USD
-                  </span>
-                  <p className={styles.balanceNote}>
-                    Point value: {formatPointDollarValue(dollarValue)} / pt
-                  </p>
-                </div>
-              )}
+        {hasError && (
+          <InlineErrors errors={['Something went wrong loading your points.']}></InlineErrors>
+        )}
+
+        {org && (
+          <InlineInfo
+            type='info'
+            messages={[`Points are equivalent to $${org?.pointRatio} USD when purchasing from this sponsor's catalog.`]}
+          />
+        )}
+
+        <Card
+          title="Point History"
+          headerRight={
+            <div className={styles.pager}>
+              <button
+                type="button"
+                className={styles.buttonSecondary}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={!canPrev || historyLoading}
+              >
+                Prev
+              </button>
+              <span className={styles.pageInfo}>
+                Page {page} of {totalPages}
+              </span>
+              <button
+                type="button"
+                className={styles.buttonSecondary}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={!canNext || historyLoading}
+              >
+                Next
+              </button>
             </div>
-          </Card>
+          }
+        >
+          {/* Filters */}
+          <div className={styles.filtersRow}>
+            <div className={styles.filterGroup}>
+              <label className={styles.filterLabel} htmlFor="points-sign">Type</label>
+              <select
+                id="points-sign"
+                className={styles.filterControl}
+                value={sign}
+                onChange={(e) =>
+                {
+                  setSign(e.target.value);
+                  setPage(1);
+                }}
+                disabled={historyLoading}
+              >
+                <option value="">All</option>
+                <option value="positive">Positive</option>
+                <option value="negative">Negative</option>
+              </select>
+            </div>
 
-          {/* ── Sponsor Info Card ── */}
-          {selectedOrg && (
-            <Card title="Your Sponsor">
-              <div className={styles.sponsorCard}>
-                <Avatar initials={getOrgInitials(selectedOrg.sponsorName)} size="lg" />
-                <div className={styles.sponsorDetails}>
-                  <p className={styles.sponsorName}>{selectedOrg.sponsorName}</p>
-                  <p className={styles.sponsorMeta}>
-                    Member since {selectedOrg.joinDate ? formatDMY(selectedOrg.joinDate) : '—'}
-                  </p>
-                  <p className={styles.sponsorMeta}>
-                    Point value: {formatPointDollarValue(selectedOrg.pointDollarValue)}
-                  </p>
-                  {selectedOrg.status && (
-                    <span className={clsx(
-                      styles.statusBadge,
-                      selectedOrg.status === 'Active' ? styles.statusActive : styles.statusInactive
-                    )}>
-                      {selectedOrg.status}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </Card>
+            <div className={styles.filterGroup}>
+              <label className={styles.filterLabel} htmlFor="points-from">From</label>
+              <input
+                id="points-from"
+                className={styles.filterControl}
+                type="date"
+                value={fromDate}
+                onChange={(e) =>
+                {
+                  setFromDate(e.target.value);
+                  setPage(1);
+                }}
+                disabled={historyLoading}
+              />
+            </div>
+
+            <div className={styles.filterGroup}>
+              <label className={styles.filterLabel} htmlFor="points-to">To</label>
+              <input
+                id="points-to"
+                className={styles.filterControl}
+                type="date"
+                value={toDate}
+                onChange={(e) =>
+                {
+                  setToDate(e.target.value);
+                  setPage(1);
+                }}
+                disabled={historyLoading}
+              />
+            </div>
+
+            <button
+              type="button"
+              className={styles.filterClear}
+              onClick={clearFilters}
+              disabled={historyLoading || (!sign && !fromDate && !toDate)}
+              aria-label="Clear filters"
+            >
+              Clear
+            </button>
+          </div>
+
+          {historyLoading ? (
+            <p className={styles.muted}>Loading history…</p>
+          ) : items.length === 0 ? (
+            <p className={styles.muted}>No point history.</p>
+          ) : (
+            <div className={styles.tableWrap}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Reason</th>
+                    <th className={styles.balance}>Change</th>
+                    <th className={styles.date}>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((t) =>
+                  {
+                    const change = Number(t.balanceChange ?? 0);
+                    const isPositive = change > 0;
+                    const isNegative = change < 0;
+                    return (
+                      <tr key={t.id}>
+                        <td>{t.reason}</td>
+                        <td
+                          className={clsx(
+                            isPositive
+                              ? styles.positive
+                              : isNegative
+                                ? styles.negative
+                                : undefined,
+                            styles.balance
+                          )}
+                        >
+                          {isPositive ? `+${change}` : `${change}`}
+                        </td>
+                        <td className={styles.date}>{formatDMY(t.transactionDateUtc)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
 
-          {/* ── Point History ── */}
-          <Card
-            title="Point History"
-            headerRight={
-              <div className={styles.filterRow}>
-                <select
-                  className={styles.filterSelect}
-                  value={sign ?? ''}
-                  onChange={e => { setSign(e.target.value || undefined); setPage(1); }}
-                >
-                  <option value="">All</option>
-                  <option value="positive">Earned</option>
-                  <option value="negative">Spent</option>
-                </select>
-                <input
-                  type="datetime-local"
-                  className={styles.filterDate}
-                  value={from}
-                  onChange={e => { setFrom(e.target.value); setPage(1); }}
-                />
-                <span className={styles.dateSep}>→</span>
-                <input
-                  type="datetime-local"
-                  className={styles.filterDate}
-                  value={to}
-                  onChange={e => { setTo(e.target.value); setPage(1); }}
-                />
-              </div>
-            }
-          >
-            {historyLoading && <p className={styles.loading}>Loading history…</p>}
-            {historyError && <InlineErrors messages={['Failed to load history.']} />}
-            {!historyLoading && !historyError && (
+          <div className={styles.footerMeta}>
+            <span className={styles.muted}>
+              Showing {items.length} of {totalCount || items.length}
+            </span>
+          </div>
+        </Card>
+        {pointRules && pointRules.length > 0 && (
+          <Card title="Point Rules">
+            {gainRules.length > 0 && (
               <>
-                {(!history?.items || history.items.length === 0) && (
-                  <p className={styles.empty}>No transactions found.</p>
-                )}
-                {history?.items?.length > 0 && (
-                  <table className={styles.historyTable}>
-                    <thead>
-                      <tr>
-                        <th>Date</th>
-                        <th>Reason</th>
-                        <th className={styles.alignRight}>Change</th>
-                        <th className={styles.alignRight}>Balance</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {history.items.map((t, i) => (
-                        <tr key={t.id ?? i}>
-                          <td>{formatDMY(t.createdAt)}</td>
-                          <td>{t.reason ?? '—'}</td>
-                          <td className={clsx(
-                            styles.alignRight,
-                            Number(t.balanceChange) > 0 ? styles.positive : styles.negative
-                          )}>
-                            {Number(t.balanceChange) > 0 ? '+' : ''}{Number(t.balanceChange).toLocaleString()}
-                          </td>
-                          <td className={styles.alignRight}>{Number(t.newBalance).toLocaleString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-
-                {/* Pagination */}
-                <div className={styles.pager}>
-                  <Button
-                    text="← Prev"
-                    color="outline"
-                    disabled={page <= 1}
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                  />
-                  <span className={styles.pageInfo}>Page {page} of {totalPages}</span>
-                  <Button
-                    text="Next →"
-                    color="outline"
-                    disabled={page >= totalPages}
-                    onClick={() => setPage(p => p + 1)}
-                  />
-                </div>
+                <p style={{ fontWeight: 600, color: '#0a6847', marginBottom: '0.5rem' }}>Ways to earn points</p>
+                {gainRules.map(r => (
+                  <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0', borderBottom: '1px solid #f0f0f0' }}>
+                    <span>{r.reason}</span>
+                    <span style={{ color: '#0a6847', fontWeight: 600 }}>+{r.balanceChange}</span>
+                  </div>
+                ))}
+              </>
+            )}
+            {loseRules.length > 0 && (
+              <>
+                <p style={{ fontWeight: 600, color: '#d32f2f', margin: '1rem 0 0.5rem' }}>Ways to lose points</p>
+                {loseRules.map(r => (
+                  <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0', borderBottom: '1px solid #f0f0f0' }}>
+                    <span>{r.reason}</span>
+                    <span style={{ color: '#d32f2f', fontWeight: 600 }}>{r.balanceChange}</span>
+                  </div>
+                ))}
               </>
             )}
           </Card>
-        </>
-      )}
-    </CardHost>
+        )}
+        {(!selectedOrgId || !orgs) &&
+          <InlineInfo
+            type='info'
+            messages={['Join a sponsor to start earning points!']}
+          />
+        }
+        <Button color="primary" onClick={() => navigate('/driver-application')}
+          style={{ fontFamily: 'var(--font-heading)' }}
+        >
+          + Apply to a Sponsor
+        </Button>
+      </CardHost>
+    </main>
   );
 }

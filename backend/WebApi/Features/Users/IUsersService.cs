@@ -11,7 +11,7 @@ public interface IUsersService
     public Task<IdentityResult> CreateSponsorUser(string email, string password, string firstName, string lastName, SponsorOrg org);
     public Task<IdentityResult> CreateSponsorUser(string email, string password, string firstName, string lastName, int orgId);
     // Attempts to create a new driver user and returns the result.
-    public Task<IdentityResult> CreateDriverUser(string email, string password, string firstName, string lastName);
+    public Task<IdentityResult> CreateDriverUser(string email, string password, string firstName, string lastName, SponsorOrg? org = null);
     // Deactivates the specified user.
     public Task<bool> SetUserActive(User user, bool active);
     // Permanently deletes a user.

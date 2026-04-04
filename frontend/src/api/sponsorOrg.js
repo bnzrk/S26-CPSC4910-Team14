@@ -172,6 +172,7 @@ export function useCreateSponsorOrgUser(orgId)
         onSuccess: () =>
         {
             queryClient.invalidateQueries({ queryKey: ["sponsorOrgUsers", user?.id] });
+            queryClient.invalidateQueries({ queryKey: ["users"] });
         },
         retry: 0
     });
