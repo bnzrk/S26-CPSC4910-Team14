@@ -20,8 +20,9 @@ const NAV_GROUPS = [
   {
     label: 'Fleet',
     items: [
-      { label: 'Manage Drivers', to: '/org/manage-drivers', badgeKey: 'pendingApps' },
+      { label: 'Manage Drivers', to: '/org/drivers', badgeKey: 'pendingApps' },
       { label: 'Manage Users', to: '/org/users' },
+      { label: 'Bulk Actions', to: '/org/bulk'}
       // { label: 'Deliveries', to: '/org/deliveries' },
       // { label: 'Routes', to: '/org/routes' },
     ],

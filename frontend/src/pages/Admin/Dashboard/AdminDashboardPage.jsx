@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import CardHost from '@/components/CardHost/CardHost';
-import Card from '@/components/Card/Card';
 import styles from './AdminDashboardPage.module.scss';
 
 const quickLinks = [
-  { label: 'Admin Tools', description: 'Create orgs, sponsors, and admins', path: '/admin/tools' },
   { label: 'Audit Logs', description: 'View and search system audit logs', path: '/admin/audit-logs' },
+  { label: 'Organizations', description: 'Manage sponsor organizations', path: '/admin/orgs' },
   { label: 'Users', description: 'Manage user accounts', path: '/admin/users' },
+  { label: 'Bulk Actions', description: 'Perform actions in bulk', path: '/admin/bulk' },
 ];
 
 export default function AdminDashboardPage() {

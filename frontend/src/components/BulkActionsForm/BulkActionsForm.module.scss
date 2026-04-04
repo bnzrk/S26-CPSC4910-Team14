@@ -1,0 +1,175 @@
+@use '@/styles/globals' as *;
+
+.description {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    margin: 0 0 $grid-2x;
+}
+
+.templateRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $grid-2x;
+    margin-bottom: $grid-2x;
+    padding: $grid-1x $grid-2x;
+    background: color-mix(in srgb, var(--color-accent) 5%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+    border-radius: var(--radius-sm);
+
+    .templateLabel {
+        font-size: 0.875rem;
+        color: var(--color-text-secondary);
+    }
+
+    button.templateButton {
+        background: none;
+        border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+        color: var(--color-text-secondary);
+        width: fit-content;
+    }
+}
+
+.dropZone {
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    padding: $grid-4x $grid-3x;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $grid-1x;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    background: var(--color-bg);
+    margin-bottom: $grid-3x;
+
+    &:hover {
+        border-color: var(--color-accent);
+        background: color-mix(in srgb, var(--color-accent) 4%, transparent);
+    }
+
+    &.withFile {
+        border-color: var(--color-accent);
+        background: color-mix(in srgb, var(--color-accent) 4%, transparent);
+
+        svg {
+            color: var(--color-accent);
+        }
+    }
+}
+
+.uploadIcon {
+    width: $grid-4x;
+    height: $grid-4x;
+    color: var(--color-text-secondary);
+}
+
+.dropText {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    text-align: center;
+}
+
+.fileName {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-accent);
+}
+
+.hiddenInput {
+    display: none;
+}
+
+.resultsCard {
+    border: 1px solid var(--color-border);
+    background: var(--gray-50);
+    box-shadow: none;
+}
+
+.results {
+    display: flex;
+    flex-direction: column;
+    min-height: 240px;
+    max-height: 240px;
+
+    &.empty {
+        align-items: center;
+    }
+}
+
+.errorListLabel {
+    padding: $grid-half;
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    color: var(--color-text-tertiary);
+}
+
+.placeholder {
+    width: 100%;
+    text-align: center;
+}
+
+.errors {
+    width: 100%;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: $grid-1x;
+    background: var(--gray-50);
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+    border-radius: $grid-1x;
+
+    .list {
+        border-color: var(--color-border);
+        border-collapse: collapse;
+
+        tr {
+            border-bottom: 1px solid var(--color-border);
+        }
+    }
+
+    .error {
+        .line {
+            padding: 0 $grid-1x;
+            background-color: var(--color-border);
+        }
+
+        .message {
+            padding: 0 $grid-1x;
+        }
+    }
+}
+
+.summaryGrid {
+    padding: 0 $grid-2x;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: $grid-1x;
+}
+
+.metricLabel {
+    font-size: 12px;
+    color: var(--color-text-tertiary);
+    font-weight: bold;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin: 0 0 6px;
+}
+
+.metricValue {
+    font-size: 28px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.metricValue.success {
+    color: var(--color-accent);
+}
+
+.metricValue.danger {
+    color: var(--color-warn);
+}

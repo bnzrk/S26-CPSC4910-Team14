@@ -12,6 +12,7 @@ export default function TextInput({
     onChange,
     isValid,
     onValidChange,
+    required,
     ...other
 })
 {
@@ -68,9 +69,10 @@ export default function TextInput({
                 defaultValue={value === undefined ? defaultValue : undefined}
                 onChange={handleChange}
                 placeholder={placeholder}
+                {...required}
                 {...other}
             />
-            {label && <label>{label}</label>}
+            {label && <label>{label} {!!required && <span className={styles.required}>*</span>}</label>}
             {(Icon && iconPosition == 'right') &&
                 <Icon className={styles.right} />
             }
