@@ -34,28 +34,20 @@ public class BulkActionsService : IBulkActionsService
         List<Action> driverActions = actions.Where(s => s.Type == ActionType.Driver).ToList();
 
         // Execute org actions with rollback on exception
-        // await using var orgTransaction = await _db.Database.BeginTransactionAsync();
+        await using var transaction = await _db.Database.BeginTransactionAsync();
         try
         {
             await ExecuteOrgActions(orgActions, errors);
-            // await orgTransaction.CommitAsync();
-        }
-        catch
-        {
-            // await orgTransaction.RollbackAsync();
-            throw;
-        }
-
-        // Execute sponsor user actions with rollback on exception
-        // await using var sponsorTransaction = await _db.Database.BeginTransactionAsync();
-        try
-        {
             await ExecuteSponsorActions(sponsorActions, actor, errors);
-            // await sponsorTransaction.CommitAsync();     
+            await ExecuteDriverActions(driverActions, actor, errors);   
+            await transaction.CommitAsync();
+
+            // Sort errors by line number
+            errors.Sort((a, b) => a.Line.CompareTo(b.Line));
         }
         catch
         {
-            // await sponsorTransaction.RollbackAsync();
+            await transaction.RollbackAsync();
             throw;
         }
 
@@ -66,10 +58,10 @@ public class BulkActionsService : IBulkActionsService
         string[] orgNames = orgActions
             .Where(n => n != null)
             .Select(a => a.OrgName!)
+            .Distinct()
             .ToArray();
 
         var json = JsonSerializer.Serialize(orgNames);
-
         var existingOrgs = await _db.SponsorOrgs
             .FromSqlRaw(@"
                 SELECT s.SponsorName
@@ -111,13 +103,11 @@ public class BulkActionsService : IBulkActionsService
 
     private async Task ExecuteSponsorActions(List<Action> sponsorActions, ClaimsPrincipal actor, List<ProcessingError> errors)
     {
-        await using var transaction = await _db.Database.BeginTransactionAsync();
-
         var actorUserId = _userManager.GetUserId(actor);
-
         var isSponsor = actor.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
         var isAdmin = actor.IsInRole(UserTypeRoles.Role(UserType.Admin));
         int? actorOrgId = isSponsor ? await _db.SponsorUsers.Where(s => s.UserId == actorUserId).Select(s => (int)s.SponsorOrgId).SingleOrDefaultAsync() : null;
+
         var sponsorRole = await _db.Roles.SingleAsync(r => r.Name == UserTypeRoles.Role(UserType.Sponsor));
 
         // Find and existing users specified in actions
@@ -232,6 +222,170 @@ public class BulkActionsService : IBulkActionsService
         // {
         //     UserId = u.UserId,
         //     RoleId = sponsorRole.Id
+        // }));
+        Console.WriteLine("Adding roles");
+        // await _db.SaveChangesAsync();
+        Console.WriteLine("--------------------------------------------------");
+    }
+
+    private async Task ExecuteDriverActions(List<Action> driverActions, ClaimsPrincipal actor, List<ProcessingError> errors)
+    {
+        var actorUserId = _userManager.GetUserId(actor);
+        var isSponsor = actor.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        var isAdmin = actor.IsInRole(UserTypeRoles.Role(UserType.Admin));
+        SponsorOrg? actorOrg = isSponsor ? await _db.SponsorUsers.Include(s => s.SponsorOrg).Where(s => s.UserId == actorUserId).Select(s => s.SponsorOrg).SingleOrDefaultAsync() : null;
+
+        var driverRole = await _db.Roles.SingleAsync(r => r.Name == UserTypeRoles.Role(UserType.Driver));
+
+        // Find and existing users specified in actions
+        var usersJson = JsonSerializer.Serialize(driverActions.Select(a => a.UserEmail).Distinct());
+        Dictionary<string, DriverUser> existingUsers = (await _db.DriverUsers
+            .FromSqlRaw("""
+                SELECT d.* FROM DriverUsers d
+                INNER JOIN AspNetUsers u ON d.UserId = u.Id
+                INNER JOIN JSON_TABLE(
+                    {0}, '$[*]' COLUMNS (
+                        email VARCHAR(255) PATH '$'
+                    )
+                ) j ON u.Email = j.email
+                """, usersJson)
+            .Include(d => d.User)
+            .ToListAsync())
+            .ToDictionary(u => u.User.Email!);
+
+        // Find any existing orgs specified in actions
+        string[] orgNames = driverActions
+            .Where(n => n != null)
+            .Select(a => a.OrgName!)
+            .Distinct()
+            .ToArray();
+        var orgsJson = JsonSerializer.Serialize(orgNames);
+        var existingOrgs = (await _db.SponsorOrgs
+            .FromSqlRaw(@"
+                SELECT s.* FROM SponsorOrgs s
+                JOIN JSON_TABLE({0}, '$[*]' COLUMNS(Value VARCHAR(255) PATH '$')) jt
+                ON s.SponsorName = jt.Value
+            ", orgsJson)
+            .ToListAsync())
+            .ToDictionary(o => o.SponsorName);
+
+        Console.Write(existingOrgs.ToString());
+
+        Dictionary<string, DriverUser> addedUsers = new();
+        Console.WriteLine("--------------------------------------------------");
+        foreach (var action in driverActions)
+        {
+            var hasPointChange = action.PointTransactionAmount.HasValue && !String.IsNullOrEmpty(action.PointTransactionReason);
+            var isAdded = addedUsers.ContainsKey(action.UserEmail!);
+            var isExisting = existingUsers.ContainsKey(action.UserEmail!);
+
+            if (!hasPointChange && isAdded)
+            {
+                errors.Add(new ProcessingError(action.Line, $"Duplicate action with email {action.UserEmail}."));
+                continue;
+            }
+            if (!hasPointChange && isExisting)
+            {
+                errors.Add(new ProcessingError(action.Line, $"Email {action.UserEmail} already in use."));
+                continue;
+            }
+            if (isSponsor && action.OrgName != null)
+            {
+                errors.Add(new ProcessingError(action.Line, "Sponsors should not specify an organization."));
+                continue;
+            }
+            if (isAdmin)
+            {
+                if (String.IsNullOrEmpty(action.OrgName))
+                {
+                    errors.Add(new ProcessingError(action.Line, $"Missing organization name."));
+                    continue;
+                }
+                else if (!existingOrgs.ContainsKey(action.OrgName))
+                {
+                    errors.Add(new ProcessingError(action.Line, $"Organization {action.OrgName} does not exist."));
+                    continue;
+                }
+            }
+            if (action.PointTransactionAmount.HasValue && String.IsNullOrEmpty(action.PointTransactionReason))
+            {
+                errors.Add(new ProcessingError(action.Line, $"Missing point change reason."));
+                continue;
+            }
+            if (!action.PointTransactionAmount.HasValue && !String.IsNullOrEmpty(action.PointTransactionReason))
+            {
+                errors.Add(new ProcessingError(action.Line, $"Missing point change amount."));
+                continue;
+            }
+
+            SponsorOrg? org = isSponsor ? actorOrg :
+                (action.OrgName != null && existingOrgs.TryGetValue(action.OrgName, out SponsorOrg? selectedOrg)) ? selectedOrg : null;
+            if (org is null)
+            {
+                errors.Add(new ProcessingError(action.Line, $"Could not resolve organization from name."));
+                continue;
+            }
+
+            if (!(isExisting || isAdded))
+            {
+                // Since we can't rely on the user manager for bulk inserts, we have to construct this unholy abomination
+                var user = new User
+                {
+                    UserName = action.UserEmail,
+                    NormalizedUserName = action.UserEmail!.ToUpperInvariant(),
+                    Email = action.UserEmail,
+                    NormalizedEmail = action.UserEmail.ToUpperInvariant(),
+                    SecurityStamp = Guid.NewGuid().ToString(),
+                    ConcurrencyStamp = Guid.NewGuid().ToString(),
+                    FirstName = action.UserFirstName!,
+                    LastName = action.UserLastName!,
+                    UserType = UserType.Sponsor,
+                    IsActive = true,
+                    CreatedDateUtc = DateTime.UtcNow
+                };
+                string defaultPassword = _config["Defaults:UserPassword"]
+                    ?? throw new InvalidOperationException("Default password not configured.");
+                user.PasswordHash = _hasher.HashPassword(user, defaultPassword);
+
+                var driver = new DriverUser
+                {
+                    User = user
+                };
+                driver.SponsorOrgs.Add(org);
+
+                Console.WriteLine($"Adding driver user: {driver.User.FirstName} {driver.User.LastName} {driver.User.Email}");
+                // _db.DriverUsers.Add(driver);
+                addedUsers.Add(driver.User.Email, driver);
+            }
+            
+            // Check added dictionary again in case it was updated this action
+            isAdded = addedUsers.ContainsKey(action.UserEmail!);
+
+            // If points included, add transaction
+            if (hasPointChange && (isExisting || isAdded))
+            {
+                var driver = isExisting && existingUsers.TryGetValue(action.UserEmail!, out DriverUser? existingDriver) ? existingDriver :
+                    isAdded && addedUsers.TryGetValue(action.UserEmail!, out DriverUser? addedDriver) ? addedDriver : null;
+                if (driver is null)
+                {
+                    errors.Add(new ProcessingError(action.Line, "Could not resolve driver for point change."));
+                    continue;
+                }
+                driver.PointTransactions.Add(new PointTransaction
+                {
+                    BalanceChange = action.PointTransactionAmount!.Value,
+                    Reason = action.PointTransactionReason!
+                });
+                Console.WriteLine($"Adding {action.PointTransactionAmount.Value} points to {action.UserEmail} for {action.PointTransactionReason}");
+            }
+        }
+        // await _db.SaveChangesAsync();
+
+        // Apply roles to added users
+        // _db.UserRoles.AddRange(addedUsers.Select(u => new IdentityUserRole<string>
+        // {
+        //     UserId = u.UserId,
+        //     RoleId = driverRole.Id
         // }));
         Console.WriteLine("Adding roles");
         // await _db.SaveChangesAsync();
