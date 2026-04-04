@@ -165,7 +165,7 @@ public class BulkActionsService : IBulkActionsService
                 errors.Add(new ProcessingError(action.Line, $"Email {action.UserEmail} already in use"));
                 continue;
             }
-            if (isSponsor && action.OrgName != null)
+            if (isSponsor && !String.IsNullOrEmpty(action.OrgName))
             {
                 errors.Add(new ProcessingError(action.Line, "Sponsors should not specify an organization"));
                 continue;
@@ -300,7 +300,7 @@ public class BulkActionsService : IBulkActionsService
                 errors.Add(new ProcessingError(action.Line, $"Email {action.UserEmail} already in use"));
                 continue;
             }
-            if (isSponsor && action.OrgName != null)
+            if (isSponsor && !String.IsNullOrEmpty(action.OrgName))
             {
                 errors.Add(new ProcessingError(action.Line, "Sponsors should not specify an organization"));
                 continue;

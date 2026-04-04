@@ -20,6 +20,7 @@ import RegisterPage from './pages/Register/RegisterPage';
 import AdminToolsPage from './pages/Admin/Tools/AdminToolsPage';
 import AdminToolsLayout from './pages/Admin/AdminToolsLayout';
 import AdminBulkActionsPage from './pages/Admin/BulkActions/AdminBulkActionsPage';
+import SponsorBulkActionsPage from './pages/SponsorOrg/BulkActions/SponsorBulkActionsPage';
 import ProfilePage from './pages/Profile/ProfilePage';
 import DriverApplicationPage from "./pages/DriverApplication/DriverApplicationPage";
 import SponsorDriverApplicationsPage from './pages/SponsorOrg/Applications/SponsorDriverApplicationsPage';
@@ -100,6 +101,7 @@ function AppContent({ user, isUserLoading, orgs })
             <Route path="settings" element={<ComingSoonPage title="Settings" />} />
             <Route path="deliveries" element={<ComingSoonPage title="Deliveries" />} />
             <Route path="routes" element={<ComingSoonPage title="Routes" />} />
+            <Route path="bulk" element={<SponsorBulkActionsPage />} />
           </Route>
           <Route path="/admin" element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>

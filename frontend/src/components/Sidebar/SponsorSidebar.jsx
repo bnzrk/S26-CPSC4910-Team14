@@ -22,6 +22,7 @@ const NAV_GROUPS = [
     items: [
       { label: 'Manage Drivers', to: '/org/drivers', badgeKey: 'pendingApps' },
       { label: 'Manage Users', to: '/org/users' },
+      { label: 'Bulk Actions', to: '/org/bulk'}
       // { label: 'Deliveries', to: '/org/deliveries' },
       // { label: 'Routes', to: '/org/routes' },
     ],
