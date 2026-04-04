@@ -126,7 +126,7 @@
         border-color: var(--color-border);
         border-collapse: collapse;
 
-        tr:not(:last-child) {
+        tr {
             border-bottom: 1px solid var(--color-border);
         }
     }

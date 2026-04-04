@@ -75,7 +75,6 @@ public class BulkActionsService : IBulkActionsService
             .Select(s => s.SponsorName)
             .ToHashSetAsync();
 
-        Console.WriteLine("--------------------------------------------------");
         foreach (var action in orgActions)
         {
             if (action.OrgName == null)
@@ -96,13 +95,11 @@ public class BulkActionsService : IBulkActionsService
                 Catalog = new Catalog()
             };
 
-            // _db.SponsorOrgs.Add(org);
-            Console.WriteLine($"Creating org: {action.OrgName}");
+            _db.SponsorOrgs.Add(org);
             existingOrgs.Add(action.OrgName);
             successCount++;
         }
-        Console.WriteLine("--------------------------------------------------");
-        // await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
         return successCount;
     }
 
@@ -148,11 +145,8 @@ public class BulkActionsService : IBulkActionsService
             .ToListAsync())
             .ToDictionary(o => o.SponsorName);
 
-        Console.Write(existingOrgs.ToString());
-
         List<SponsorUser> addedUsers = new();
         HashSet<string> addedUserEmails = new();
-        Console.WriteLine("--------------------------------------------------");
         foreach (var action in sponsorActions)
         {
             if (addedUserEmails.Contains(action.UserEmail!))
@@ -217,23 +211,20 @@ public class BulkActionsService : IBulkActionsService
                 SponsorOrgId = orgId.Value
             };
 
-            Console.WriteLine($"Adding sponsor user: {sponsor.User.FirstName} {sponsor.User.LastName} {sponsor.User.Email}");
-            // _db.SponsorUsers.Add(sponsor);
+            _db.SponsorUsers.Add(sponsor);
             addedUsers.Add(sponsor);
             addedUserEmails.Add(sponsor.User.Email);
             successCount++;
         }
-        // await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
 
         // Apply roles to added users
-        // _db.UserRoles.AddRange(addedUsers.Select(u => new IdentityUserRole<string>
-        // {
-        //     UserId = u.UserId,
-        //     RoleId = sponsorRole.Id
-        // }));
-        Console.WriteLine("Adding roles");
-        // await _db.SaveChangesAsync();
-        Console.WriteLine("--------------------------------------------------");
+        _db.UserRoles.AddRange(addedUsers.Select(u => new IdentityUserRole<string>
+        {
+            UserId = u.UserId,
+            RoleId = sponsorRole.Id
+        }));
+        await _db.SaveChangesAsync();
         return successCount;
     }
 
@@ -280,10 +271,7 @@ public class BulkActionsService : IBulkActionsService
             .ToListAsync())
             .ToDictionary(o => o.SponsorName);
 
-        Console.Write(existingOrgs.ToString());
-
         Dictionary<string, DriverUser> addedUsers = new();
-        Console.WriteLine("--------------------------------------------------");
         foreach (var action in driverActions)
         {
             var hasPointChange = action.PointTransactionAmount.HasValue && !String.IsNullOrEmpty(action.PointTransactionReason);
@@ -350,7 +338,7 @@ public class BulkActionsService : IBulkActionsService
                     ConcurrencyStamp = Guid.NewGuid().ToString(),
                     FirstName = action.UserFirstName!,
                     LastName = action.UserLastName!,
-                    UserType = UserType.Sponsor,
+                    UserType = UserType.Driver,
                     IsActive = true,
                     CreatedDateUtc = DateTime.UtcNow
                 };
@@ -365,7 +353,7 @@ public class BulkActionsService : IBulkActionsService
                 driver.SponsorOrgs.Add(org);
 
                 Console.WriteLine($"Adding driver user: {driver.User.FirstName} {driver.User.LastName} {driver.User.Email}");
-                // _db.DriverUsers.Add(driver);
+                _db.DriverUsers.Add(driver);
                 addedUsers.Add(driver.User.Email, driver);
             }
             
@@ -384,24 +372,22 @@ public class BulkActionsService : IBulkActionsService
                 }
                 driver.PointTransactions.Add(new PointTransaction
                 {
+                    SponsorOrg = org,
                     BalanceChange = action.PointTransactionAmount!.Value,
                     Reason = action.PointTransactionReason!
                 });
-                Console.WriteLine($"Adding {action.PointTransactionAmount.Value} points to {action.UserEmail} for {action.PointTransactionReason}");
             }
             successCount++;
         }
-        // await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
 
         // Apply roles to added users
-        // _db.UserRoles.AddRange(addedUsers.Select(u => new IdentityUserRole<string>
-        // {
-        //     UserId = u.UserId,
-        //     RoleId = driverRole.Id
-        // }));
-        Console.WriteLine("Adding roles");
-        // await _db.SaveChangesAsync();
-        Console.WriteLine("--------------------------------------------------");
+        _db.UserRoles.AddRange(addedUsers.Values.Select(u => new IdentityUserRole<string>
+        {
+            UserId = u.UserId,
+            RoleId = driverRole.Id
+        }));
+        await _db.SaveChangesAsync();
         return successCount;
     }
 }
