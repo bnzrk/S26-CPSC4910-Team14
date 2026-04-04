@@ -13,13 +13,13 @@ import PointsPage from './pages/Points/PointsPage'
 import SponsorOrgLayout from './pages/SponsorOrg/SponsorOrgLayout';
 import SponsorDashboardPage from '@/pages/SponsorOrg/SponsorDashboardPage';
 import SponsorUsersPage from './pages/SponsorOrg/Users/SponsorUsersPage';
-import SponsorDriversPage from './pages/SponsorOrg/Drivers/Index/SponsorDriversPage';
 import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPage';
 import UsersPage from './pages/Admin/Users/UsersPage';
 import ShopPage from './pages/Shop/ShopPage';
 import RegisterPage from './pages/Register/RegisterPage';
 import AdminToolsPage from './pages/Admin/Tools/AdminToolsPage';
 import AdminToolsLayout from './pages/Admin/AdminToolsLayout';
+import AdminBulkActionsPage from './pages/Admin/BulkActions/AdminBulkActionsPage';
 import ProfilePage from './pages/Profile/ProfilePage';
 import DriverApplicationPage from "./pages/DriverApplication/DriverApplicationPage";
 import SponsorDriverApplicationsPage from './pages/SponsorOrg/Applications/SponsorDriverApplicationsPage';
@@ -109,6 +109,7 @@ function AppContent({ user, isUserLoading, orgs })
             <Route index element={<AdminToolsPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="audit-logs" element={<AuditLogPage />} />
+            <Route path="bulk" element={<AdminBulkActionsPage />} />
           </Route>
           <Route path="/profile" element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER, USER_TYPES.SPONSOR, USER_TYPES.ADMIN]}>

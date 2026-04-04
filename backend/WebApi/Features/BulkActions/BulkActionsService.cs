@@ -27,34 +27,37 @@ public class BulkActionsService : IBulkActionsService
         _config = config;
     }
 
-    public async Task ExecuteActions(List<Action> actions, ClaimsPrincipal actor, List<ProcessingError> errors)
+    public async Task<int> ExecuteActions(List<Action> actions, ClaimsPrincipal actor, List<ProcessingError> errors)
     {
         List<Action> orgActions = actions.Where(a => a.Type == ActionType.Org).ToList();
         List<Action> sponsorActions = actions.Where(s => s.Type == ActionType.Sponsor).ToList();
         List<Action> driverActions = actions.Where(s => s.Type == ActionType.Driver).ToList();
 
+        int successCount = 0;
         // Execute org actions with rollback on exception
         await using var transaction = await _db.Database.BeginTransactionAsync();
         try
         {
-            await ExecuteOrgActions(orgActions, errors);
-            await ExecuteSponsorActions(sponsorActions, actor, errors);
-            await ExecuteDriverActions(driverActions, actor, errors);   
+            successCount += await ExecuteOrgActions(orgActions, errors);
+            successCount += await ExecuteSponsorActions(sponsorActions, actor, errors);
+            successCount += await ExecuteDriverActions(driverActions, actor, errors);   
             await transaction.CommitAsync();
 
             // Sort errors by line number
             errors.Sort((a, b) => a.Line.CompareTo(b.Line));
+            return successCount;
         }
         catch
         {
             await transaction.RollbackAsync();
             throw;
         }
-
     }
 
-    private async Task ExecuteOrgActions(List<Action> orgActions, List<ProcessingError> errors)
+    private async Task<int> ExecuteOrgActions(List<Action> orgActions, List<ProcessingError> errors)
     {
+        int successCount = 0;
+
         string[] orgNames = orgActions
             .Where(n => n != null)
             .Select(a => a.OrgName!)
@@ -77,12 +80,12 @@ public class BulkActionsService : IBulkActionsService
         {
             if (action.OrgName == null)
             {
-                errors.Add(new ProcessingError(action.Line, "Organization name cannot be empty."));
+                errors.Add(new ProcessingError(action.Line, "Organization name cannot be empty"));
                 continue;
             }
             if (existingOrgs.Contains(action.OrgName))
             {
-                errors.Add(new ProcessingError(action.Line, $"{action.OrgName} already exists."));
+                errors.Add(new ProcessingError(action.Line, $"{action.OrgName} already exists"));
                 continue;
             }
 
@@ -96,13 +99,17 @@ public class BulkActionsService : IBulkActionsService
             // _db.SponsorOrgs.Add(org);
             Console.WriteLine($"Creating org: {action.OrgName}");
             existingOrgs.Add(action.OrgName);
+            successCount++;
         }
         Console.WriteLine("--------------------------------------------------");
         // await _db.SaveChangesAsync();
+        return successCount;
     }
 
-    private async Task ExecuteSponsorActions(List<Action> sponsorActions, ClaimsPrincipal actor, List<ProcessingError> errors)
+    private async Task<int> ExecuteSponsorActions(List<Action> sponsorActions, ClaimsPrincipal actor, List<ProcessingError> errors)
     {
+        int successCount = 0;
+
         var actorUserId = _userManager.GetUserId(actor);
         var isSponsor = actor.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
         var isAdmin = actor.IsInRole(UserTypeRoles.Role(UserType.Admin));
@@ -150,29 +157,29 @@ public class BulkActionsService : IBulkActionsService
         {
             if (addedUserEmails.Contains(action.UserEmail!))
             {
-                errors.Add(new ProcessingError(action.Line, $"Duplicate action with email {action.UserEmail}."));
+                errors.Add(new ProcessingError(action.Line, $"Duplicate action with email {action.UserEmail}"));
                 continue;
             }
             if (existingUsers.ContainsKey(action.UserEmail!))
             {
-                errors.Add(new ProcessingError(action.Line, $"Email {action.UserEmail} already in use."));
+                errors.Add(new ProcessingError(action.Line, $"Email {action.UserEmail} already in use"));
                 continue;
             }
             if (isSponsor && action.OrgName != null)
             {
-                errors.Add(new ProcessingError(action.Line, "Sponsors should not specify an organization."));
+                errors.Add(new ProcessingError(action.Line, "Sponsors should not specify an organization"));
                 continue;
             }
             if (isAdmin)
             {
                 if (String.IsNullOrEmpty(action.OrgName))
                 {
-                    errors.Add(new ProcessingError(action.Line, $"Missing organization name."));
+                    errors.Add(new ProcessingError(action.Line, $"Missing organization name"));
                     continue;
                 }
                 else if (!existingOrgs.ContainsKey(action.OrgName))
                 {
-                    errors.Add(new ProcessingError(action.Line, $"Organization {action.OrgName} does not exist."));
+                    errors.Add(new ProcessingError(action.Line, $"Organization {action.OrgName} does not exist"));
                     continue;
                 }
             }
@@ -181,7 +188,7 @@ public class BulkActionsService : IBulkActionsService
                 (action.OrgName != null && existingOrgs.TryGetValue(action.OrgName, out SponsorOrg? selectedOrg)) ? selectedOrg?.Id : null;
             if (!orgId.HasValue)
             {
-                errors.Add(new ProcessingError(action.Line, $"Could not resolve organization from name."));
+                errors.Add(new ProcessingError(action.Line, $"Could not resolve organization from name"));
                 continue;
             }
 
@@ -201,7 +208,7 @@ public class BulkActionsService : IBulkActionsService
                 CreatedDateUtc = DateTime.UtcNow
             };
             string defaultPassword = _config["Defaults:UserPassword"]
-                ?? throw new InvalidOperationException("Default password not configured.");
+                ?? throw new InvalidOperationException("Default password not configured");
             user.PasswordHash = _hasher.HashPassword(user, defaultPassword);
 
             var sponsor = new SponsorUser
@@ -214,6 +221,7 @@ public class BulkActionsService : IBulkActionsService
             // _db.SponsorUsers.Add(sponsor);
             addedUsers.Add(sponsor);
             addedUserEmails.Add(sponsor.User.Email);
+            successCount++;
         }
         // await _db.SaveChangesAsync();
 
@@ -226,10 +234,13 @@ public class BulkActionsService : IBulkActionsService
         Console.WriteLine("Adding roles");
         // await _db.SaveChangesAsync();
         Console.WriteLine("--------------------------------------------------");
+        return successCount;
     }
 
-    private async Task ExecuteDriverActions(List<Action> driverActions, ClaimsPrincipal actor, List<ProcessingError> errors)
+    private async Task<int> ExecuteDriverActions(List<Action> driverActions, ClaimsPrincipal actor, List<ProcessingError> errors)
     {
+        int successCount = 0;
+
         var actorUserId = _userManager.GetUserId(actor);
         var isSponsor = actor.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
         var isAdmin = actor.IsInRole(UserTypeRoles.Role(UserType.Admin));
@@ -281,40 +292,40 @@ public class BulkActionsService : IBulkActionsService
 
             if (!hasPointChange && isAdded)
             {
-                errors.Add(new ProcessingError(action.Line, $"Duplicate action with email {action.UserEmail}."));
+                errors.Add(new ProcessingError(action.Line, $"Duplicate action with email {action.UserEmail}"));
                 continue;
             }
             if (!hasPointChange && isExisting)
             {
-                errors.Add(new ProcessingError(action.Line, $"Email {action.UserEmail} already in use."));
+                errors.Add(new ProcessingError(action.Line, $"Email {action.UserEmail} already in use"));
                 continue;
             }
             if (isSponsor && action.OrgName != null)
             {
-                errors.Add(new ProcessingError(action.Line, "Sponsors should not specify an organization."));
+                errors.Add(new ProcessingError(action.Line, "Sponsors should not specify an organization"));
                 continue;
             }
             if (isAdmin)
             {
                 if (String.IsNullOrEmpty(action.OrgName))
                 {
-                    errors.Add(new ProcessingError(action.Line, $"Missing organization name."));
+                    errors.Add(new ProcessingError(action.Line, $"Missing organization name"));
                     continue;
                 }
                 else if (!existingOrgs.ContainsKey(action.OrgName))
                 {
-                    errors.Add(new ProcessingError(action.Line, $"Organization {action.OrgName} does not exist."));
+                    errors.Add(new ProcessingError(action.Line, $"Organization {action.OrgName} does not exist"));
                     continue;
                 }
             }
             if (action.PointTransactionAmount.HasValue && String.IsNullOrEmpty(action.PointTransactionReason))
             {
-                errors.Add(new ProcessingError(action.Line, $"Missing point change reason."));
+                errors.Add(new ProcessingError(action.Line, $"Missing point change reason"));
                 continue;
             }
             if (!action.PointTransactionAmount.HasValue && !String.IsNullOrEmpty(action.PointTransactionReason))
             {
-                errors.Add(new ProcessingError(action.Line, $"Missing point change amount."));
+                errors.Add(new ProcessingError(action.Line, $"Missing point change amount"));
                 continue;
             }
 
@@ -322,7 +333,7 @@ public class BulkActionsService : IBulkActionsService
                 (action.OrgName != null && existingOrgs.TryGetValue(action.OrgName, out SponsorOrg? selectedOrg)) ? selectedOrg : null;
             if (org is null)
             {
-                errors.Add(new ProcessingError(action.Line, $"Could not resolve organization from name."));
+                errors.Add(new ProcessingError(action.Line, $"Could not resolve organization from name"));
                 continue;
             }
 
@@ -344,7 +355,7 @@ public class BulkActionsService : IBulkActionsService
                     CreatedDateUtc = DateTime.UtcNow
                 };
                 string defaultPassword = _config["Defaults:UserPassword"]
-                    ?? throw new InvalidOperationException("Default password not configured.");
+                    ?? throw new InvalidOperationException("Default password not configured");
                 user.PasswordHash = _hasher.HashPassword(user, defaultPassword);
 
                 var driver = new DriverUser
@@ -368,7 +379,7 @@ public class BulkActionsService : IBulkActionsService
                     isAdded && addedUsers.TryGetValue(action.UserEmail!, out DriverUser? addedDriver) ? addedDriver : null;
                 if (driver is null)
                 {
-                    errors.Add(new ProcessingError(action.Line, "Could not resolve driver for point change."));
+                    errors.Add(new ProcessingError(action.Line, "Could not resolve driver for point change"));
                     continue;
                 }
                 driver.PointTransactions.Add(new PointTransaction
@@ -378,6 +389,7 @@ public class BulkActionsService : IBulkActionsService
                 });
                 Console.WriteLine($"Adding {action.PointTransactionAmount.Value} points to {action.UserEmail} for {action.PointTransactionReason}");
             }
+            successCount++;
         }
         // await _db.SaveChangesAsync();
 
@@ -390,5 +402,6 @@ public class BulkActionsService : IBulkActionsService
         Console.WriteLine("Adding roles");
         // await _db.SaveChangesAsync();
         Console.WriteLine("--------------------------------------------------");
+        return successCount;
     }
 }

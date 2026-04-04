@@ -17,9 +17,6 @@ public class ReadActionsService : IReadActionsService
 
     private async Task<List<Action>> ProcessResults(List<LineResult> results, bool isSponsor, List<ProcessingError> errors)
     {
-        // List<Action> OrgActions = new();
-        // List<Action> SponsorActions = new();
-        // List<Action> DriverActions = new();
         List<Action> actions = new();
 
         foreach (var result in results)
@@ -44,18 +41,6 @@ public class ReadActionsService : IReadActionsService
                 }
 
                 actions.Add(action);
-                // switch (action.Type)
-                // {
-                //     case ActionType.Org:
-                //         OrgActions.Add(action);
-                //         break;
-                //     case ActionType.Sponsor:
-                //         SponsorActions.Add(action);
-                //         break;
-                //     case ActionType.Driver:
-                //         DriverActions.Add(action);
-                //         break;
-                // }
             }
             catch (Exception ex)
             {
@@ -64,7 +49,6 @@ public class ReadActionsService : IReadActionsService
             }
         }
 
-        // List<Action> actions = [.. OrgActions, .. SponsorActions, .. DriverActions];
         return actions;
     }
 
@@ -139,9 +123,9 @@ public class ReadActionsService : IReadActionsService
     private string? GetOrgActionError(Action action, bool isSponsor)
     {
         if (isSponsor)
-            return "Sponsors cannot create an organization.";
+            return "Sponsors cannot create an organization";
         if (String.IsNullOrEmpty(action.OrgName))
-            return "Missing organization name.";
+            return "Missing organization name";
 
         var hasOtherParameters = !String.IsNullOrEmpty(action.UserFirstName)
             || !String.IsNullOrEmpty(action.UserLastName)
@@ -149,7 +133,7 @@ public class ReadActionsService : IReadActionsService
             || action.PointTransactionAmount != null
             || !String.IsNullOrEmpty(action.PointTransactionReason);
         if (hasOtherParameters)
-            return "Organization create action should only have 2 parameters.";
+            return "Organization create action should only have 2 parameters";
 
         return null;
     }
@@ -157,34 +141,34 @@ public class ReadActionsService : IReadActionsService
     private string? GetSponsorActionError(Action action, bool isSponsor)
     {
         if (!String.IsNullOrEmpty(action.OrgName) && isSponsor)
-            return "Sponsors cannot specify an organization.";
+            return "Sponsors cannot specify an organization";
         if (String.IsNullOrEmpty(action.UserFirstName))
-            return "Missing user's first name.";
+            return "Missing user's first name";
         if (String.IsNullOrEmpty(action.UserLastName))
-            return "Missing user's last name.";
+            return "Missing user's last name";
         if (String.IsNullOrEmpty(action.UserEmail))
-            return "Missing user's email.";
+            return "Missing user's email";
         if (action.PointTransactionAmount != null)
-            return "Cannot specify point amount for sponsor user action.";
+            return "Cannot specify point amount for sponsor user action";
         if (!String.IsNullOrEmpty(action.PointTransactionReason))
-            return "Cannot specify point change reason for sponsor user action.";
+            return "Cannot specify point change reason for sponsor user action";
         return null;
     }
 
     private string? GetDriverActionError(Action action, bool isSponsor)
     {
         if (!String.IsNullOrEmpty(action.OrgName) && isSponsor)
-            return "Sponsors cannot specify an organization.";
+            return "Sponsors cannot specify an organization";
         if (String.IsNullOrEmpty(action.UserFirstName))
-            return "Missing driver's first name.";
+            return "Missing driver's first name";
         if (String.IsNullOrEmpty(action.UserLastName))
-            return "Missing driver's last name.";
+            return "Missing driver's last name";
         if (String.IsNullOrEmpty(action.UserEmail))
-            return "Missing driver's email.";
+            return "Missing driver's email";
         if (action.PointTransactionAmount.HasValue && String.IsNullOrEmpty(action.PointTransactionReason))
             return "Missing point change reason";
         if (!action.PointTransactionAmount.HasValue && !String.IsNullOrEmpty(action.PointTransactionReason))
-            return "Missing or invalid point change amount.";
+            return "Missing or invalid point change amount";
         return null;
     }
 }

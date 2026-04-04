@@ -1,3 +1,3 @@
 namespace WebApi.Features.BulkActions;
 
-public record ProcessingError(int Line, string Error);
+public record ProcessingError(int Line, string Message);

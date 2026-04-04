@@ -5,7 +5,6 @@ using WebApi.Data;
 using WebApi.Data.Enums;
 using WebApi.Features.Users;
 using Microsoft.AspNetCore.Authorization;
-using Mysqlx;
 
 namespace WebApi.Features.BulkActions;
 
@@ -49,9 +48,10 @@ public class BulkActionsController : ControllerBase
         List<ProcessingError> errors = new();
         var actions = await _readActionsService.ReadActionsFromFile(file, isSponsor, errors);
 
+        int successCount = 0;
         try
         {
-            await _bulkActionsService.ExecuteActions(actions, User, errors);
+            successCount += await _bulkActionsService.ExecuteActions(actions, User, errors);
         }
         catch (Exception ex)
         {
@@ -59,7 +59,7 @@ public class BulkActionsController : ControllerBase
         }
 
         return Ok(new {
-            Actions = actions,
+            Completed = successCount,
             Errors = errors
         });
     }   
