@@ -8,6 +8,7 @@ export function usePointRules(orgId)
     const { data: user } = useCurrentUser();
     const isSponsor = user?.userType === USER_TYPES.SPONSOR;
     const isAdmin = user?.userType === USER_TYPES.ADMIN;
+    const isDriver = user?.userType === USER_TYPES.DRIVER;
 
     const orgPath = orgId ?? "me";
 
@@ -20,7 +21,7 @@ export function usePointRules(orgId)
             return response.json();
         },
         placeholderData: keepPreviousData,
-        enabled: !!user && (isSponsor || isAdmin),
+        enabled: !!user && (isSponsor || isAdmin || (isDriver && !!orgId)),
     });
 }
 

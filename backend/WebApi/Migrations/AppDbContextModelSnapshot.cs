@@ -504,9 +504,12 @@ namespace WebApi.Migrations
 
                     b.Property<string>("SponsorName")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("varchar(255)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SponsorName")
+                        .IsUnique();
 
                     b.ToTable("SponsorOrgs");
                 });

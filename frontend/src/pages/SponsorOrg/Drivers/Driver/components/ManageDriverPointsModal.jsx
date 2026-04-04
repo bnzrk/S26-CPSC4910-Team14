@@ -7,6 +7,7 @@ import Button from "@/components/Button/Button";
 import AsyncButton from "@/components/AsyncButton/AsyncButton";
 import ListIcon from "@/assets/icons/list-checks.svg?react";
 import StarIcon from "@/assets/icons/star.svg?react";
+import TextInput from "@/components/TextInput/TextInput";
 import styles from './ManageDriverPointsModal.module.scss';
 import clsx from "clsx";
 
@@ -162,9 +163,9 @@ export default function ManageDriverPointsModal({ isOpen, onClose, onSuccess, dr
                     <div className={styles.customBody}>
                         <div className={styles.inputs}>
                             <div className={styles.field}>
-                                <label className={styles.label}>Reason</label>
-                                <input
+                                <TextInput
                                     type="text"
+                                    label="Reason"
                                     className={styles.input}
                                     placeholder="e.g. Good driver bonus"
                                     value={customReason}
@@ -173,9 +174,9 @@ export default function ManageDriverPointsModal({ isOpen, onClose, onSuccess, dr
                                 />
                             </div>
                             <div className={styles.field}>
-                                <label className={styles.label}>Points</label>
-                                <input
+                                <TextInput
                                     type="number"
+                                    label="Points"
                                     className={styles.input}
                                     placeholder="e.g. 100 or -50"
                                     value={customBalanceChange}

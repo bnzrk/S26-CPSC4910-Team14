@@ -19,28 +19,71 @@ namespace WebApi.Migrations.AuditDb
                 .HasAnnotation("ProductVersion", "10.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("LoginAuditLog", b =>
+            modelBuilder.Entity("WebApi.Data.Entities.Audit.ApplicationStatusChangeAuditLog", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("Email")
+                    b.Property<string>("ActorUserEmail")
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<bool>("Successful")
-                        .HasColumnType("tinyint(1)");
+                    b.Property<string>("ActorUserId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("ApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NewStatus")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("TimestampUtc")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("LoginAuditLogs");
+                    b.ToTable("ApplicationStatusChangeAuditLogs");
                 });
 
-            modelBuilder.Entity("WebApi.Data.Entities.DriverSponsorChangeAuditLog", b =>
+            modelBuilder.Entity("WebApi.Data.Entities.Audit.CatalogChangeAuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("ActorUserEmail")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ActorUserId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ChangeType")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("ExternalItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SponsorOrgId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("TimestampUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CatalogChangeAuditLogs");
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.Audit.DriverSponsorChangeAuditLog", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -79,7 +122,28 @@ namespace WebApi.Migrations.AuditDb
                     b.ToTable("DriverSponsorChangeAuditLogs");
                 });
 
-            modelBuilder.Entity("WebApi.Data.Entities.PasswordChangeAuditLog", b =>
+            modelBuilder.Entity("WebApi.Data.Entities.Audit.LoginAuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("Successful")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime>("TimestampUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LoginAuditLogs");
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.Audit.PasswordChangeAuditLog", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -107,7 +171,7 @@ namespace WebApi.Migrations.AuditDb
                     b.ToTable("PasswordChangeAuditLogs");
                 });
 
-            modelBuilder.Entity("WebApi.Data.Entities.PointTransactionAuditLog", b =>
+            modelBuilder.Entity("WebApi.Data.Entities.Audit.PointTransactionAuditLog", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

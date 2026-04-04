@@ -1,16 +1,14 @@
 import { useState } from "react";
-import { useSponsorOrgUsers, useRemoveSponsorOrgUser, useBulkCreateSponsorUsers } from "@/api/sponsorOrg";
+import { useSponsorOrgUsers, useRemoveSponsorOrgUser } from "@/api/sponsorOrg";
 import CardHost from "@/components/CardHost/CardHost";
 import Card from "@/components/Card/Card";
 import ListItem from "@/components/ListItem/ListItem";
 import Modal from "@/components/Modal/Modal";
 import Button from "@/components/Button/Button";
 import AsyncButton from "@/components/AsyncButton/AsyncButton";
-import BulkUploadModal from "@/components/BulkUploadModal/BulkUploadModal";
 import CreateUserModal from "./components/CreateUserModal";
 import UserIcon from "@/assets/icons/user.svg?react";
 import AddUserIcon from "@/assets/icons/user-round-plus.svg?react";
-import UploadIcon from "@/assets/icons/upload.svg?react";
 import { useToast } from "@/components/Toast/ToastContext";
 import styles from './SponsorUsersPage.module.scss';
 
@@ -25,135 +23,90 @@ export default function SponsorUsersPage()
     const modals = {
         createUser: 'createUser',
         userInfo: 'userInfo',
-        bulkUpload: 'bulkUpload',
-    };
+    }
 
     const { data: users, usersLoading, usersError } = useSponsorOrgUsers();
     const removeUser = useRemoveSponsorOrgUser();
-    const bulkCreateUsers = useBulkCreateSponsorUsers();
     const { push } = useToast();
 
-    const [activeModal, setActiveModal] = useState(null);
-    const [selectedUser, setSelectedUser] = useState(null);
+    const [currentModal, setCurrentModal] = useState(null);
+    const [modalUser, setModalUser] = useState(null);
+    const [confirmRemove, setConfirmRemove] = useState(false);
 
-    function openUserInfo(user)
+    function openUserModal(user)
     {
-        setSelectedUser(user);
-        setActiveModal(modals.userInfo);
+        setModalUser(user);
+        setConfirmRemove(false);
+        setCurrentModal(modals.userInfo);
     }
 
-    async function handleRemoveUser()
+    function closeUserModal()
     {
-        if (!selectedUser) return;
+        setCurrentModal(null);
+        setConfirmRemove(false);
+    }
+
+    async function handleRemove()
+    {
         try
         {
-            await removeUser.mutateAsync({ userId: selectedUser.id });
-            push({ type: 'success', message: `${selectedUser.firstName} ${selectedUser.lastName} removed.` });
-            setActiveModal(null);
-            setSelectedUser(null);
-        }
-        catch
+            await removeUser.mutateAsync(modalUser.id);
+            push({ type: 'success', message: 'Employee removed successfully.' });
+            closeUserModal();
+        } catch
         {
-            push({ type: 'error', message: 'Failed to remove user.' });
+            push({ type: 'error', message: 'Failed to remove employee.' });
+            return Promise.reject();
         }
     }
 
     return (
-        <>
-            <CardHost>
-                <Card
-                    title="Sponsor Users"
-                    headerRight={
-                        <div className={styles.headerActions}>
-                            <Button
-                                text="Add User"
-                                color="primary"
-                                icon={AddUserIcon}
-                                onClick={() => setActiveModal(modals.createUser)}
-                            />
-                            <Button
-                                text="Bulk Upload"
-                                color="outline"
-                                icon={UploadIcon}
-                                onClick={() => setActiveModal(modals.bulkUpload)}
-                            />
+        <main className={styles.sponsorUsers}>
+            <CreateUserModal
+                isOpen={currentModal == modals.createUser}
+                onClose={() => setCurrentModal(null)}
+                onSuccess={() => setCurrentModal(null)}
+            />
+            <Modal isOpen={currentModal == modals.userInfo} onClose={closeUserModal} className={styles.userModal}>
+                <Modal.Header title='User Account' />
+                <Modal.Body className={styles.body}>
+                    {modalUser &&
+                        <div className={styles.userInfo}>
+                            <div className={styles.userHeader}>
+                                <p className={styles.userName}>{modalUser?.firstName} {modalUser?.lastName}</p>
+                                <p className={styles.userEmail}>({modalUser?.email})</p>
+                            </div>
+                            <div className={styles.userDetails}>
+                                <div>Date Created: {formatDate(modalUser?.dateCreatedUtc)}</div>
+                                <div>Last Login: {(modalUser.lastLoginUtc) ? formatDate(modalUser?.lastLoginUtc, true) : 'Never'}</div>
+                            </div>
                         </div>
                     }
-                >
-                    {(usersLoading) && <p className={styles.empty}>Loading users…</p>}
-                    {usersError && <p className={styles.empty}>Failed to load users.</p>}
-
-                    {users && users.length === 0 && (
-                        <p className={styles.empty}>No sponsor users found.</p>
-                    )}
-
-                    {users && users.map((user) => (
-                        <ListItem
-                            key={user.id}
-                            icon={UserIcon}
-                            label={`${user.firstName} ${user.lastName}`}
-                            onClick={() => openUserInfo(user)}
-                            showChevron={true}
-                        >
+                </Modal.Body>
+                <Modal.Buttons position='left'>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        {!confirmRemove
+                            ? <Button text='Remove Employee' color='warn' onClick={() => setConfirmRemove(true)} />
+                            : <>
+                                <AsyncButton text='Confirm Remove' color='warn' action={handleRemove} />
+                                <Button text='Cancel' onClick={() => setConfirmRemove(false)} />
+                            </>
+                        }
+                    </div>
+                    <Button text='Close' onClick={closeUserModal} />
+                </Modal.Buttons>
+            </Modal>
+            <CardHost title='Users' subtitle="Manage your organization's users">
+                <Card title='Accounts' headerRight={
+                    <Button text='New' size='small' icon={AddUserIcon} onClick={() => setCurrentModal(modals.createUser)}></Button>
+                }>
+                    {users && users.items.map((user) => (
+                        <ListItem key={user.id} icon={UserIcon} label={`${user.firstName} ${user.lastName}`} onClick={() => openUserModal(user)}>
                             <p className={styles.userEmail}>{user.email}</p>
                         </ListItem>
                     ))}
                 </Card>
             </CardHost>
-
-            {/* Create Single User Modal */}
-            <CreateUserModal
-                isOpen={activeModal === modals.createUser}
-                onClose={() => setActiveModal(null)}
-                onSuccess={() => setActiveModal(null)}
-            />
-
-            {/* Bulk Upload Sponsor Users Modal */}
-            <BulkUploadModal
-                isOpen={activeModal === modals.bulkUpload}
-                onClose={() => setActiveModal(null)}
-                onSuccess={() => setActiveModal(null)}
-                title="Bulk Upload Sponsor Users"
-                description={
-                    'Upload a CSV to add multiple sponsor users at once. ' +
-                    'Required columns: email, firstName, lastName, password.'
-                }
-                templateCols={['email', 'firstName', 'lastName', 'password']}
-                templateName="bulk_sponsor_users_template.csv"
-                mutation={bulkCreateUsers}
-            />
-
-            {/* User Info / Remove Modal */}
-            {selectedUser && (
-                <Modal
-                    isOpen={activeModal === modals.userInfo}
-                    onClose={() => { setActiveModal(null); setSelectedUser(null); }}
-                    closeButton
-                >
-                    <Modal.Header title="User Details" />
-                    <Modal.Body>
-                        <div className={styles.userDetails}>
-                            <p><strong>Name:</strong> {selectedUser.firstName} {selectedUser.lastName}</p>
-                            <p><strong>Email:</strong> {selectedUser.email}</p>
-                            {selectedUser.createdAt && (
-                                <p><strong>Added:</strong> {formatDate(selectedUser.createdAt)}</p>
-                            )}
-                        </div>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button
-                            text="Cancel"
-                            color="outline"
-                            onClick={() => { setActiveModal(null); setSelectedUser(null); }}
-                        />
-                        <AsyncButton
-                            text="Remove User"
-                            color="warn"
-                            action={handleRemoveUser}
-                        />
-                    </Modal.Footer>
-                </Modal>
-            )}
-        </>
+        </main>
     );
 }

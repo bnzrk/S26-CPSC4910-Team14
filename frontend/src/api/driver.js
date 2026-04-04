@@ -41,3 +41,33 @@ export function useUpdateDriver()
         },
     });
 }
+
+export function useCreateDriverUser(orgId)
+{
+    const queryClient = useQueryClient();
+    const { data: user } = useCurrentUser();
+    const isAdmin = user?.userType === USER_TYPES.ADMIN;
+
+    return useMutation({
+        mutationFn: async ({ email, username, firstName, lastName, password }) =>
+        {
+            const res = await apiFetch(`/drivers${orgId ? `?${orgId}` : ''}`, {
+                method: "POST",
+                body: JSON.stringify({ email, username, firstName, lastName, password }),
+            });
+
+            if (!res.ok)
+            {
+                throw await res.json();
+            }
+
+            return null;
+        },
+        retry: 0,
+        enabled: isAdmin,
+        onSuccess: () =>
+        {
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+        },
+    });
+}

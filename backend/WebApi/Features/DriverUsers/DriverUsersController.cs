@@ -57,6 +57,30 @@ public class DriverUsersController : ControllerBase
         return Created();
     }
 
+    [HttpPost]
+    [Authorize(Policy = PolicyNames.AdminOnly)]
+    public async Task<ActionResult> CreateDriverUser([FromQuery] int? orgId, RegisterDriverUserModel request)
+    {
+        SponsorOrg? org = null;
+        if (orgId.HasValue)
+        {
+            org = await _db.SponsorOrgs.Where(s => s.Id == orgId.Value).SingleOrDefaultAsync();
+            if (org is null)
+                return NotFound("Organization not found.");
+        }
+
+        var result = await _usersService.CreateDriverUser(request.Email, request.Password, request.FirstName, request.LastName, org);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new
+            {
+                Errors = result.Errors.Select(e => e.Description).ToArray()
+            });
+        }
+
+        return Created();
+    }
+
     [HttpGet("me")]
     [Authorize(Policy = PolicyNames.DriverOnly)]
     public async Task<ActionResult<DriverUserModel>> GetMe()
@@ -147,7 +171,7 @@ public class DriverUsersController : ControllerBase
                         SponsorName = o.SponsorName,
                         PointRatio = o.PointRatio
                     });
-                    
+
                 return Ok(new List<SponsorOrgModel>(org));
             }
         }
