@@ -61,7 +61,7 @@ public class CatalogsService : ICatalogsService
         return models;
     }
 
-    private async Task RefreshItemCachesAsync(List<int> itemIds)
+    public async Task RefreshItemCachesAsync(List<int> itemIds)
     {
         // Because we're accessing the database in a thread, we need to make a new scope
         using var scope = _scopeFactory.CreateScope();

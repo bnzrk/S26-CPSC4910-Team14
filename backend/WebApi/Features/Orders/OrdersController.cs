@@ -1,0 +1,194 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using WebApi.Data;
+using WebApi.Data.Enums;
+using WebApi.Data.Entities;
+using WebApi.Features.Orders.Models;
+using Microsoft.EntityFrameworkCore;
+using WebApi.Features.Catalogs;
+using System.Transactions;
+using System.Formats.Asn1;
+
+namespace WebApi.Features.Orders;
+
+[ApiController]
+[Route("/orders")]
+public class OrdersController : ControllerBase
+{
+    private readonly AppDbContext _db;
+    private readonly UserManager<User> _userManager;
+    private readonly ICatalogsService _catalogService;
+
+    public OrdersController(AppDbContext db, UserManager<User> userManager, ICatalogsService catalogService)
+    {
+        _db = db;
+        _userManager = userManager;
+        _catalogService = catalogService;
+    }
+
+    [HttpPost]
+    [Authorize]
+    public async Task<ActionResult> CreateOrder([FromBody] CreateOrderModel request)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var orderDriver = await _db.DriverUsers
+            .Include(d => d.SponsorOrgs)
+            .Where(d => d.Id == request.DriverId)
+            .SingleOrDefaultAsync();
+        if (orderDriver is null)
+            return NotFound("Driver not found.");
+
+        var catalog = await _db.Catalogs
+        .AsNoTracking()
+        .Include(c => c.SponsorOrg)
+        .Where(c => c.Id == request.CatalogId)
+        .SingleOrDefaultAsync();
+        if (catalog is null)
+            return NotFound("Catalog not found.");
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        var isDriver = User.IsInRole(UserTypeRoles.Role(UserType.Driver));
+        if (isDriver)
+        {
+            var userDriverId = await _db.DriverUsers.Where(d => d.UserId == userId).Select(d => (int?)d.Id).SingleOrDefaultAsync();
+            if (!userDriverId.HasValue || userDriverId != orderDriver.Id)
+                return NotFound("Cannot place an order for a different user.");
+        }
+        if (isSponsor)
+        {
+            // Get the sponsor user's org id
+            var userOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => (int?)s.SponsorOrgId).SingleOrDefaultAsync();
+            if (!userOrgId.HasValue)
+                return BadRequest("Could not resolve user org.");
+            // Ensure request catalog belongs to same org
+            if (catalog.SponsorOrgId != userOrgId)
+                return NotFound("Catalog not found.");
+            // Ensure driver is in sposnor's org
+            var isInOrg = orderDriver.SponsorOrgs.Any(o => o.Id == userOrgId.Value);
+            if (!isInOrg)
+                return NotFound("Driver not found.");
+        }
+
+        var canAccessCatalog = orderDriver.SponsorOrgs.Any(o => o.Id == catalog.SponsorOrgId);
+        if (!canAccessCatalog)
+            return NotFound("Catalog not found.");
+
+        // Fetch matching catalog items
+        var catalogItems = await _db.CatalogItems
+            .Where(i => request.CatalogItemIds.Contains(i.Id))
+            .ToListAsync();
+        var catalogRatio = await _db.Catalogs
+            .Include(c => c.SponsorOrg)
+            .Where(c => c.Id == request.CatalogId)
+            .Select(c => (decimal?)c.SponsorOrg.PointRatio)
+            .SingleOrDefaultAsync();
+        if (!catalogRatio.HasValue)
+            return BadRequest("Unable to resolve org point value.");
+
+        // Compare to request ids and return error if any missing
+        foreach (var id in request.CatalogItemIds)
+        {
+            if (!catalogItems.Any(i => i.Id == id))
+                return NotFound($"Catalog item with id {id} not found.");
+        }
+        // Validate catalog items to ensure items still available
+        await _catalogService.RefreshItemCachesAsync(request.CatalogItemIds);
+        foreach (var item in catalogItems)
+        {
+            if (!item.IsAvailable)
+                return NotFound($"Catalog item with id {item.Id} is no longer available.");
+        }
+
+        await using var dbTransaction = await _db.Database.BeginTransactionAsync();
+        try
+        {
+            // Create order
+            var order = new Order
+            {
+                DriverId = orderDriver.Id,
+                Status = OrderStatus.Placed,
+                PlacedDateUtc = DateTime.UtcNow
+            };
+            foreach (var id in request.CatalogItemIds)
+            {
+                var catalogItem = catalogItems.SingleOrDefault(i => i.Id == id);
+                if (catalogItem is null)
+                    return NotFound($"Catalog item with id {id} not found.");
+
+                order.Items.Add(new OrderItem
+                {
+                    ThumbnailUrl = catalogItem.Images.FirstOrDefault() ?? "",
+                    Title = catalogItem.Title,
+                    Category = catalogItem.CategoryTitle,
+                    Description = catalogItem.Description,
+                    PricePoints = Convert.ToInt32(catalogItem.CatalogPrice / catalogRatio.Value),
+                    PriceUsd = catalogItem.CatalogPrice,
+                    VendorPriceUsd = catalogItem.ExternalPrice
+                });
+            }
+            var orderTotal = order.Items.Sum(i => i.PricePoints);
+            // Deduct cost of order with point transaction
+            var pointTransaction = new PointTransaction
+            {
+                SponsorOrgId = catalog.SponsorOrgId,
+                DriverUserId = orderDriver.Id,
+                BalanceChange = -orderTotal,
+                Reason = "Redeemed",
+                TransactionDateUtc = DateTime.UtcNow
+            };
+            _db.PointTransactions.Add(pointTransaction);
+            _db.Orders.Add(order);
+            await _db.SaveChangesAsync();
+
+            await dbTransaction.CommitAsync();
+            return Ok(new CreateOrderResultModel
+            {
+                OrderId = order.Id,
+                Successful = true
+            });
+        }
+        catch (Exception ex)
+        {
+            await dbTransaction.RollbackAsync();
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult> GetOrders(int driverId)
+    {
+        // Todo validate permissions
+        
+        var orders = await _db.Orders
+            .Where(o => o.DriverId == driverId)
+            .Select(o => new OrderModel
+            {
+                Id = o.Id,
+                DriverId = o.DriverId,
+                Status = o.Status,
+                PlacedDateUtc = o.PlacedDateUtc,
+                ShippeDateUtc = o.ShippeDateUtc,
+                DeliveryStartDateUtc = o.DeliveryStartDateUtc,
+                DeliveryCompleteDateUtc = o.DeliveryCompleteDateUtc,
+                Items = o.Items.Select(i => new OrderItemModel
+                {
+                    Id = i.Id,
+                    OrderId = i.OrderId,
+                    ThumbnailUrl = i.ThumbnailUrl,
+                    Title = i.Title,
+                    Category = i.Category,
+                    Description = i.Description,
+                    PricePoints = i.PricePoints,
+                    PriceUsd = i.PriceUsd,
+                    VendorPriceUsd = i.VendorPriceUsd
+                }).ToList()
+            })
+            .ToListAsync();
+        return Ok(orders);
+    }
+}
