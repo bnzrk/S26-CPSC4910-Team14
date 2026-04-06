@@ -109,6 +109,7 @@ public class OrdersController : ControllerBase
             // Create order
             var order = new Order
             {
+                SponsorOrgId = catalog.SponsorOrgId,
                 DriverId = orderDriver.Id,
                 Status = OrderStatus.Placed,
                 PlacedDateUtc = DateTime.UtcNow
@@ -131,6 +132,18 @@ public class OrdersController : ControllerBase
                 });
             }
             var orderTotal = order.Items.Sum(i => i.PricePoints);
+
+            // Ensure driver has enough points to place order
+            var driverPoints = await _db.PointTransactions
+                .Where(t => t.SponsorOrgId == catalog.SponsorOrgId && t.DriverUserId == orderDriver.Id)
+                .SumAsync(t => t.BalanceChange);
+            if (driverPoints < orderTotal)
+                return Ok(new CreateOrderResultModel
+                {
+                    Successful = false,
+                    Error = "Not enough points."
+                });
+
             // Deduct cost of order with point transaction
             var pointTransaction = new PointTransaction
             {
@@ -160,35 +173,79 @@ public class OrdersController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult> GetOrders(int driverId)
+    public async Task<ActionResult> GetOrders([FromQuery] int driverId, int? orgId)
     {
         // Todo validate permissions
-        
-        var orders = await _db.Orders
-            .Where(o => o.DriverId == driverId)
-            .Select(o => new OrderModel
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var driver = await _db.DriverUsers
+            .AsNoTracking()
+            .Include(d => d.SponsorOrgs)
+            .Where(d => d.Id == driverId)
+            .SingleOrDefaultAsync();
+        if (driver is null)
+            return NotFound("Driver not found.");
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        var isDriver = User.IsInRole(UserTypeRoles.Role(UserType.Driver));
+        if (isDriver)
+        {
+            var userDriverId = await _db.DriverUsers.Where(d => d.UserId == userId).Select(d => (int?)d.Id).SingleOrDefaultAsync();
+            if (!userDriverId.HasValue || userDriverId != driver.Id)
+                return NotFound("Cannot place an order for a different user.");
+        }
+        if (isSponsor)
+        {
+            if (orgId.HasValue)
+                return BadRequest("Sponsors should not specific an org id.");
+
+            // Get the sponsor user's org id
+            var userOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => (int?)s.SponsorOrgId).SingleOrDefaultAsync();
+            if (!userOrgId.HasValue)
+                return BadRequest("Could not resolve user org.");
+            // Ensure driver is in sposnor's org
+            var isInOrg = driver.SponsorOrgs.Any(o => o.Id == userOrgId.Value);
+            if (!isInOrg)
+                return NotFound("Driver not found.");
+
+            orgId = userOrgId;
+        }
+
+        var orderQuery = _db.Orders
+            .Where(o => o.DriverId == driverId);
+
+        if (orgId.HasValue)
+        {
+            orderQuery.Where(o => o.SponsorOrgId == orgId.Value);
+        }
+
+        var orders = await orderQuery.Select(o => new OrderModel
+        {
+            Id = o.Id,
+            SponsorOrgId = o.SponsorOrgId,
+            DriverId = o.DriverId,
+            Status = o.Status,
+            PlacedDateUtc = o.PlacedDateUtc,
+            ShippeDateUtc = o.ShippeDateUtc,
+            DeliveryStartDateUtc = o.DeliveryStartDateUtc,
+            DeliveryCompleteDateUtc = o.DeliveryCompleteDateUtc,
+            Items = o.Items.Select(i => new OrderItemModel
             {
-                Id = o.Id,
-                DriverId = o.DriverId,
-                Status = o.Status,
-                PlacedDateUtc = o.PlacedDateUtc,
-                ShippeDateUtc = o.ShippeDateUtc,
-                DeliveryStartDateUtc = o.DeliveryStartDateUtc,
-                DeliveryCompleteDateUtc = o.DeliveryCompleteDateUtc,
-                Items = o.Items.Select(i => new OrderItemModel
-                {
-                    Id = i.Id,
-                    OrderId = i.OrderId,
-                    ThumbnailUrl = i.ThumbnailUrl,
-                    Title = i.Title,
-                    Category = i.Category,
-                    Description = i.Description,
-                    PricePoints = i.PricePoints,
-                    PriceUsd = i.PriceUsd,
-                    VendorPriceUsd = i.VendorPriceUsd
-                }).ToList()
-            })
+                Id = i.Id,
+                OrderId = i.OrderId,
+                ThumbnailUrl = i.ThumbnailUrl,
+                Title = i.Title,
+                Category = i.Category,
+                Description = i.Description,
+                PricePoints = i.PricePoints,
+                PriceUsd = i.PriceUsd,
+                VendorPriceUsd = i.VendorPriceUsd
+            }).ToList()
+        })
             .ToListAsync();
+
         return Ok(orders);
     }
 }

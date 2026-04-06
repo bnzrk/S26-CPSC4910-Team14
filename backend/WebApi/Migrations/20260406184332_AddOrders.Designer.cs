@@ -11,7 +11,7 @@ using WebApi.Data;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260406175324_AddOrders")]
+    [Migration("20260406184332_AddOrders")]
     partial class AddOrders
     {
         /// <inheritdoc />
@@ -447,12 +447,17 @@ namespace WebApi.Migrations
                     b.Property<int>("DriverId")
                         .HasColumnType("int");
 
+                    b.Property<int>("SponsorOrgId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("DriverId");
+
+                    b.HasIndex("SponsorOrgId");
 
                     b.ToTable("Orders");
                 });
@@ -1024,7 +1029,15 @@ namespace WebApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
+                        .WithMany()
+                        .HasForeignKey("SponsorOrgId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Driver");
+
+                    b.Navigation("SponsorOrg");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.OrderItem", b =>

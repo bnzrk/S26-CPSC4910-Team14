@@ -18,6 +18,7 @@ namespace WebApi.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     DriverId = table.Column<int>(type: "int", nullable: false),
+                    SponsorOrgId = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -27,6 +28,12 @@ namespace WebApi.Migrations
                         name: "FK_Orders_DriverUsers_DriverId",
                         column: x => x.DriverId,
                         principalTable: "DriverUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Orders_SponsorOrgs_SponsorOrgId",
+                        column: x => x.SponsorOrgId,
+                        principalTable: "SponsorOrgs",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
@@ -68,6 +75,11 @@ namespace WebApi.Migrations
                 name: "IX_Orders_DriverId",
                 table: "Orders",
                 column: "DriverId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_SponsorOrgId",
+                table: "Orders",
+                column: "SponsorOrgId");
         }
 
         /// <inheritdoc />
