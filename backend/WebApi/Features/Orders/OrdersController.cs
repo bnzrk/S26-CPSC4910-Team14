@@ -175,11 +175,26 @@ public class OrdersController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult> GetOrders([FromQuery] int driverId, int? orgId)
+    public async Task<ActionResult> GetOrders([FromQuery] int? driverId, [FromQuery] int? orgId)
     {
         var userId = _userManager.GetUserId(User);
         if (userId is null)
             return Unauthorized();
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        var isDriver = User.IsInRole(UserTypeRoles.Role(UserType.Driver));
+
+        if (isDriver)
+        {
+            if (driverId.HasValue)
+                return BadRequest("Drivers should not specify a driver id.");
+
+            var userDriverId = await _db.DriverUsers.Where(d => d.UserId == userId).Select(d => (int?)d.Id).SingleOrDefaultAsync();
+            driverId = userDriverId;
+        }
+
+        if (!isDriver && !driverId.HasValue)
+            return BadRequest("Missing driver id.");
 
         var driver = await _db.DriverUsers
             .AsNoTracking()
@@ -189,14 +204,6 @@ public class OrdersController : ControllerBase
         if (driver is null)
             return NotFound("Driver not found.");
 
-        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
-        var isDriver = User.IsInRole(UserTypeRoles.Role(UserType.Driver));
-        if (isDriver)
-        {
-            var userDriverId = await _db.DriverUsers.Where(d => d.UserId == userId).Select(d => (int?)d.Id).SingleOrDefaultAsync();
-            if (!userDriverId.HasValue || userDriverId != driver.Id)
-                return NotFound("Cannot place an order for a different user.");
-        }
         if (isSponsor)
         {
             if (orgId.HasValue)
@@ -219,7 +226,7 @@ public class OrdersController : ControllerBase
 
         if (orgId.HasValue)
         {
-            orderQuery.Where(o => o.SponsorOrgId == orgId.Value);
+            orderQuery = orderQuery.Where(o => o.SponsorOrgId == orgId.Value);
         }
 
         var orders = await orderQuery.Select(o => new OrderModel

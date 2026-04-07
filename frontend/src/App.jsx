@@ -14,6 +14,7 @@ import SponsorOrgLayout from './pages/SponsorOrg/SponsorOrgLayout';
 import SponsorDashboardPage from '@/pages/SponsorOrg/SponsorDashboardPage';
 import SponsorUsersPage from './pages/SponsorOrg/Users/SponsorUsersPage';
 import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPage';
+import OrderHistoryPage from './pages/Orders/Index/OrderHistoryPage';
 import UsersPage from './pages/Admin/Users/UsersPage';
 import ShopPage from './pages/Shop/ShopPage';
 import RegisterPage from './pages/Register/RegisterPage';
@@ -69,6 +70,11 @@ function AppContent({ user, isUserLoading, orgs })
           <Route path='/shop' element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
               <ShopPage />
+            </ProtectedRoute>
+          } />
+          <Route path='/orders' element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+              <OrderHistoryPage />
             </ProtectedRoute>
           } />
           <Route path='/organizations' element={

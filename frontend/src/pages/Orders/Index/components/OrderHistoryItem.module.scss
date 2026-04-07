@@ -1,0 +1,119 @@
+@use '@/styles/globals' as *;
+
+.item {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+
+    cursor: pointer;
+
+    * {
+        cursor: inherit;
+    }
+}
+
+.thumbnail {
+    width: 100%;
+    height: min-content;
+    max-width: 120px;
+    width: 120px;
+    aspect-ratio: 1 / 1;
+}
+
+.details {
+    width: 100%;
+    min-width: 0;
+    padding-left: $grid-2x;
+
+    .header {
+        font-size: 1em;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: $grid-1x;
+        justify-content: space-between;
+        margin-bottom: $grid-2x;
+    }
+
+    .body {
+        display: flex;
+        gap: $grid-2x;
+        flex-direction: row;
+        justify-content: space-between;
+        flex-wrap: nowrap;
+    }
+
+    .section {
+        display: flex;
+        flex-direction: column;
+        gap: $grid-1x;
+
+        label {
+            color: var(--color-text);
+        }
+
+        .total {
+            display: flex;
+            align-items: center;
+            gap: $grid-fourth;
+            color: var(--color-accent);
+
+            svg {
+                width: 1rem;
+                height: 1rem;
+            }
+        }
+    }
+
+    .products {
+        min-width: 0;
+        display: flex;
+        flex-shrink: 3;
+
+        @media only screen and (max-width : $small-width) {
+            display: none;
+        }
+    }
+
+    .quantities {
+        min-width: 0;
+        display: flex;
+        flex-shrink: 1;
+
+        .itemQuantity {
+            min-width: 0;
+            display: flex;
+            flex-shrink: 1;
+        }
+    }
+
+    .productName {
+        flex-shrink: 2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+    }
+
+    .statusBadge {
+        border-radius: 999px;
+        padding: $grid-fourth $grid-1x;
+        background: color-mix(in srgb, var(--color-text-secondary) 5%, transparent);
+        color: var(--color-text-secondary);
+
+        &.pending {
+            background: color-mix(in srgb, var(--color-caution) 5%, transparent);
+            color: var(--color-caution);
+        }
+
+        &.shipped {
+            background: color-mix(in srgb, var(--blue-500) 5%, transparent);
+            color: var(--blue-500);
+        }
+
+        &.completed {
+            background: color-mix(in srgb, var(--color-accent) 5%, transparent);
+            color: var(--color-accent);
+        }
+    }
+}

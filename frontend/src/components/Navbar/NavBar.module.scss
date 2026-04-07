@@ -82,7 +82,7 @@
   display: none;
 }
 
-@media only screen and (max-width : $small-width) {
+@media only screen and (max-width : $medium-width) {
   .navbar {
     padding: 0 $grid-2x;
   }
