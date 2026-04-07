@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using WebApi.Features.Catalogs;
 using System.Transactions;
 using System.Formats.Asn1;
+using System.Data.Odbc;
+using Org.BouncyCastle.Ocsp;
 
 namespace WebApi.Features.Orders;
 
@@ -175,7 +177,6 @@ public class OrdersController : ControllerBase
     [Authorize]
     public async Task<ActionResult> GetOrders([FromQuery] int driverId, int? orgId)
     {
-        // Todo validate permissions
         var userId = _userManager.GetUserId(User);
         if (userId is null)
             return Unauthorized();
@@ -231,6 +232,8 @@ public class OrdersController : ControllerBase
             ShippeDateUtc = o.ShippeDateUtc,
             DeliveryStartDateUtc = o.DeliveryStartDateUtc,
             DeliveryCompleteDateUtc = o.DeliveryCompleteDateUtc,
+            CanceledDateUtc = o.CanceledDateUtc,
+            IsRefunded = o.IsRefunded,
             Items = o.Items.Select(i => new OrderItemModel
             {
                 Id = i.Id,
@@ -247,5 +250,155 @@ public class OrdersController : ControllerBase
             .ToListAsync();
 
         return Ok(orders);
+    }
+
+    [HttpPut("{orderId}/status")]
+    [Authorize]
+    public async Task<ActionResult> UpdateOrderStatus(int orderId, [FromBody] UpdateOrderStatusModel request)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var order = await _db.Orders.Include(o => o.Items).Where(o => o.Id == orderId).SingleOrDefaultAsync();
+        if (order is null)
+            return NotFound();
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        var isDriver = User.IsInRole(UserTypeRoles.Role(UserType.Driver));
+        if (isDriver)
+        {
+            var driverId = await _db.DriverUsers
+                .AsNoTracking()
+                .Where(d => d.UserId == userId)
+                .Select(d => (int?)d.Id)
+                .SingleOrDefaultAsync();
+            if (!driverId.HasValue)
+                throw new Exception("Could not resolve driver from user.");
+
+            if (driverId != order.DriverId)
+                return NotFound();
+        }
+        if (isSponsor)
+        {
+            var userOrgId = await _db.SponsorUsers
+                .AsNoTracking()
+                .Where(s => s.UserId == userId)
+                .Select(s => (int?)s.SponsorOrgId)
+                .SingleOrDefaultAsync();
+            if (!userOrgId.HasValue)
+                throw new Exception("Could not resolve org from user.");
+
+            if (userOrgId != order.SponsorOrgId)
+                return NotFound();
+        }
+
+        if (request.Status == OrderStatus.Canceled)
+            return BadRequest("Invalid status.");
+
+        SetOrderStatus(order, request.Status);
+        await _db.SaveChangesAsync();
+
+        return Ok();
+    }
+
+    [HttpPut("{orderId}/cancel")]
+    [Authorize]
+    public async Task<ActionResult> CancelOrder(int orderId)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var order = await _db.Orders.Include(o => o.Items).Where(o => o.Id == orderId).SingleOrDefaultAsync();
+        if (order is null)
+            return NotFound();
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        var isDriver = User.IsInRole(UserTypeRoles.Role(UserType.Driver));
+        if (isDriver)
+        {
+            var driverId = await _db.DriverUsers
+                .AsNoTracking()
+                .Where(d => d.UserId == userId)
+                .Select(d => (int?)d.Id)
+                .SingleOrDefaultAsync();
+            if (!driverId.HasValue)
+                throw new Exception("Could not resolve driver from user.");
+
+            if (driverId != order.DriverId)
+                return NotFound();
+        }
+        if (isSponsor)
+        {
+            var userOrgId = await _db.SponsorUsers
+                .AsNoTracking()
+                .Where(s => s.UserId == userId)
+                .Select(s => (int?)s.SponsorOrgId)
+                .SingleOrDefaultAsync();
+            if (!userOrgId.HasValue)
+                throw new Exception("Could not resolve org from user.");
+
+            if (userOrgId != order.SponsorOrgId)
+                return NotFound();
+        }
+
+        if (order.Status == OrderStatus.Canceled)
+        {
+            return BadRequest("Order is already canceled.");
+        }
+        SetOrderStatus(order, OrderStatus.Canceled);
+
+        // If not already refunded, refund points
+        if (!order.IsRefunded)
+        {
+            Console.WriteLine("Adding refund transaction...");
+            _db.PointTransactions.Add(new PointTransaction
+            {
+                DriverUserId = order.DriverId,
+                SponsorOrgId = order.SponsorOrgId,
+                BalanceChange = order.Items.Sum(i => i.PricePoints),
+                TransactionDateUtc = DateTime.UtcNow,
+                Reason = "Refund"
+            });
+            order.IsRefunded = true;
+        }
+        await _db.SaveChangesAsync();
+
+        return Ok();
+    }
+
+    private void SetOrderStatus(Order order, OrderStatus status)
+    {
+        if (status != OrderStatus.Canceled)
+            order.CanceledDateUtc = null;
+
+        // Set status. If reverted to an earlier status, clear timestamps
+        switch (status)
+        {
+            case OrderStatus.Placed:
+                order.ShippeDateUtc = null;
+                order.DeliveryStartDateUtc = null;
+                order.DeliveryCompleteDateUtc = null;
+                break;
+            case OrderStatus.Shipped:
+                order.ShippeDateUtc = DateTime.UtcNow;
+                order.DeliveryStartDateUtc = null;
+                order.DeliveryCompleteDateUtc = null;
+                break;
+            case OrderStatus.OutForDelivery:
+                order.DeliveryStartDateUtc = DateTime.UtcNow;
+                order.DeliveryCompleteDateUtc = null;
+                break;
+            case OrderStatus.Delivered:
+                order.DeliveryCompleteDateUtc = DateTime.UtcNow;
+                break;
+            case OrderStatus.Canceled:
+                order.CanceledDateUtc = DateTime.UtcNow;
+                break;
+            default:
+                throw new Exception("Invalid status.");
+        }
+        order.Status = status;
     }
 }

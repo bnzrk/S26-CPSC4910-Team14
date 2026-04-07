@@ -9,9 +9,10 @@ public class OrderModel
     public int SponsorOrgId { get; set; }
     public ICollection<OrderItemModel> Items { get; set; } = new List<OrderItemModel>();
     public OrderStatus Status { get; set; }
-    public DateTime PlacedDateUtc;
-    public DateTime? ShippeDateUtc;
-    public DateTime? DeliveryStartDateUtc;
-    public DateTime? DeliveryCompleteDateUtc;
-    public DateTime? CanceledDateUtc;
+    public DateTime PlacedDateUtc { get; set; }
+    public DateTime? ShippeDateUtc { get; set; }
+    public DateTime? DeliveryStartDateUtc { get; set; }
+    public DateTime? DeliveryCompleteDateUtc { get; set; }
+    public DateTime? CanceledDateUtc { get; set; }
+    public bool IsRefunded { get; set; }
 }

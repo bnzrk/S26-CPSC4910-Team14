@@ -11,9 +11,10 @@ public class Order
     public SponsorOrg SponsorOrg { get; set; } = null!;
     public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
     public OrderStatus Status { get; set; } = OrderStatus.Placed;
-    public DateTime PlacedDateUtc;
-    public DateTime? ShippeDateUtc;
-    public DateTime? DeliveryStartDateUtc;
-    public DateTime? DeliveryCompleteDateUtc;
-    public DateTime? CanceledDateUtc;
+    public DateTime PlacedDateUtc { get; set; }
+    public DateTime? ShippeDateUtc { get; set; }
+    public DateTime? DeliveryStartDateUtc { get; set; }
+    public DateTime? DeliveryCompleteDateUtc { get; set; }
+    public DateTime? CanceledDateUtc { get; set; }
+    public bool IsRefunded { get; set; } = false;
 }
