@@ -39,7 +39,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginModel login)
+    public async Task<IActionResult> Login([FromBody] LoginModel login)
     {
         var user = await _userManager.FindByEmailAsync(login.Email);
         if (user is null || !user.IsActive)
