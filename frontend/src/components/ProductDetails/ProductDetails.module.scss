@@ -17,6 +17,11 @@
         color: var(--color-text-tertiary);
     }
 
+    .description {
+        max-width: 160px;
+        font-size: 0.8rem;
+    }
+
     .prices {
         display: flex;
         flex-direction: row;

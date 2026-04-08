@@ -36,13 +36,6 @@ public class OrdersController : ControllerBase
         if (userId is null)
             return Unauthorized();
 
-        var orderDriver = await _db.DriverUsers
-            .Include(d => d.SponsorOrgs)
-            .Where(d => d.Id == request.DriverId)
-            .SingleOrDefaultAsync();
-        if (orderDriver is null)
-            return NotFound("Driver not found.");
-
         var catalog = await _db.Catalogs
         .AsNoTracking()
         .Include(c => c.SponsorOrg)
@@ -55,10 +48,19 @@ public class OrdersController : ControllerBase
         var isDriver = User.IsInRole(UserTypeRoles.Role(UserType.Driver));
         if (isDriver)
         {
-            var userDriverId = await _db.DriverUsers.Where(d => d.UserId == userId).Select(d => (int?)d.Id).SingleOrDefaultAsync();
-            if (!userDriverId.HasValue || userDriverId != orderDriver.Id)
-                return NotFound("Cannot place an order for a different user.");
+            if (request.DriverId.HasValue)
+                return BadRequest("Drivers should not specify a driver id.");
+
+            request.DriverId = await _db.DriverUsers.Where(d => d.UserId == userId).Select(d => (int?)d.Id).SingleOrDefaultAsync();
         }
+
+        var orderDriver = await _db.DriverUsers
+               .Include(d => d.SponsorOrgs)
+               .Where(d => d.Id == request.DriverId)
+               .SingleOrDefaultAsync();
+        if (orderDriver is null)
+            return NotFound("Driver not found.");
+
         if (isSponsor)
         {
             // Get the sponsor user's org id
@@ -281,6 +283,78 @@ public class OrdersController : ControllerBase
         var results = await PagedResult.ToPagedResultAsync(pageQuery, queryPage, queryPageSize);
 
         return Ok(results);
+    }
+
+    [HttpGet("{orderId}")]
+    [Authorize]
+    public async Task<ActionResult<OrderModel>> GetOrder(int orderId)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        var isDriver = User.IsInRole(UserTypeRoles.Role(UserType.Driver));
+
+        var order = await _db.Orders
+            .AsNoTracking()
+            .Include(o => o.Items)
+            .Where(o => o.Id == orderId)
+            .SingleOrDefaultAsync();
+        if (order is null)
+            return NotFound();
+
+        if (isDriver)
+        {
+            var userDriverId = await _db.DriverUsers
+                .AsNoTracking()
+                .Where(d => d.UserId == userId)
+                .Select(d => (int?)d.Id)
+                .SingleOrDefaultAsync();
+            if (userDriverId != order.DriverId)
+                return NotFound();
+        }
+        if (isSponsor)
+        {
+            var userOrgId = await _db.SponsorUsers
+                .AsNoTracking()
+                .Where(s => s.UserId == userId)
+                .Select(s => (int?)s.SponsorOrgId)
+                .SingleOrDefaultAsync();
+            if (!userOrgId.HasValue)
+                throw new Exception("Could not resolve user's organization.");
+
+            if (userOrgId != order.SponsorOrgId)
+                return NotFound();
+        }
+
+        var model = new OrderModel
+        {
+            Id = order.Id,
+            DriverId = order.DriverId,
+            SponsorOrgId = order.SponsorOrgId,
+            Items = order.Items.Select(i => new OrderItemModel
+            {
+                Id = i.Id,
+                OrderId = i.OrderId,
+                ThumbnailUrl = i.ThumbnailUrl,
+                Title = i.Title,
+                Category = i.Category,
+                Description = i.Description,
+                PricePoints = i.PricePoints,
+                PriceUsd = i.PriceUsd,
+                VendorPriceUsd = i.VendorPriceUsd
+            }).ToList(),
+            Status = order.Status,
+            PlacedDateUtc = order.PlacedDateUtc,
+            ShippeDateUtc = order.ShippeDateUtc,
+            DeliveryStartDateUtc = order.DeliveryStartDateUtc,
+            DeliveryCompleteDateUtc = order.DeliveryCompleteDateUtc,
+            CanceledDateUtc = order.CanceledDateUtc,
+            IsRefunded = order.IsRefunded
+        };
+
+        return Ok(model);
     }
 
     [HttpPut("{orderId}/status")]

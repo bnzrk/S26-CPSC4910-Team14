@@ -153,6 +153,13 @@
   align-items: center;
   flex-shrink: 0;
   opacity: 0.8;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    max-width: 18px;
+    max-height: 18px;
+  }
 }
 
 .points {

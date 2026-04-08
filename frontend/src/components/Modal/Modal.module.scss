@@ -6,6 +6,7 @@
   border-radius: $grid-1x;
   color: var(--color-text);
   min-width: $small-width;
+  max-width: $medium-width;
   display: flex;
   flex-direction: column;
   max-height: calc(100dvh - 2rem);
