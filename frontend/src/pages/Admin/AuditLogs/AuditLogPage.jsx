@@ -14,16 +14,18 @@ const LOG_TYPES = [
   { key: 'catalog-changes', label: 'Catalog Changes' },
 ];
 
-async function fetchLogs(type, filters) {
+async function fetchLogs(type, filters, page = 1, pageSize = 50) {
   const params = new URLSearchParams();
   if (filters.email) params.set('email', filters.email);
   if (filters.from) params.set('from', filters.from);
   if (filters.to) params.set('to', filters.to);
   if (filters.sponsorOrgId) params.set('sponsorOrgId', filters.sponsorOrgId);
+  params.set('page', page);
+  params.set('pageSize', pageSize);
 
   const response = await apiFetch(`/audit-logs/${type}?${params.toString()}`);
   if (!response.ok) throw new Error('Failed to fetch audit logs');
-  return response.json();
+  return response.json(); // expects { logs: [], totalCount, page, pageSize }
 }
 
 function exportToCSV(logs, type) {
@@ -46,27 +48,36 @@ export default function AuditLogPage() {
   const [activeType, setActiveType] = useState('logins');
   const [filters, setFilters] = useState({ email: '', from: '', to: '', sponsorOrgId: '' });
   const [appliedFilters, setAppliedFilters] = useState({ email: '', from: '', to: '', sponsorOrgId: '' });
+  const [page, setPage] = useState(1);
+  const pageSize = 50;
 
-  const { data: logs, isLoading, isError } = useQuery({
-    queryKey: ['auditLogs', activeType, appliedFilters],
-    queryFn: () => fetchLogs(activeType, appliedFilters),
+  const showSponsorFilter = activeType === 'point-transactions' || activeType === 'driver-sponsor-changes';
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['auditLogs', activeType, appliedFilters, page],
+    queryFn: () => fetchLogs(activeType, appliedFilters, page, pageSize),
+    keepPreviousData: true,
   });
+
+  const logs = data?.logs ?? [];
+  const totalCount = data?.totalCount ?? 0;
+  const totalPages = Math.ceil(totalCount / pageSize);
 
   function handleApplyFilters() {
     setAppliedFilters({ ...filters });
+    setPage(1);
   }
 
   function handleClearFilters() {
     setFilters({ email: '', from: '', to: '', sponsorOrgId: '' });
     setAppliedFilters({ email: '', from: '', to: '', sponsorOrgId: '' });
+    setPage(1);
   }
 
   function formatDate(dateStr) {
     if (!dateStr) return '-';
     return new Date(dateStr).toLocaleString();
   }
-
-  const showSponsorFilter = activeType === 'point-transactions' || activeType === 'driver-sponsor-changes';
 
   return (
     <main>
@@ -78,7 +89,7 @@ export default function AuditLogPage() {
             <button
               key={t.key}
               className={`${styles.tab} ${activeType === t.key ? styles.tabActive : ''}`}
-              onClick={() => setActiveType(t.key)}
+              onClick={() => { setActiveType(t.key); setPage(1); }}
             >
               {t.label}
             </button>
@@ -143,13 +154,10 @@ export default function AuditLogPage() {
         </Card>
 
         {/* Results */}
-        <Card title={`${LOG_TYPES.find(t => t.key === activeType)?.label} (${logs?.length ?? 0})`}>
+        <Card title={`${LOG_TYPES.find(t => t.key === activeType)?.label} (${totalCount})`}>
           {isLoading && <p className={styles.muted}>Loading...</p>}
           {isError && <p className={styles.error}>Failed to load logs.</p>}
-
-          {logs && logs.length === 0 && (
-            <p className={styles.muted}>No logs found.</p>
-          )}
+          {logs && logs.length === 0 && !isLoading && <p className={styles.muted}>No logs found.</p>}
 
           {logs && logs.length > 0 && (
             <div className={styles.tableWrapper}>
@@ -179,8 +187,17 @@ export default function AuditLogPage() {
               </table>
             </div>
           )}
-        </Card>
 
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className={styles.pagination}>
+              <button onClick={() => setPage(p => Math.max(p - 1, 1))} disabled={page <= 1}>Previous</button>
+              <span>Page {page} of {totalPages}</span>
+              <button onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page >= totalPages}>Next</button>
+            </div>
+          )}
+
+        </Card>
       </CardHost>
     </main>
   );
