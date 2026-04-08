@@ -7,10 +7,7 @@ using WebApi.Data.Entities;
 using WebApi.Features.Orders.Models;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Features.Catalogs;
-using System.Transactions;
-using System.Formats.Asn1;
-using System.Data.Odbc;
-using Org.BouncyCastle.Ocsp;
+using WebApi.Helpers.Pagination;
 
 namespace WebApi.Features.Orders;
 
@@ -21,6 +18,8 @@ public class OrdersController : ControllerBase
     private readonly AppDbContext _db;
     private readonly UserManager<User> _userManager;
     private readonly ICatalogsService _catalogService;
+
+    private readonly HashSet<string> _orderQueryTypes = new HashSet<string> { "all", "completed", "cancelled" };
 
     public OrdersController(AppDbContext db, UserManager<User> userManager, ICatalogsService catalogService)
     {
@@ -175,8 +174,17 @@ public class OrdersController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult> GetOrders([FromQuery] int? driverId, [FromQuery] int? orgId)
+    public async Task<ActionResult<PagedResult<OrderModel>>> GetOrders(
+        [FromQuery] int? driverId,
+        [FromQuery] int? orgId,
+        [FromQuery] string? type,
+        [FromQuery] int? pageSize,
+        [FromQuery] int? page
+        )
     {
+        if (type is not null && !_orderQueryTypes.Contains(type))
+            return BadRequest("Invalid order filter.");
+
         var userId = _userManager.GetUserId(User);
         if (userId is null)
             return Unauthorized();
@@ -224,12 +232,25 @@ public class OrdersController : ControllerBase
         var orderQuery = _db.Orders
             .Where(o => o.DriverId == driverId);
 
+        // Filter by org if specified 
         if (orgId.HasValue)
-        {
             orderQuery = orderQuery.Where(o => o.SponsorOrgId == orgId.Value);
+        // Add any other query filters
+        if (type is not null && type != "all")
+        {
+            switch (type)
+            {
+                case "completed":
+                    orderQuery = orderQuery.Where(o => o.Status == OrderStatus.Delivered);
+                    break;
+                case "cancelled":
+                    orderQuery = orderQuery.Where(o => o.Status == OrderStatus.Canceled);
+                    break;
+            }
         }
+        orderQuery = orderQuery.OrderByDescending(o => o.PlacedDateUtc);
 
-        var orders = await orderQuery.Select(o => new OrderModel
+        var pageQuery = orderQuery.Select(o => new OrderModel
         {
             Id = o.Id,
             SponsorOrgId = o.SponsorOrgId,
@@ -253,10 +274,13 @@ public class OrdersController : ControllerBase
                 PriceUsd = i.PriceUsd,
                 VendorPriceUsd = i.VendorPriceUsd
             }).ToList()
-        })
-            .ToListAsync();
+        });
 
-        return Ok(orders);
+        var queryPage = page is not null ? page.Value : 1;
+        var queryPageSize = pageSize is not null ? pageSize.Value : 20;
+        var results = await PagedResult.ToPagedResultAsync(pageQuery, queryPage, queryPageSize);
+
+        return Ok(results);
     }
 
     [HttpPut("{orderId}/status")]

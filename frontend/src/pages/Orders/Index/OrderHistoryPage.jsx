@@ -1,7 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useOrgContext } from "@/contexts/OrgContext/OrgContext";
 import { useOrders } from "@/api/order";
+import PageControls from "@/components/PageControls/PageControls";
 import CardHost from "@/components/CardHost/CardHost";
 import Card from "@/components/Card/Card";
 import OrderHistoryItem from "./components/OrderHistoryItem";
@@ -14,23 +15,31 @@ const TABS = {
     Cancelled: 2
 }
 
+const HISTORY_SIZE = 10;
+
 export default function OrderHistoryPage()
 {
     const { selectedOrgId } = useOrgContext();
 
+    const [page, setPage] = useState(1);
+
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = searchParams.get('tab') || 0;
 
-    const { data: orders, isLoading: isOrdersLoading, isError: isOrdersError } = useOrders({ orgId: selectedOrgId });
-    const cancelledOrders = useMemo(
-        () => orders?.filter(order => order.status == 4) ?? [],
-        [orders]
-    );
-    const completedOrders = useMemo(
-    () => orders?.filter(order => order.status == 3) ?? [],
-    [orders]);
+    const queryType = useMemo(
+        () => activeTab == 0 ? "all" :
+            activeTab == 1 ? "completed" :
+                activeTab == 2 ? "cancelled" :
+                    undefined,
+        [activeTab]);
 
-    const displayedOrders = activeTab == TABS.All ? orders : activeTab == TABS.Completed ? completedOrders : activeTab == TABS.Cancelled ? cancelledOrders : [];
+    const { data: ordersResult, isLoading: isOrdersLoading, isError: isOrdersError } = useOrders({ orgId: selectedOrgId, page: 1, pageSize: HISTORY_SIZE, type: queryType });
+    const totalCount = ordersResult?.totalCount ?? 1;
+    const totalPages = useMemo(() =>
+    {
+        if (!totalCount) return 1;
+        return Math.max(1, Math.ceil(totalCount / HISTORY_SIZE));
+    }, [totalCount]);
 
     const handleTabChange = (tab) =>
     {
@@ -51,12 +60,24 @@ export default function OrderHistoryPage()
                         Canceled
                     </button>
                 </div>
-                <div className={styles.orders}>
-                    {!isOrdersLoading && !isOrdersError && (!displayedOrders || displayedOrders?.length == 0) &&
+                <div>
+                    {!isOrdersLoading && !isOrdersError && (!ordersResult || ordersResult.items?.length == 0) &&
                         <p className={styles.none}>No orders.</p>
                     }
-                    {displayedOrders && displayedOrders?.length > 0 &&
-                        displayedOrders.map((order) => <OrderHistoryItem key={order.id} order={order} />)
+                    {ordersResult && ordersResult.items?.length > 0 &&
+                        <PageControls
+                            showBookends={true}
+                            page={page}
+                            totalPages={totalPages}
+                            onPrev={() => setPage(page > 1 ? page - 1 : 1)}
+                            onNext={() => setPage(page < totalPages ? page + 1 : totalPages)}
+                            onStart={() => setPage(1)}
+                            onEnd={() => setPage(totalPages)}
+                        >
+                            <div className={styles.orders}>
+                                {ordersResult.items.map((order) => <OrderHistoryItem key={order.id} order={order} />)}
+                            </div>
+                        </PageControls>
                     }
                 </div>
             </Card>
