@@ -21,11 +21,25 @@ public class AuditLogger : IAuditLogger
 
     public async Task CreateLoginAuditLog(string email, bool successful)
     {
+
+        // Get the current user from the HTTP context
+        var httpUser = _http.HttpContext?.User;
+        if (httpUser is null)
+            throw new Exception("Could not resolve user from HTTP context.");
+
+        // Assuming your JWT includes the OrgId claim for sponsors
+        var orgIdClaim = httpUser.FindFirst("OrgId")?.Value;
+        if (orgIdClaim is null)
+            throw new Exception("OrgId claim not found in JWT.");
+
+        int orgId = int.Parse(orgIdClaim);
+
         var log = new LoginAuditLog
         {
             TimestampUtc = DateTime.UtcNow,
             Email = email,
-            Successful = successful
+            Successful = successful,
+            OrgId = orgId
         };
 
         _auditDb.LoginAuditLogs.Add(log);

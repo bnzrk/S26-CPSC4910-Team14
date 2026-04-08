@@ -12,63 +12,67 @@ import StarIcon from "@/assets/icons/star.svg?react";
 import ToolsIcon from "@/assets/icons/wrench.svg?react";
 import styles from './NavBar.module.scss';
 
-export default function Navbar({ toggleSidebar })
-{
+export default function Navbar({ toggleSidebar }) {
   const navigate = useNavigate();
   const { data: currentUser, isLoading } = useCurrentUser();
   const { selectedOrgId } = useOrgContext();
   const { data: points, isLoading: isPointsLoading } = usePoints(selectedOrgId);
 
   const isLoggedIn = !!currentUser;
-  const isDriver = currentUser?.userType === 'Driver';
-  const isAdmin = currentUser?.userType === 'Admin';
+  const isDriver = currentUser?.userType?.toLowerCase() === 'driver';
+  const isAdmin = currentUser?.userType?.toLowerCase() === 'admin';
+  const isSponsor = currentUser?.userType?.toLowerCase() === 'sponsor';
 
   const userInitials = currentUser?.firstName && currentUser?.lastName
     ? `${currentUser.firstName[0]}${currentUser.lastName[0]}`
     : currentUser?.email?.slice(0, 2)?.toUpperCase() ?? 'SP';
 
   return (
-    <>
-      <nav className={styles.navbar}>
-        <div className={styles.left}>
-          {(!isLoggedIn || isAdmin) &&
-            <Link to="/" className={styles.home}>
-              DrivePoints
-            </Link>
-          }
-        </div>
+    <nav className={styles.navbar}>
+      <div className={styles.left}>
+        {(!isLoggedIn || isAdmin) &&
+          <Link to="/" className={styles.home}>DrivePoints</Link>
+        }
+      </div>
 
-        <div className={styles.right}>
-          {!isLoading && (
-            isLoggedIn ? (
+      <div className={styles.right}>
+        {!isLoading && isLoggedIn ? (
+          <>
+            {/* Driver section */}
+            {isDriver && selectedOrgId && (
               <>
-                {isDriver && selectedOrgId && (
-                  <>
-                    <OrgSelector />
-                    <span
-                      className={styles.points}
-                      onClick={() => navigate("/driver/points")}
-                    >
-                      {isPointsLoading ? '…' : (points?.balance ?? 0)}
-                      <StarIcon />
-                    </span>
-                  </>
-                )}
-                {isAdmin && (
-                  <Button className={styles.button} onClick={() => navigate("/admin")} text='Tools' icon={ToolsIcon} />
-                )}
-                {userInitials && <Avatar className={styles.profile} initials={userInitials} size="md" onClick={() => navigate("/profile")} />}
-                {userInitials && <Avatar className={styles.mobileMenu} initials={userInitials} size="md" onClick={toggleSidebar} />}
+                <OrgSelector />
+                <span
+                  className={styles.points}
+                  onClick={() => navigate("/driver/points")}
+                >
+                  {isPointsLoading ? '…' : (points?.balance ?? 0)}
+                  <StarIcon />
+                </span>
               </>
-            ) : (
-              <>
-                <Button className={styles.button} onClick={() => navigate("/login")} text='Sign In' color='pill' />
-                <Button className={styles.button} onClick={() => navigate("/register")} text='Get Started' color='pillWhite' />
-              </>
-            )
-          )}
-        </div>
-      </nav>
-    </>
+            )}
+
+            {/* Admin Tools */}
+            {isAdmin && (
+              <Button
+                className={styles.button}
+                onClick={() => navigate("/admin")}
+                text="Tools"
+                icon={ToolsIcon}
+              />
+            )}
+
+            {/* Avatar */}
+            {userInitials && <Avatar className={styles.profile} initials={userInitials} size="md" onClick={() => navigate("/profile")} />}
+            {userInitials && <Avatar className={styles.mobileMenu} initials={userInitials} size="md" onClick={toggleSidebar} />}
+          </>
+        ) : (
+          <>
+            <Button className={styles.button} onClick={() => navigate("/login")} text="Sign In" color="pill" />
+            <Button className={styles.button} onClick={() => navigate("/register")} text="Get Started" color="pillWhite" />
+          </>
+        )}
+      </div>
+    </nav>
   );
 }

@@ -9,22 +9,19 @@ import { apiFetch } from '@/api/apiFetch';
 import CloseIcon from '@/assets/icons/x.svg?react';
 import styles from './SponsorSidebar.module.scss';
 import clsx from 'clsx';
+import { queryClient } from '@/api/queryClient';
 
 const NAV_GROUPS = [
   {
     label: 'Overview',
-    items: [
-      { label: 'Dashboard', to: '/org' },
-    ],
+    items: [{ label: 'Dashboard', to: '/org' }],
   },
   {
     label: 'Fleet',
     items: [
       { label: 'Manage Drivers', to: '/org/drivers', badgeKey: 'pendingApps' },
       { label: 'Manage Users', to: '/org/users' },
-      { label: 'Bulk Actions', to: '/org/bulk'}
-      // { label: 'Deliveries', to: '/org/deliveries' },
-      // { label: 'Routes', to: '/org/routes' },
+      { label: 'Bulk Actions', to: '/org/bulk' },
     ],
   },
   {
@@ -38,53 +35,65 @@ const NAV_GROUPS = [
     label: 'Account',
     items: [
       { label: 'My Profile', to: '/profile' },
-      { label: 'Settings', to: '/org/settings' }
+      { label: 'Settings', to: '/org/settings' },
     ],
   },
 ];
 
-async function handleLogout()
-{
-  try
-  {
-    await apiFetch("/auth/logout", { method: "POST" });
-  } catch (err)
-  {
-    console.error("Logout failed:", err);
+async function handleLogout(navigate) {
+  try {
+    await apiFetch('/auth/logout', { method: 'POST' });
+  } catch (err) {
+    console.error('Logout failed:', err);
   }
-  queryClient.setQueryData(["currentUser"], null);
-  navigate("/login");
+  queryClient.setQueryData(['currentUser'], null);
+  navigate('/login');
 }
 
-export default function SponsorSidebar({ className, onClose })
-{
+export default function SponsorSidebar({ className, onClose }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { data: org } = useSponsorOrg();
   const { data: user } = useCurrentUser();
+
+  const isSponsor = user?.userType?.toLowerCase() === 'sponsor';
+
   const orgInitials = org?.sponsorName
     ? org.sponsorName.slice(0, 2).toUpperCase()
     : 'SP';
   const orgName = org?.sponsorName ?? 'Your Org';
-  const userName = user?.firstName && user?.lastName
-    ? `${user.firstName} ${user.lastName}`
-    : user?.email ?? '';
+  const userName =
+    user?.firstName && user?.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user?.email ?? '';
+
   const { data: applications = [] } = useQuery({
     queryKey: ['sponsor-applications'],
     queryFn: () => apiFetch('/applications').then(r => r.json()),
     staleTime: 30_000,
   });
-  const pendingApps = applications.filter(a =>
-  {
+
+  const pendingApps = applications.filter(a => {
     const s = a.status;
     return s === 0 || (typeof s === 'string' && s.toLowerCase() === 'pending');
   }).length;
+
+  // add Admin section for sponsors
+  const navGroups = [...NAV_GROUPS];
+  if (isSponsor) {
+    navGroups.push({
+      label: 'Admin',
+      items: [{ label: 'Audit Logs', to: '/org/audit-logs' }],
+    });
+  }
 
   return (
     <aside className={clsx(className, styles.sidebar)}>
       <div className={styles.logoArea}>
         <div className={styles.left}>
-          <span className={styles.logo} onClick={() => navigate("/")}>DrivePoints</span>
+          <span className={styles.logo} onClick={() => navigate('/')}>
+            DrivePoints
+          </span>
           <span className={styles.portalBadge}>Sponsor Portal</span>
         </div>
         <div className={styles.close} onClick={onClose}>
@@ -102,13 +111,14 @@ export default function SponsorSidebar({ className, onClose })
       </div>
 
       <nav className={styles.nav}>
-        {NAV_GROUPS.map(group => (
+        {navGroups.map(group => (
           <div key={group.label} className={styles.group}>
             <span className={styles.groupLabel}>{group.label}</span>
-            {group.items.map(item =>
-            {
-              const count = item.badgeKey === 'pendingApps' ? pendingApps : item.badge ?? 0;
-              const isActive = pathname === item.to ||
+            {group.items.map(item => {
+              const count =
+                item.badgeKey === 'pendingApps' ? pendingApps : item.badge ?? 0;
+              const isActive =
+                pathname === item.to ||
                 (item.to !== '/org' && pathname.startsWith(item.to));
               return (
                 <Link
