@@ -32,8 +32,8 @@ export default function OrderHistoryItem({ order, onClick, className, other })
     const groupedItems = Object.values(
         order?.items.reduce((acc, item) =>
         {
-            if (!acc[item.id]) acc[item.id] = { ...item, count: 0 };
-            acc[item.id].count++;
+            if (!acc[item.title]) acc[item.title] = { ...item, count: 0 };
+            acc[item.title].count++;
             return acc;
         }, {})
     );
@@ -58,7 +58,9 @@ export default function OrderHistoryItem({ order, onClick, className, other })
                                         {item.title}
                                     </span>
                                     <span>
-                                        &nbsp;x{item.count}
+                                        <b>
+                                            &nbsp;x{item.count}
+                                        </b>
                                     </span>
                                     {i < groupedItems.length - 1 && (
                                         <span>, </span>

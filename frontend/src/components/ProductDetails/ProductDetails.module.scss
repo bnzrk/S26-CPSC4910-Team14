@@ -20,6 +20,8 @@
     .description {
         max-width: 160px;
         font-size: 0.8rem;
+        max-height: 160px;
+        text-overflow: ellipsis;
     }
 
     .prices {

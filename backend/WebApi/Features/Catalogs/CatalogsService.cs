@@ -21,8 +21,12 @@ public class CatalogsService : ICatalogsService
         _scopeFactory = scopeFactory;
     }
 
-    public async Task<List<CatalogItemModel>> GetOrgCatalogAsync(int orgId)
+    public async Task<CatalogModel> GetOrgCatalogAsync(int orgId)
     {
+        var catalogId = await _db.Catalogs.Where(c => c.SponsorOrgId == orgId).Select(c => (int?)c.Id).SingleOrDefaultAsync();
+        if (!catalogId.HasValue)
+            throw new Exception("Catalog not found.");
+
         var items = await _db.Catalogs
             .AsNoTracking()
             .Where(c => c.SponsorOrgId == orgId)
@@ -58,7 +62,13 @@ public class CatalogsService : ICatalogsService
         if (staleIds.Any())
             _ = Task.Run(() => RefreshItemCachesAsync(staleIds));
 
-        return models;
+        var catalog = new CatalogModel
+        {
+            Id = catalogId.Value,
+            Items = models
+        };
+
+        return catalog;
     }
 
     public async Task RefreshItemCachesAsync(List<int> itemIds)

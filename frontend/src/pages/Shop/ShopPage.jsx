@@ -1,7 +1,9 @@
+import { useToast } from "@/components/Toast/ToastContext";
 import { useMemo, useState } from "react";
 import { useOrgContext } from "@/contexts/OrgContext/OrgContext";
 import { usePoints } from "@/api/points";
 import { useCatalog } from "@/api/catalog";
+import { useCreateOrder } from "@/api/order";
 import CardHost from "@/components/CardHost/CardHost";
 import Card from "@/components/Card/Card";
 import ShopItem from "@/components/ShopItem/ShopItem";
@@ -15,6 +17,7 @@ import StarIcon from "@/assets/icons/star.svg?react";
 import CartIcon from "@/assets/icons/shopping-cart.svg?react";
 import HandbagIcon from "@/assets/icons/handbag.svg?react";
 import styles from "./ShopPage.module.scss";
+import { Exception } from "sass";
 
 const MODALS = {
     purchase: "purchase"
@@ -22,14 +25,18 @@ const MODALS = {
 
 export default function ShopPage()
 {
+    const { push } = useToast();
+
     const { selectedOrgId, driverOrgs } = useOrgContext();
     var org = driverOrgs && selectedOrgId ? driverOrgs[selectedOrgId] : null;
-    var { data: points } = usePoints(selectedOrgId);
 
+    var { data: points } = usePoints(selectedOrgId);
     const { data: catalog, isLoading: isCatalogLoading, isError: isCatalogError } = useCatalog(selectedOrgId);
 
+    const createOrder = useCreateOrder();
+
     const availableItems = useMemo(
-        () => catalog ? catalog.filter((item) => item.isAvailable) : [],
+        () => catalog ? catalog.items.filter((item) => item.isAvailable) : [],
         [catalog]);
 
     const [selectedCatalogItemId, setSelectedCatalogItemId] = useState(null);
@@ -47,8 +54,6 @@ export default function ShopPage()
         () => selectedItemPoints && points ? points.balance - selectedItemPoints : null
         , [points, selectedItemPoints]);
 
-    console.log(remainingBalance);
-
     const handleClickItem = (itemId) =>
     {
         console.log(`Setting item id to ${itemId}`);
@@ -58,10 +63,19 @@ export default function ShopPage()
 
     async function handlePurchase()
     {
-        await new Promise((resolve, reject) =>
+        try
         {
-            setTimeout(() => reject(), 1000)
-        });
+            if (!selectedItem)
+                throw new Exception("No selected item.");
+
+            await createOrder.mutateAsync({ catalogId: catalog.id , catalogItemIds: [selectedItem.id]});
+            setCurrentModal(null);
+            push({ type: "success", message: "Purchase successful!"});
+        }
+        catch(ex)
+        {
+            push({ type: "error", message: "Order could not be placed." });
+        }
     }
 
     return (

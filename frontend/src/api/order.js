@@ -1,4 +1,5 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useQuery, keepPreviousData, useMutation } from "@tanstack/react-query";
+import { queryClient } from "./queryClient";
 import { useCurrentUser } from "./currentUser";
 import { USER_TYPES } from "@/constants/userTypes";
 import { apiFetch } from "./apiFetch";
@@ -15,21 +16,18 @@ export function useOrder(orderId)
     });
 }
 
-export function useCreateOrder({ driverId, catalogId, catalogItemIds })
+export function useCreateOrder()
 {
     const { data: user } = useCurrentUser();
-    const isDriver = user?.userType === USER_TYPES.DRIVER;
-
-    const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({ externalItemId, catalogPrice, catalogItemIds }) =>
+        mutationFn: async ({ driverId, catalogId, catalogItemIds }) =>
         {
             const response = await apiFetch('/orders', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ externalItemId, catalogPrice, catalogItemIds }),
+                body: JSON.stringify({ driverId, catalogId, catalogItemIds }),
             });
             if (!response.ok) throw new Error('Failed to create order');
         },
