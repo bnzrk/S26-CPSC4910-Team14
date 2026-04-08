@@ -201,4 +201,49 @@ public class AuditLogsController : ControllerBase
             Type = "CatalogChange"
         });
     }
+
+    [HttpGet("driver-points-history")]
+    public async Task<IActionResult> GetDriverPointsHistory([FromQuery] int? driverId)
+    {
+        if (!IsAdminOrSponsor())
+            return Forbid();
+
+        var sponsorOrgId = await GetSponsorOrgId();
+
+        var query = _auditDb.PointTransactionAuditLogs.AsNoTracking();
+
+        if (sponsorOrgId.HasValue)
+            query = query.Where(l => l.SponsorOrgId == sponsorOrgId.Value);
+
+        if (driverId.HasValue)
+            query = query.Where(l => l.DriverId == driverId.Value);
+
+        var logs = await query
+            .OrderBy(l => l.DriverId)
+            .ThenBy(l => l.TimestampUtc)
+            .ToListAsync();
+
+        var driverTotals = new Dictionary<int, int>();
+
+        var report = logs.Select(l =>
+        {
+            if (!driverTotals.ContainsKey(l.DriverId))
+                driverTotals[l.DriverId] = 0;
+
+            driverTotals[l.DriverId] += l.BalanceChange;
+
+            return new
+            {
+                l.DriverId,
+                l.DriverEmail,
+                TotalPoints = driverTotals[l.DriverId],
+                PointsChanged = l.BalanceChange,
+                Date = l.TimestampUtc,
+                SponsorName = l.ActorUserEmail,
+                l.Reason
+            };
+        }).ToList();
+
+        return Ok(report);
+    }
 }

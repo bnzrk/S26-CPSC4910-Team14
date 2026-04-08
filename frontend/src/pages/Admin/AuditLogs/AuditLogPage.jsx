@@ -4,6 +4,7 @@ import { apiFetch } from '@/api/apiFetch';
 import CardHost from '@/components/CardHost/CardHost';
 import Card from '@/components/Card/Card';
 import styles from './AuditLogPage.module.scss';
+import { fetchDriverPointsHistory } from '@/api/auditLogs';
 
 const LOG_TYPES = [
   { key: 'logins', label: 'Logins' },
@@ -12,6 +13,7 @@ const LOG_TYPES = [
   { key: 'password-changes', label: 'Password Changes' },
   { key: 'application-status-changes', label: 'Application Changes' },
   { key: 'catalog-changes', label: 'Catalog Changes' },
+  { key: 'driver-points-history', label: 'Driver Points History' },
 ];
 
 async function fetchLogs(type, filters, page = 1, pageSize = 50) {
@@ -20,8 +22,20 @@ async function fetchLogs(type, filters, page = 1, pageSize = 50) {
   if (filters.from) params.set('from', filters.from);
   if (filters.to) params.set('to', filters.to);
   if (filters.sponsorOrgId) params.set('sponsorOrgId', filters.sponsorOrgId);
+  if (filters.driverId) params.set('driverId', filters.driverId);
   params.set('page', page);
   params.set('pageSize', pageSize);
+
+  // Allows filtering for driverID field
+  if (type === 'driver-points-history') {
+    return fetchDriverPointsHistory({
+      driverId: filters.driverId,
+      page,
+      pageSize,
+      from: filters.from,
+      to: filters.to,
+    });
+  }
 
   const response = await apiFetch(`/audit-logs/${type}?${params.toString()}`);
   if (!response.ok) throw new Error('Failed to fetch audit logs');
@@ -32,7 +46,9 @@ function exportToCSV(logs, type) {
   if (!logs || logs.length === 0) return;
 
   const headers = Object.keys(logs[0]);
-  const rows = logs.map(log => headers.map(h => JSON.stringify(log[h] ?? '')).join(','));
+  const rows = logs.map(log =>
+    headers.map(h => JSON.stringify(log[h] ?? '')).join(',')
+  );
   const csv = [headers.join(','), ...rows].join('\n');
 
   const blob = new Blob([csv], { type: 'text/csv' });
@@ -46,12 +62,26 @@ function exportToCSV(logs, type) {
 
 export default function AuditLogPage() {
   const [activeType, setActiveType] = useState('logins');
-  const [filters, setFilters] = useState({ email: '', from: '', to: '', sponsorOrgId: '' });
-  const [appliedFilters, setAppliedFilters] = useState({ email: '', from: '', to: '', sponsorOrgId: '' });
+  const [filters, setFilters] = useState({
+    email: '',
+    from: '',
+    to: '',
+    sponsorOrgId: '',
+    driverId: '',
+  });
+  const [appliedFilters, setAppliedFilters] = useState({
+    email: '',
+    from: '',
+    to: '',
+    sponsorOrgId: '',
+    driverId: '',
+  });
   const [page, setPage] = useState(1);
   const pageSize = 50;
 
-  const showSponsorFilter = activeType === 'point-transactions' || activeType === 'driver-sponsor-changes';
+  const showSponsorFilter =
+    activeType === 'point-transactions' || activeType === 'driver-sponsor-changes';
+  const showDriverFilter = activeType === 'driver-points-history';
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['auditLogs', activeType, appliedFilters, page],
@@ -69,8 +99,8 @@ export default function AuditLogPage() {
   }
 
   function handleClearFilters() {
-    setFilters({ email: '', from: '', to: '', sponsorOrgId: '' });
-    setAppliedFilters({ email: '', from: '', to: '', sponsorOrgId: '' });
+    setFilters({ email: '', from: '', to: '', sponsorOrgId: '', driverId: '' });
+    setAppliedFilters({ email: '', from: '', to: '', sponsorOrgId: '', driverId: '' });
     setPage(1);
   }
 
@@ -139,6 +169,18 @@ export default function AuditLogPage() {
                 />
               </div>
             )}
+            {showDriverFilter && (
+              <div className={styles.filterField}>
+                <label className={styles.filterLabel}>Driver ID</label>
+                <input
+                  type="number"
+                  className={styles.filterInput}
+                  placeholder="Driver ID"
+                  value={filters.driverId || ''}
+                  onChange={e => setFilters(f => ({ ...f, driverId: e.target.value }))}
+                />
+              </div>
+            )}
             <div className={styles.filterActions}>
               <button className={styles.btnPrimary} onClick={handleApplyFilters}>Apply</button>
               <button className={styles.btnSecondary} onClick={handleClearFilters}>Clear</button>
@@ -196,7 +238,6 @@ export default function AuditLogPage() {
               <button onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page >= totalPages}>Next</button>
             </div>
           )}
-
         </Card>
       </CardHost>
     </main>
