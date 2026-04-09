@@ -259,7 +259,7 @@ public class OrdersController : ControllerBase
             DriverId = o.DriverId,
             Status = o.Status,
             PlacedDateUtc = o.PlacedDateUtc,
-            ShippeDateUtc = o.ShippeDateUtc,
+            ShippedDateUtc = o.ShippedDateUtc,
             DeliveryStartDateUtc = o.DeliveryStartDateUtc,
             DeliveryCompleteDateUtc = o.DeliveryCompleteDateUtc,
             CanceledDateUtc = o.CanceledDateUtc,
@@ -347,7 +347,7 @@ public class OrdersController : ControllerBase
             }).ToList(),
             Status = order.Status,
             PlacedDateUtc = order.PlacedDateUtc,
-            ShippeDateUtc = order.ShippeDateUtc,
+            ShippedDateUtc = order.ShippedDateUtc,
             DeliveryStartDateUtc = order.DeliveryStartDateUtc,
             DeliveryCompleteDateUtc = order.DeliveryCompleteDateUtc,
             CanceledDateUtc = order.CanceledDateUtc,
@@ -482,12 +482,12 @@ public class OrdersController : ControllerBase
         switch (status)
         {
             case OrderStatus.Placed:
-                order.ShippeDateUtc = null;
+                order.ShippedDateUtc = null;
                 order.DeliveryStartDateUtc = null;
                 order.DeliveryCompleteDateUtc = null;
                 break;
             case OrderStatus.Shipped:
-                order.ShippeDateUtc = DateTime.UtcNow;
+                order.ShippedDateUtc = DateTime.UtcNow;
                 order.DeliveryStartDateUtc = null;
                 order.DeliveryCompleteDateUtc = null;
                 break;

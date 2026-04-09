@@ -144,7 +144,7 @@ export default function DriverSidebar({ className, onClose }) {
         <Avatar initials={initials} size="md" />
         <div className={styles.profileInfo}>
           <span className={styles.profileName}>{fullName}</span>
-          <span className={styles.profileOrg}>{org?.name ?? 'No sponsor'}</span>
+          <span className={styles.profileOrg}>{org?.sponsorName ?? 'No sponsor'}</span>
           <span className={styles.rankBadge}>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>

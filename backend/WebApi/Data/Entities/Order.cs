@@ -12,7 +12,7 @@ public class Order
     public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
     public OrderStatus Status { get; set; } = OrderStatus.Placed;
     public DateTime PlacedDateUtc { get; set; }
-    public DateTime? ShippeDateUtc { get; set; }
+    public DateTime? ShippedDateUtc { get; set; }
     public DateTime? DeliveryStartDateUtc { get; set; }
     public DateTime? DeliveryCompleteDateUtc { get; set; }
     public DateTime? CanceledDateUtc { get; set; }

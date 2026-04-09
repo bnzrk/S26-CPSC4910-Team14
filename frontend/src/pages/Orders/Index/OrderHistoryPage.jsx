@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useOrgContext } from "@/contexts/OrgContext/OrgContext";
 import { useOrders } from "@/api/order";
 import PageControls from "@/components/PageControls/PageControls";
@@ -19,6 +19,8 @@ const HISTORY_SIZE = 10;
 
 export default function OrderHistoryPage()
 {
+    const navigate = useNavigate();
+
     const { selectedOrgId } = useOrgContext();
 
     const [page, setPage] = useState(1);
@@ -75,7 +77,7 @@ export default function OrderHistoryPage()
                             onEnd={() => setPage(totalPages)}
                         >
                             <div className={styles.orders}>
-                                {ordersResult.items.map((order) => <OrderHistoryItem key={order.id} order={order} />)}
+                                {ordersResult.items.map((order) => <OrderHistoryItem key={order.id} order={order} onClick={() => navigate(`${order.id}`)}/>)}
                             </div>
                         </PageControls>
                     }

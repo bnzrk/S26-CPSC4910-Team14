@@ -1,0 +1,101 @@
+@use '@/styles/globals' as *;
+
+.track {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+}
+
+.step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    align-items: center;
+
+    .label {
+        margin-top: $grid-1x;
+        font-size: 0.8rem;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+
+        .statusName {
+            color: var(--color-text);
+
+            &.active {
+                color: var(--color-accent);
+            }
+        }
+
+        .statusDate {
+            color: var(--color-text-secondary);
+        }
+
+        &.hidden {
+            visibility: hidden;
+        }
+    }
+
+    .badge {
+        z-index: 1;
+        position: relative;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        background: var(--color-bg);
+        border: 1px solid var(--color-border);
+        color: var(--color-text-tertiary);
+
+        &.active {
+            background: color-mix(in srgb, var(--color-accent) 90%, var(--color-bg));
+            color: var(--color-surface);
+            border: none;
+        }
+
+        &.complete {
+            background: color-mix(in srgb, var(--color-accent) 5%, var(--color-bg));
+            border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+            color: var(--color-accent);
+        }
+
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+    }
+
+    &:last-child {
+        .connector {
+            display: none;
+        }
+    }
+
+    .connector {
+        position: absolute;
+        height: 1px;
+        top: 22px;
+        left: calc(50% + 20px);
+        right: calc(-50% + 20px);
+        overflow: hidden;
+        z-index: 0;
+
+        .fill {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: var(--color-border);
+
+            &.complete {
+                background: color-mix(in srgb, var(--color-accent) 90%, var(--color-bg));
+            }
+        }
+    }
+}
