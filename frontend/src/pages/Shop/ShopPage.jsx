@@ -138,7 +138,6 @@ export default function ShopPage()
                                     imageUrl={item.images[0]}
                                     title={item.title}
                                     category={item.categoryTitle}
-                                    price={item.price}
                                     points={org ? item.price / org.pointRatio : undefined}
                                     onClick={() => handleClickItem(item.id)}
                                 />
