@@ -15,7 +15,15 @@ public class AlertService : IAlertsService
 
     public async Task CreateOrderAlert(Order order)
     {
-        throw new NotImplementedException();
+        var alert = new OrderAlert
+        {
+            DriverId = order.DriverId,
+            OrderId = order.Id,
+            TimestampUtc = DateTime.UtcNow
+        };
+
+        _db.OrderAlerts.Add(alert);
+        await _db.SaveChangesAsync();
     }
 
     public async Task CreatePointTransactionAlert(PointTransaction transaction)

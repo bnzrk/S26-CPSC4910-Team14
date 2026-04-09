@@ -8,6 +8,7 @@ using WebApi.Features.Orders.Models;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Features.Catalogs;
 using WebApi.Helpers.Pagination;
+using WebApi.Features.Alerts;
 
 namespace WebApi.Features.Orders;
 
@@ -18,14 +19,16 @@ public class OrdersController : ControllerBase
     private readonly AppDbContext _db;
     private readonly UserManager<User> _userManager;
     private readonly ICatalogsService _catalogService;
+    private readonly IAlertsService _alertsService;
 
     private readonly HashSet<string> _orderQueryTypes = new HashSet<string> { "all", "completed", "cancelled" };
 
-    public OrdersController(AppDbContext db, UserManager<User> userManager, ICatalogsService catalogService)
+    public OrdersController(AppDbContext db, UserManager<User> userManager, ICatalogsService catalogService, IAlertsService alertsService)
     {
         _db = db;
         _userManager = userManager;
         _catalogService = catalogService;
+        _alertsService = alertsService;
     }
 
     [HttpPost]
@@ -161,6 +164,9 @@ public class OrdersController : ControllerBase
             await _db.SaveChangesAsync();
 
             await dbTransaction.CommitAsync();
+
+            await _alertsService.CreateOrderAlert(order);
+
             return Ok(new CreateOrderResultModel
             {
                 OrderId = order.Id,

@@ -129,7 +129,7 @@ export default function ShopPage()
             <CardHost>
                 <Card title='Catalog'>
                     {(!availableItems || availableItems.length < 1) &&
-                        <p className={styles.noItems}>No items currently available</p>
+                        <p className={styles.noItems}>No items currently available.</p>
                     }
                     <div className={styles.grid}>
                         {availableItems && availableItems.length > 0 &&
