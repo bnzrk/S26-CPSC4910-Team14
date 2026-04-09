@@ -72,7 +72,6 @@ export default function SponsorDriverPage()
             navigate("/org/drivers");
         } catch (err)
         {
-            console.log(err);
             push({ type: 'error', message: 'Failed to remove driver.' });
             return Promise.reject();
         }

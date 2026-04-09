@@ -14,6 +14,10 @@ import SponsorOrgLayout from './pages/SponsorOrg/SponsorOrgLayout';
 import SponsorDashboardPage from '@/pages/SponsorOrg/SponsorDashboardPage';
 import SponsorUsersPage from './pages/SponsorOrg/Users/SponsorUsersPage';
 import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPage';
+import OrderHistoryPage from './pages/Orders/Index/OrderHistoryPage';
+import OrdersLayout from './pages/Orders/OrdersLayout';
+import OrderPage from './pages/Orders/Order/OrderPage';
+import AlertsPage from './pages/Alerts/AlertsPage';
 import UsersPage from './pages/Admin/Users/UsersPage';
 import ShopPage from './pages/Shop/ShopPage';
 import RegisterPage from './pages/Register/RegisterPage';
@@ -71,6 +75,14 @@ function AppContent({ user, isUserLoading, orgs })
               <ShopPage />
             </ProtectedRoute>
           } />
+          <Route path='/orders' element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+              <OrdersLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<OrderHistoryPage />} />
+            <Route path=":orderId" element={<OrderPage />} />
+          </Route>
           <Route path='/organizations' element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
               <DriverLayout>
@@ -85,6 +97,7 @@ function AppContent({ user, isUserLoading, orgs })
           }>
             <Route index element={<DriverDashboardPage />} />
             <Route path="points" element={<PointsPage />} />
+            <Route path="alerts" element={<AlertsPage />} />
           </Route>
           <Route path='/org' element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.SPONSOR]}>
@@ -140,9 +153,6 @@ export default function App()
     : isSponsor && sponsorOrg
       ? [sponsorOrg]
       : [];
-
-  if (!isLoading)
-    console.log(`Current user: ${JSON.stringify(user)}`);
 
   return <AppContent user={user} isUserLoading={isLoading} orgs={orgs} />;
 }

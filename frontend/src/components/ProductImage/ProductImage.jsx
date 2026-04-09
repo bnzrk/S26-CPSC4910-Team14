@@ -6,10 +6,13 @@ import clsx from "clsx";
 export default function ProductImage({ className, src, alt })
 {
     const placeholderSource = 'placehold.co';
-    const isPlaceholderImage = src.includes(placeholderSource);
+    const isPlaceholderImage = src ? src.includes(placeholderSource) : true;
 
     useEffect(() =>
     {
+        if (!src)
+            return;
+
         const img = new Image();
         img.src = src;
     }, [src]);
@@ -33,7 +36,7 @@ export default function ProductImage({ className, src, alt })
         !showPlaceholder ?
             <img
                 className={clsx(className, styles.image)}
-                src={src}
+                src={src ?? ""}
                 alt={alt}
             /> :
             <div className={clsx(className, styles.placeholder)}>

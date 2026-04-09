@@ -3,7 +3,7 @@ import clsx from 'clsx';
 
 export default function Button({ children, text = '', color, icon: Icon, size, disabled = false, onClick, className, type = 'button', ...other})
 {
-  var colorClass = "";
+  var colorClass = "";  
   switch (color) {
     case "primary":
       colorClass = styles.primary;

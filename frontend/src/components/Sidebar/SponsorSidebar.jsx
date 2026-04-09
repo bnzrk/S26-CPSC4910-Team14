@@ -84,7 +84,7 @@ export default function SponsorSidebar({ className, onClose })
     <aside className={clsx(className, styles.sidebar)}>
       <div className={styles.logoArea}>
         <div className={styles.left}>
-          <span className={styles.logo} onClick={() => navigate("/")}>DrivePoints</span>
+          <span className={styles.logo} onClick={() => { onClose(); navigate("/"); }}>DrivePoints</span>
           <span className={styles.portalBadge}>Sponsor Portal</span>
         </div>
         <div className={styles.close} onClick={onClose}>
@@ -115,6 +115,7 @@ export default function SponsorSidebar({ className, onClose })
                   key={item.to}
                   to={item.to}
                   className={clsx(styles.navItem, isActive && styles.active)}
+                  onClick={onClose}
                 >
                   <span>{item.label}</span>
                   {count > 0 && <NavBadge count={count} color="green" />}

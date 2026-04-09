@@ -38,6 +38,15 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<Catalog> Catalogs { get; set; }
     public DbSet<CatalogItem> CatalogItems { get; set; }
 
+    // Orders
+    public DbSet<OrderItem> OrderItems { get; set; }
+    public DbSet<Order> Orders { get; set; }
+
+    // Alerts
+    public DbSet<PointTransactionAlert> PointTransactionAlerts { get; set; }
+    public DbSet<SponsorshipChangeAlert> SponsorshipChangeAlerts { get; set; }
+    public DbSet<OrderAlert> OrderAlerts { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

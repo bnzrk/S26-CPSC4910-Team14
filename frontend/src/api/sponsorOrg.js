@@ -241,3 +241,18 @@ export function useUpdateSponsorOrg(orgId)
         },
     });
 }
+
+export function useSponsorTopDrivers(orgId, limit = 5) {
+    const { data: user } = useCurrentUser();
+    const orgPath = orgId ?? "me";
+  
+    return useQuery({
+      queryKey: ["sponsorTopDrivers", orgPath],
+      queryFn: async () => {
+        const res = await apiFetch(`/sponsor-orgs/${orgPath}/top-drivers?limit=${limit}`);
+        if (!res.ok) throw new Error("Failed to fetch top drivers");
+        return res.json(); // expects [{ driverId, firstName, lastName, points, rank }]
+      },
+      enabled: !!user,
+    });
+  }

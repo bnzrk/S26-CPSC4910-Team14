@@ -40,7 +40,7 @@ public class BulkActionsService : IBulkActionsService
         {
             successCount += await ExecuteOrgActions(orgActions, errors);
             successCount += await ExecuteSponsorActions(sponsorActions, actor, errors);
-            successCount += await ExecuteDriverActions(driverActions, actor, errors);   
+            successCount += await ExecuteDriverActions(driverActions, actor, errors);
             await transaction.CommitAsync();
 
             // Sort errors by line number
@@ -124,7 +124,6 @@ public class BulkActionsService : IBulkActionsService
                         email VARCHAR(255) PATH '$'
                     )
                 ) j ON u.Email = j.email
-                AND u.UserType = 1
                 """, usersJson)
             .ToListAsync())
             .ToDictionary(u => u.Email!);
@@ -241,7 +240,21 @@ public class BulkActionsService : IBulkActionsService
 
         // Find and existing users specified in actions
         var usersJson = JsonSerializer.Serialize(driverActions.Select(a => a.UserEmail).Distinct());
-        Dictionary<string, DriverUser> existingUsers = (await _db.DriverUsers
+        var existingNonDrivers = (await _db.Users
+            .FromSqlRaw("""
+                SELECT u.* FROM AspNetUsers u
+                INNER JOIN JSON_TABLE(
+                    {0}, '$[*]' COLUMNS (
+                        email VARCHAR(255) PATH '$'
+                    )
+                ) j ON u.Email = j.email
+                WHERE u.UserType != 0
+                """, usersJson)
+            .AsNoTracking()
+            .ToListAsync())
+            .ToDictionary(u => u.Email!);
+
+        Dictionary<string, DriverUser> existingDrivers = (await _db.DriverUsers
             .FromSqlRaw("""
                 SELECT d.* FROM DriverUsers d
                 INNER JOIN AspNetUsers u ON d.UserId = u.Id
@@ -275,15 +288,16 @@ public class BulkActionsService : IBulkActionsService
         foreach (var action in driverActions)
         {
             var hasPointChange = action.PointTransactionAmount.HasValue && !String.IsNullOrEmpty(action.PointTransactionReason);
-            var isAdded = addedUsers.ContainsKey(action.UserEmail!);
-            var isExisting = existingUsers.ContainsKey(action.UserEmail!);
+            var driverIsAdded = addedUsers.ContainsKey(action.UserEmail!);
+            var driverExists = existingDrivers.ContainsKey(action.UserEmail!);
+            var nonDriverExists = existingNonDrivers.ContainsKey(action.UserEmail!);
 
-            if (!hasPointChange && isAdded)
+            if (!hasPointChange && driverIsAdded)
             {
                 errors.Add(new ProcessingError(action.Line, $"Duplicate action with email {action.UserEmail}"));
                 continue;
             }
-            if (!hasPointChange && isExisting)
+            if (nonDriverExists || (!hasPointChange && driverExists))
             {
                 errors.Add(new ProcessingError(action.Line, $"Email {action.UserEmail} already in use"));
                 continue;
@@ -325,7 +339,7 @@ public class BulkActionsService : IBulkActionsService
                 continue;
             }
 
-            if (!(isExisting || isAdded))
+            if (!(nonDriverExists || driverExists || driverIsAdded))
             {
                 // Since we can't rely on the user manager for bulk inserts, we have to construct this unholy abomination
                 var user = new User
@@ -356,15 +370,15 @@ public class BulkActionsService : IBulkActionsService
                 _db.DriverUsers.Add(driver);
                 addedUsers.Add(driver.User.Email, driver);
             }
-            
+
             // Check added dictionary again in case it was updated this action
-            isAdded = addedUsers.ContainsKey(action.UserEmail!);
+            driverIsAdded = addedUsers.ContainsKey(action.UserEmail!);
 
             // If points included, add transaction
-            if (hasPointChange && (isExisting || isAdded))
+            if (hasPointChange && (driverExists || driverIsAdded))
             {
-                var driver = isExisting && existingUsers.TryGetValue(action.UserEmail!, out DriverUser? existingDriver) ? existingDriver :
-                    isAdded && addedUsers.TryGetValue(action.UserEmail!, out DriverUser? addedDriver) ? addedDriver : null;
+                var driver = driverExists && existingDrivers.TryGetValue(action.UserEmail!, out DriverUser? existingDriver) ? existingDriver :
+                    driverIsAdded && addedUsers.TryGetValue(action.UserEmail!, out DriverUser? addedDriver) ? addedDriver : null;
                 if (driver is null)
                 {
                     errors.Add(new ProcessingError(action.Line, "Could not resolve driver for point change"));
