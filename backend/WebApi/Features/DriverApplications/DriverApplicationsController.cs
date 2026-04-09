@@ -133,7 +133,6 @@ public class DriverApplicationsController : ControllerBase
         application.IsActive = false;
 
         await _db.SaveChangesAsync();
-
         await _auditLogger.CreateApplicationStatusChangeAuditLog(applicationId, "Accepted", null);
         return Ok();
     }
@@ -153,7 +152,6 @@ public class DriverApplicationsController : ControllerBase
         application.RejectionReason = request?.Reason;
 
         await _db.SaveChangesAsync();
-
         await _auditLogger.CreateApplicationStatusChangeAuditLog(applicationId, "Rejected", request?.Reason);
         return Ok();
     }

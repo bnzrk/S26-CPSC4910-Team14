@@ -1,41 +1,46 @@
-import Avatar from '@/components/Avatar/Avatar';
+import { useSponsorOrgDrivers } from "@/api/sponsorOrg";
+import Avatar from "@/components/Avatar/Avatar";
 import styles from './TopPerformers.module.scss';
 
-const PERFORMERS = [
-  { rank: 1, name: 'Sandra J.', initials: 'SJ', pts: '1,840' },
-  { rank: 2, name: 'Marcus R.', initials: 'MR', pts: '1,620' },
-  { rank: 3, name: 'Diana C.', initials: 'DC', pts: '1,540' },
-  { rank: 4, name: 'Kevin W.', initials: 'KW', pts: '1,310' },
-  { rank: 5, name: 'Amy L.', initials: 'AL', pts: '980' },
-];
+export default function TopPerformers({ orgId, limit = 5 }) {
+  const { data, isLoading, isError } = useSponsorOrgDrivers(orgId);
 
-const RANK_COLORS = {
-  1: 'var(--amber-500)',
-  2: 'var(--gray-400)',
-  3: '#cd7c2f',
-};
+  // Extract items safely
+  const drivers = data?.items || [];
 
-export default function TopPerformers() {
+  // Sort by points descending
+  const sortedDrivers = [...drivers].sort((a, b) => (b.points || 0) - (a.points || 0));
+
+  // Limit the number of top performers
+  const topDrivers = sortedDrivers.slice(0, limit);
+
   return (
     <div className={styles.card}>
       <div className={styles.header}>
         <h3 className={styles.title}>Top Performers</h3>
-        <span className={styles.period}>Feb 2026</span>
       </div>
+
       <div className={styles.list}>
-        {PERFORMERS.map(p => (
-          <div key={p.rank} className={styles.row}>
-            <span
-              className={styles.rank}
-              style={{ color: RANK_COLORS[p.rank] ?? 'var(--color-text-tertiary)' }}
-            >
-              {p.rank}
-            </span>
-            <Avatar initials={p.initials} size={34} />
-            <span className={styles.name}>{p.name}</span>
-            <span className={styles.pts}>{p.pts} pts</span>
-          </div>
-        ))}
+        {isLoading && <div className={styles.pointsText}>Loading top performers...</div>}
+
+        {isError && <div className={styles.noData}>Failed to load top performers.</div>}
+
+        {!isLoading && !isError && topDrivers.length === 0 && (
+          <div className={styles.pointsText}>No top performers yet.</div>
+        )}
+
+        {!isLoading && !isError && topDrivers.length > 0 && topDrivers.map((driver, index) => {
+          const initials = `${driver.firstName?.[0] || ''}${driver.lastName?.[0] || ''}`;
+          const rank = index + 1;
+          return (
+            <div key={driver.id} className={styles.row}>
+              <span className={styles.rank}>{rank}</span>
+              <Avatar initials={initials} size={34} />
+              <span className={styles.name}>{driver.firstName} {driver.lastName}</span>
+              <span className={styles.pts}>{driver.points ?? 0} pts</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

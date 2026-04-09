@@ -10,6 +10,7 @@ using WebApi.Helpers.Pagination;
 using WebApi.Data.Enums;
 using WebApi.Audit;
 using WebApi.Features.Auth;
+using WebApi.Features.Alerts;
 
 namespace WebApi.Features.DriverUsers;
 
@@ -23,6 +24,7 @@ public class DriverUsersController : ControllerBase
     private readonly IDriverUsersService _driversService;
     private readonly IAuditLogger _auditLogger;
     private readonly IImpersonationService _impersonationService;
+    private readonly IAlertsService _alertsService;
 
     public DriverUsersController(
         AppDbContext db,
@@ -30,7 +32,8 @@ public class DriverUsersController : ControllerBase
         UserManager<User> userManager,
         IDriverUsersService driversService,
         IAuditLogger auditLogger,
-        IImpersonationService impersonationService)
+        IImpersonationService impersonationService,
+        IAlertsService alertsService)
     {
         _db = db;
         _usersService = usersService;
@@ -38,6 +41,7 @@ public class DriverUsersController : ControllerBase
         _driversService = driversService;
         _auditLogger = auditLogger;
         _impersonationService = impersonationService;
+        _alertsService = alertsService;
     }
 
     #region Drivers
@@ -46,6 +50,30 @@ public class DriverUsersController : ControllerBase
     public async Task<ActionResult> Register(RegisterDriverUserModel request)
     {
         var result = await _usersService.CreateDriverUser(request.Email, request.Password, request.FirstName, request.LastName);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new
+            {
+                Errors = result.Errors.Select(e => e.Description).ToArray()
+            });
+        }
+
+        return Created();
+    }
+
+    [HttpPost]
+    [Authorize(Policy = PolicyNames.AdminOnly)]
+    public async Task<ActionResult> CreateDriverUser([FromQuery] int? orgId, RegisterDriverUserModel request)
+    {
+        SponsorOrg? org = null;
+        if (orgId.HasValue)
+        {
+            org = await _db.SponsorOrgs.Where(s => s.Id == orgId.Value).SingleOrDefaultAsync();
+            if (org is null)
+                return NotFound("Organization not found.");
+        }
+
+        var result = await _usersService.CreateDriverUser(request.Email, request.Password, request.FirstName, request.LastName, org);
         if (!result.Succeeded)
         {
             return BadRequest(new
@@ -147,7 +175,7 @@ public class DriverUsersController : ControllerBase
                         SponsorName = o.SponsorName,
                         PointRatio = o.PointRatio
                     });
-                    
+
                 return Ok(new List<SponsorOrgModel>(org));
             }
         }
@@ -361,6 +389,9 @@ public class DriverUsersController : ControllerBase
         _db.PointTransactions.Add(transaction);
         await _db.SaveChangesAsync();
         await _auditLogger.CreatePointTransactionAuditLog(driver.Id, driver.User.Email!, org.Id, org.SponsorName, transaction.BalanceChange, transaction.Reason);
+
+        if (isSponsor)
+            await _alertsService.CreatePointTransactionAlert(transaction);
 
         return Created();
     }

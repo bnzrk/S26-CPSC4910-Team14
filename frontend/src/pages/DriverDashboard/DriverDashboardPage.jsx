@@ -41,7 +41,7 @@ export default function DriverDashboardPage()
         pageSize: 50,
     });
 
-    const hasError = !!pointsError || !!historyError;
+    const hasError = (!pointsLoading && !!pointsError && !points) || (!historyLoading && !!historyError && !points);
     const balance = points?.balance ?? 0;
 
     return (

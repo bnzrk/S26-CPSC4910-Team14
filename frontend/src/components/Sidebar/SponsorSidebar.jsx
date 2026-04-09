@@ -20,8 +20,9 @@ const NAV_GROUPS = [
   {
     label: 'Fleet',
     items: [
-      { label: 'Manage Drivers', to: '/org/manage-drivers', badgeKey: 'pendingApps' },
+      { label: 'Manage Drivers', to: '/org/drivers', badgeKey: 'pendingApps' },
       { label: 'Manage Users', to: '/org/users' },
+      { label: 'Bulk Actions', to: '/org/bulk'}
       // { label: 'Deliveries', to: '/org/deliveries' },
       // { label: 'Routes', to: '/org/routes' },
     ],
@@ -83,7 +84,7 @@ export default function SponsorSidebar({ className, onClose })
     <aside className={clsx(className, styles.sidebar)}>
       <div className={styles.logoArea}>
         <div className={styles.left}>
-          <span className={styles.logo} onClick={() => navigate("/")}>DrivePoints</span>
+          <span className={styles.logo} onClick={() => { onClose(); navigate("/"); }}>DrivePoints</span>
           <span className={styles.portalBadge}>Sponsor Portal</span>
         </div>
         <div className={styles.close} onClick={onClose}>
@@ -114,6 +115,7 @@ export default function SponsorSidebar({ className, onClose })
                   key={item.to}
                   to={item.to}
                   className={clsx(styles.navItem, isActive && styles.active)}
+                  onClick={onClose}
                 >
                   <span>{item.label}</span>
                   {count > 0 && <NavBadge count={count} color="green" />}

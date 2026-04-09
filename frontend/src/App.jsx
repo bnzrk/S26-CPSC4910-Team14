@@ -13,13 +13,18 @@ import PointsPage from './pages/Points/PointsPage'
 import SponsorOrgLayout from './pages/SponsorOrg/SponsorOrgLayout';
 import SponsorDashboardPage from '@/pages/SponsorOrg/SponsorDashboardPage';
 import SponsorUsersPage from './pages/SponsorOrg/Users/SponsorUsersPage';
-import SponsorDriversPage from './pages/SponsorOrg/Drivers/Index/SponsorDriversPage';
 import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPage';
+import OrderHistoryPage from './pages/Orders/Index/OrderHistoryPage';
+import OrdersLayout from './pages/Orders/OrdersLayout';
+import OrderPage from './pages/Orders/Order/OrderPage';
+import AlertsPage from './pages/Alerts/AlertsPage';
 import UsersPage from './pages/Admin/Users/UsersPage';
 import ShopPage from './pages/Shop/ShopPage';
 import RegisterPage from './pages/Register/RegisterPage';
-import AdminToolsPage from './pages/Admin/Tools/AdminToolsPage';
+import AdminOrgsPage from './pages/Admin/Orgs/AdminOrgsPage';
 import AdminToolsLayout from './pages/Admin/AdminToolsLayout';
+import AdminBulkActionsPage from './pages/Admin/BulkActions/AdminBulkActionsPage';
+import SponsorBulkActionsPage from './pages/SponsorOrg/BulkActions/SponsorBulkActionsPage';
 import ProfilePage from './pages/Profile/ProfilePage';
 import DriverApplicationPage from "./pages/DriverApplication/DriverApplicationPage";
 import SponsorDriverApplicationsPage from './pages/SponsorOrg/Applications/SponsorDriverApplicationsPage';
@@ -45,10 +50,10 @@ function AppContent({ user, isUserLoading, orgs })
         <Routes>
           <Route path="/" element={
             isUserLoading ? <div></div> :
-            user?.userType === USER_TYPES.DRIVER ? <Navigate to="/driver" replace /> :
-            user?.userType === USER_TYPES.SPONSOR ? <Navigate to="/org" replace /> :
-            user?.userType === USER_TYPES.ADMIN ? <Navigate to="/admin" replace /> :
-            <Navigate to="/about" replace />
+              user?.userType === USER_TYPES.DRIVER ? <Navigate to="/driver" replace /> :
+                user?.userType === USER_TYPES.SPONSOR ? <Navigate to="/org" replace /> :
+                  user?.userType === USER_TYPES.ADMIN ? <Navigate to="/admin" replace /> :
+                    <Navigate to="/about" replace />
           } />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/login" element={
@@ -72,6 +77,14 @@ function AppContent({ user, isUserLoading, orgs })
               <ShopPage />
             </ProtectedRoute>
           } />
+          <Route path='/orders' element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+              <OrdersLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<OrderHistoryPage />} />
+            <Route path=":orderId" element={<OrderPage />} />
+          </Route>
           <Route path='/organizations' element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
               <DriverLayout>
@@ -86,6 +99,7 @@ function AppContent({ user, isUserLoading, orgs })
           }>
             <Route index element={<DriverDashboardPage />} />
             <Route path="points" element={<PointsPage />} />
+            <Route path="alerts" element={<AlertsPage />} />
             <Route path="settings" element={<DriverSettingsPage />} />
           </Route>
           <Route path='/org' element={
@@ -96,7 +110,7 @@ function AppContent({ user, isUserLoading, orgs })
             <Route index element={<SponsorDashboardPage />} />
             <Route path="point-rules" element={<PointRulesPage />} />
             <Route path="users" element={<SponsorUsersPage />} />
-            <Route path="drivers" element={<SponsorDriversPage />} />
+            <Route path="drivers" element={<ManageDriversPage />} />
             <Route path="drivers/:driverId" element={<SponsorDriverPage />} />
             <Route path="applications" element={<SponsorDriverApplicationsPage />} />
             <Route path="catalog" element={<SponsorCatalogPage />} />
@@ -105,17 +119,19 @@ function AppContent({ user, isUserLoading, orgs })
             <Route path="settings" element={<SponsorSettingsPage />} />
             <Route path="deliveries" element={<ComingSoonPage title="Deliveries" />} />
             <Route path="routes" element={<ComingSoonPage title="Routes" />} />
+            <Route path="bulk" element={<SponsorBulkActionsPage />} />
           </Route>
           <Route path="/admin" element={
-          <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
-            <AdminToolsLayout />
-          </ProtectedRoute>
-        }>
-          <Route index element={<AdminDashboardPage />} />
-          <Route path="tools" element={<AdminToolsPage />} />
-          <Route path="audit-logs" element={<AuditLogPage />} />
-          <Route path="users" element={<UsersPage />} />
-        </Route>
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.ADMIN]}>
+              <AdminToolsLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="orgs" element={<AdminOrgsPage />} />
+            <Route path="audit-logs" element={<AuditLogPage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="bulk" element={<AdminBulkActionsPage />} />
+          </Route>
           <Route path="/profile" element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER, USER_TYPES.SPONSOR, USER_TYPES.ADMIN]}>
               <ProfilePage />
@@ -141,9 +157,6 @@ export default function App()
     : isSponsor && sponsorOrg
       ? [sponsorOrg]
       : [];
-
-  if (!isLoading)
-    console.log(`Current user: ${JSON.stringify(user)}`);
 
   return <AppContent user={user} isUserLoading={isLoading} orgs={orgs} />;
 }

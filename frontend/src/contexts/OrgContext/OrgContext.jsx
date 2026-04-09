@@ -18,8 +18,10 @@ export function OrgProvider ({ user, orgs, children }) {
   useEffect(() => {
     if (!isDriver) return;
 
-    const saved = localStorage.getItem("selectedDriverOrgId");
-    const validSaved = driverOrgs.some((org) => org.id === saved);
+    //const saved = localStorage.getItem("selectedDriverOrgId");
+    //const validSaved = driverOrgs.some((org) => org.id === saved);
+    const saved = Number(localStorage.getItem("selectedDriverOrgId"));
+    const validSaved = saved && driverOrgs.some((org) => org.id === saved);
 
     if (validSaved) {
       setDriverSelectedOrgId(saved);

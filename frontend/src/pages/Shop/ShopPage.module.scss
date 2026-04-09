@@ -6,9 +6,85 @@
     gap: $grid-2x;
 }
 
+.modalItem {
+    display: flex;
+    flex-direction: row;
+    gap: $grid-2x;
+    flex-wrap: nowrap;
+}
+
+.modalBody {
+    display: flex;
+    flex-direction: column;
+    gap: $grid-2x;
+}
+
+.pointCalculation {
+    margin-left: 104px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: flex-end;
+    gap: $grid-1x;
+
+    width: auto;
+    padding: $grid-2x;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--gray-50);
+
+    @media only screen and (max-width : $small-width) {
+        margin-left: 0;
+    }
+}
+
+.balance {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: $grid-1x;
+    border-collapse: collapse;
+
+    svg {
+        width: 0.8rem;
+        height: 0.8rem;
+    }
+
+    .label {
+        color: var(--color-text-secondary);
+        padding-right: $grid-1x;
+    }
+
+    .value {
+        font-weight: bold;
+    }
+
+    .subtracted .value {
+        color: var(--color-warn);
+    }
+
+    .remaining .value {
+        color: var(--color-accent);
+    }
+}
+
+.thumbnail {
+    position: relative;
+    display: block;
+    width: 100%;
+    min-width: calc($grid-1x * 13);
+    max-width: calc($grid-1x * 13);
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+}
+
 @media only screen and (max-width : $small-width) {
     .grid {
         display: flex;
         flex-direction: column;
+    }
+
+    .pointCalculation {
+        margin-top: $grid-1x;
     }
 }

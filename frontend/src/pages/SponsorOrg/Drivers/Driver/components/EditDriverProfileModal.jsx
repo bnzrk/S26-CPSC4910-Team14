@@ -39,7 +39,6 @@ export default function EditDriverProfileModal({ isOpen, onClose, onSuccess, dri
             onSuccess();
         } catch (err)
         {
-            console.log(err);
             push({ type: 'error', message: 'Update failed. Please try again.' });
             return Promise.reject();
         }

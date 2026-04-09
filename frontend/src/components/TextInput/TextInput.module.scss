@@ -74,4 +74,8 @@
         background: var(--color-surface);
         padding: 0 4px;
     }
+
+    .required {
+        color: var(--color-warn);
+    }
 }

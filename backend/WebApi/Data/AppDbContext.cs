@@ -38,15 +38,28 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<Catalog> Catalogs { get; set; }
     public DbSet<CatalogItem> CatalogItems { get; set; }
 
+    // Orders
+    public DbSet<OrderItem> OrderItems { get; set; }
+    public DbSet<Order> Orders { get; set; }
+
+    // Alerts
+    public DbSet<PointTransactionAlert> PointTransactionAlerts { get; set; }
+    public DbSet<SponsorshipChangeAlert> SponsorshipChangeAlerts { get; set; }
+    public DbSet<OrderAlert> OrderAlerts { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         // Table relationships
-        modelBuilder.Entity<SponsorOrg>()
-                .HasOne(s => s.Catalog)
+        modelBuilder.Entity<SponsorOrg>(e =>
+        {
+            e.HasOne(s => s.Catalog)
                 .WithOne(c => c.SponsorOrg)
                 .HasForeignKey<Catalog>(c => c.SponsorOrgId);
+            e.HasIndex(s => s.SponsorName)
+                .IsUnique();
+        });
 
         modelBuilder.Entity<CatalogItem>(e =>
         {

@@ -150,7 +150,7 @@ public class UsersService : IUsersService
         return IdentityResult.Success;
     }
 
-    public async Task<IdentityResult> CreateDriverUser(string email, string password, string firstName, string lastName)
+    public async Task<IdentityResult> CreateDriverUser(string email, string password, string firstName, string lastName, SponsorOrg? org = null)
     {
         // We want to abort our changes if something fails before we finish.
         using var transaction = await _db.Database.BeginTransactionAsync();
@@ -186,6 +186,9 @@ public class UsersService : IUsersService
             User = user
         };
         _db.DriverUsers.Add(driver);
+
+        if (org is not null)
+            driver.SponsorOrgs.Add(org);
         await _db.SaveChangesAsync();
 
         // Commit our changes if successful.
