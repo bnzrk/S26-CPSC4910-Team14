@@ -40,7 +40,7 @@ export default function AppLayout({ children })
 
   useEffect(() =>
   {
-    const mediaQuery = window.matchMedia('(max-width: 540px)');
+    const mediaQuery = window.matchMedia('(max-width: 720px)');
     const handleResize = () =>
     {
       if (!mediaQuery.matches)
@@ -55,7 +55,7 @@ export default function AppLayout({ children })
 
   useEffect(() =>
   {
-    const isMobile = window.matchMedia('(max-width: 540px)').matches;
+    const isMobile = window.matchMedia('(max-width: 720px)').matches;
     if (isMobile && bodyRef.current)
     {
       bodyRef.current.style.overflow = sidebarOpen ? 'hidden' : '';

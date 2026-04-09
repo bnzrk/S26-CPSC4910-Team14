@@ -10,6 +10,7 @@ using WebApi.Helpers.Pagination;
 using WebApi.Data.Enums;
 using WebApi.Audit;
 using WebApi.Features.Auth;
+using WebApi.Features.Alerts;
 
 namespace WebApi.Features.DriverUsers;
 
@@ -23,6 +24,7 @@ public class DriverUsersController : ControllerBase
     private readonly IDriverUsersService _driversService;
     private readonly IAuditLogger _auditLogger;
     private readonly IImpersonationService _impersonationService;
+    private readonly IAlertsService _alertsService;
 
     public DriverUsersController(
         AppDbContext db,
@@ -30,7 +32,8 @@ public class DriverUsersController : ControllerBase
         UserManager<User> userManager,
         IDriverUsersService driversService,
         IAuditLogger auditLogger,
-        IImpersonationService impersonationService)
+        IImpersonationService impersonationService,
+        IAlertsService alertsService)
     {
         _db = db;
         _usersService = usersService;
@@ -38,6 +41,7 @@ public class DriverUsersController : ControllerBase
         _driversService = driversService;
         _auditLogger = auditLogger;
         _impersonationService = impersonationService;
+        _alertsService = alertsService;
     }
 
     #region Drivers
@@ -385,6 +389,9 @@ public class DriverUsersController : ControllerBase
         _db.PointTransactions.Add(transaction);
         await _db.SaveChangesAsync();
         await _auditLogger.CreatePointTransactionAuditLog(driver.Id, driver.User.Email!, org.Id, org.SponsorName, transaction.BalanceChange, transaction.Reason);
+
+        if (isSponsor)
+            await _alertsService.CreatePointTransactionAlert(transaction);
 
         return Created();
     }

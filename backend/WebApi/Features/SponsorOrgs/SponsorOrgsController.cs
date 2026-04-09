@@ -10,6 +10,7 @@ using WebApi.Helpers.Pagination;
 using WebApi.Features.Users;
 using WebApi.Features.DriverUsers.Models;
 using WebApi.Audit;
+using WebApi.Features.Alerts;
 
 namespace WebApi.Features.SponsorOrgs;
 
@@ -21,13 +22,15 @@ public class SponsorOrgsController : ControllerBase
     private readonly UserManager<User> _userManager;
     private readonly IUsersService _usersService;
     private readonly IAuditLogger _auditLogger;
+    private readonly IAlertsService _alertsService;
 
-    public SponsorOrgsController(AppDbContext db, UserManager<User> userManager, IUsersService usersService, IAuditLogger auditLogger)
+    public SponsorOrgsController(AppDbContext db, UserManager<User> userManager, IUsersService usersService, IAuditLogger auditLogger, IAlertsService alertsService)
     {
         _db = db;
         _userManager = userManager;
         _usersService = usersService;
         _auditLogger = auditLogger;
+        _alertsService = alertsService;
     }
 
     #region Org
@@ -254,7 +257,7 @@ public class SponsorOrgsController : ControllerBase
         if (userId is null)
             return Unauthorized();
 
-        var driver = await _db.DriverUsers.FindAsync(driverId);
+        var driver = await _db.DriverUsers.Include(d => d.User).SingleOrDefaultAsync(d => d.Id == driverId);
         if (driver is null)
             return NotFound("Driver does not exist.");
 
@@ -268,6 +271,7 @@ public class SponsorOrgsController : ControllerBase
         driver.SponsorOrgs.Add(org);
         await _db.SaveChangesAsync();
         await _auditLogger.CreateDriverSponsorChangeAuditLog(driverId, driver.User.Email!, orgId, org.SponsorName, DriverSponsorChangeType.Added);
+        await _alertsService.CreateSponsorshipChangeAlert(driverId, orgId, DriverSponsorChangeType.Added);
 
         return Ok();
     }
@@ -309,8 +313,9 @@ public class SponsorOrgsController : ControllerBase
         driver.SponsorOrgs.Remove(org);
         await _db.SaveChangesAsync();
         await _auditLogger.CreateDriverSponsorChangeAuditLog(driverId, driver.User.Email!, org.Id, org.SponsorName, DriverSponsorChangeType.Removed);
+        await _alertsService.CreateSponsorshipChangeAlert(driverId, org.Id, DriverSponsorChangeType.Removed);
 
-        return Ok();
+        return Ok();    
     }
     #endregion
 

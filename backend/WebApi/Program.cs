@@ -8,6 +8,7 @@ using WebApi.Features.Store;
 using WebApi.Features.Users;
 using WebApi.Features.Auth;
 using WebApi.Features.BulkActions;
+using WebApi.Features.Alerts;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
@@ -57,6 +58,7 @@ builder.Services.AddScoped<IAuditLogger, AuditLogger>();
 builder.Services.AddScoped<IImpersonationService, ImpersonationService>();
 builder.Services.AddScoped<IReadActionsService, ReadActionsService>();
 builder.Services.AddScoped<IBulkActionsService, BulkActionsService>();
+builder.Services.AddScoped<IAlertsService, AlertService>();
 
 var app = builder.Build();
 

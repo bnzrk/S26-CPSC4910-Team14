@@ -57,7 +57,7 @@ export default function SponsorCatalogPage()
 
         return products.reduce((acc, item) =>
         {
-            acc[item.id] = !catalog.some(
+            acc[item.id] = !catalog.items.some(
                 (catalogItem) => catalogItem.externalId == item.id
             );
             return acc;
@@ -118,12 +118,12 @@ export default function SponsorCatalogPage()
             <EditCatalogItemModal
                 isOpen={currentModal == modals.updateItem}
                 onClose={() => setCurrentModal(null)}
-                item={catalog ? catalog.find((i) => i.id == selectedCatalogItemId) : null}
+                item={catalog ? catalog.items.find((i) => i.id == selectedCatalogItemId) : null}
             />
             <CardHost>
                 <Card title='Catalog'>
                     <div className={styles.grid}>
-                        {catalog && catalog.sort((a, b) => b.isAvailable - a.isAvailable).map((item) => (
+                        {catalog && catalog.items.sort((a, b) => b.isAvailable - a.isAvailable).map((item) => (
                             <ShopItem
                                 key={item.id}
                                 imageUrl={item.images[0]}

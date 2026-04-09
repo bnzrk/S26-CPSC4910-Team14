@@ -39,9 +39,8 @@ export default function ShopItem({ title, category, imageUrl, alt, price, points
         <div
             {...other}
             className={clsx(availableStyle, styles.shopItem)}
-            onClick={onClick}
         >
-            <div className={styles.itemBody}>
+            <div className={clsx(styles.itemBody, onClick && styles.clickable)} onClick={onClick}>
                 <div className={styles.thumbnail}>
                     {(!failed) &&
                         <img

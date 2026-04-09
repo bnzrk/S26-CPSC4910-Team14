@@ -11,6 +11,7 @@ export default function InlineInfo({ messages, type = 'info', showIcon = true, c
     return (
         <div {...other} className={clsx(className, styles.messages, styles[type])}>
             {showIcon && type == 'info' && <InfoIcon />}
+            {showIcon && type == 'note' && <InfoIcon />}
             {showIcon && type == 'warning' && <AlertIcon />}
             {multipleMessages &&
                 <ul>

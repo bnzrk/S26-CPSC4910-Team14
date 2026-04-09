@@ -69,24 +69,7 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult> Register(RegisterModel request)
     {
-        var role = request.Role?.ToLower() == "sponsor" ? UserType.Sponsor : UserType.Driver;
-        IdentityResult result;
-
-        if (role == UserType.Sponsor)
-        {
-            var org = new SponsorOrg
-            {
-                SponsorName = $"{request.FirstName} {request.LastName}",
-                DateJoined = DateTime.UtcNow
-            };
-            _db.SponsorOrgs.Add(org);
-            await _db.SaveChangesAsync();
-            result = await _usersService.CreateSponsorUser(request.Email, request.Password, request.FirstName, request.LastName, org);
-        }
-        else
-        {
-            result = await _usersService.CreateDriverUser(request.Email, request.Password, request.FirstName, request.LastName);
-        }
+        var result = await _usersService.CreateDriverUser(request.Email, request.Password, request.FirstName, request.LastName);
 
         if (!result.Succeeded)
             return BadRequest(new { Errors = result.Errors.Select(e => e.Description).ToArray() });

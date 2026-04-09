@@ -144,8 +144,7 @@ export default function ProfilePage()
     }
   }
 
-  if (isLoading) return <div className={styles.page}><p className={styles.muted}>Loading...</p></div>;
-  if (isError) return <div className={styles.page}><p className={styles.error}>Failed to load profile.</p></div>;
+  if (isError && !isLoading && !profile) return <div className={styles.page}><p className={styles.error}>Failed to load profile.</p></div>;
 
   async function handleLogout()
   {

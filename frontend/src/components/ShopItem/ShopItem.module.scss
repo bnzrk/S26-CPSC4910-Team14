@@ -4,7 +4,10 @@
     display: flex;
     flex-direction: column;
     gap: $grid-half;
-    cursor: pointer;
+
+    &.clickable {
+        cursor: pointer;
+    }
 }
 
 .shopItem {
@@ -44,7 +47,6 @@
     position: relative;
     display: block;
     width: 100%;
-    aspect-ratio: 1 / 1;
     overflow: hidden;
 
     .unavailable & {
@@ -80,9 +82,13 @@
         font-weight: bold;
         color: var(--color-accent);
         display: flex;
-        flex-direction: row;
-        gap: $grid-1x;
-        align-items: center;
+        flex-direction: column;
+        gap: $grid-fourth;
+        align-items: flex-start;
+
+        .points {
+            font-size: 1rem;
+        }
 
         .unavailable & {
             color: var(--color-text-tertiary);
