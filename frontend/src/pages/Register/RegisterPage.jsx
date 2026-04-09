@@ -12,7 +12,6 @@ export default function RegisterPage()
     const [lastName, setLastName] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [role, setRole] = useState('driver');
 
     const [errorMsgs, setErrorMsgs] = useState([]); // <-- supports multiple server errors
     const [isLoading, setIsLoading] = useState(false);
@@ -40,8 +39,7 @@ export default function RegisterPage()
                     email,
                     firstName,
                     lastName,
-                    password,
-                    role,
+                    password
                 }),
             });
 
@@ -154,32 +152,6 @@ export default function RegisterPage()
                             required
                             autoComplete="new-password"
                         />
-                    </div>
-
-                    <div className={styles.field}>
-                        <span className={styles.label}>I am a</span>
-                        <div className={styles.roleGroup}>
-                            <label className={styles.roleOption}>
-                                <input
-                                    type="radio"
-                                    name="role"
-                                    value="driver"
-                                    checked={role === 'driver'}
-                                    onChange={() => setRole('driver')}
-                                />
-                                Driver
-                            </label>
-                            <label className={styles.roleOption}>
-                                <input
-                                    type="radio"
-                                    name="role"
-                                    value="sponsor"
-                                    checked={role === 'sponsor'}
-                                    onChange={() => setRole('sponsor')}
-                                />
-                                Sponsor
-                            </label>
-                        </div>
                     </div>
 
                     {errorMsgs.length > 0 && (

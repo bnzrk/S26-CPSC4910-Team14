@@ -163,7 +163,7 @@ export default function DriverSidebar({ className, onClose }) {
 
       {/* Points card */}
       <div className={styles.pointsArea}>
-        <PointCard className={styles.points} points={balance} onClick={() => navigate("/driver/points")} />
+        <PointCard className={styles.points} points={balance} onClick={() => { onClose(); navigate("/driver/points")}} />
       </div>
 
       {/* Nav */}
@@ -176,6 +176,7 @@ export default function DriverSidebar({ className, onClose }) {
                 key={item.label}
                 to={item.to}
                 className={clsx(styles.navItem, pathname === item.to && styles.active)}
+                onClick={onClose}
               >
                 <span className={styles.navItemInner}>
                   <span className={styles.navIcon}><NavIcon name={item.icon} /></span>
