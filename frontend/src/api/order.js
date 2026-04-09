@@ -9,7 +9,7 @@ export function useOrder(orderId)
     const { data: user } = useCurrentUser();
 
     return useQuery({
-        queryKey: ["orders", orderId],
+        queryKey: ['order', orderId],
         queryFn: async () => apiFetch(`/orders/${orderId}`).then(r => r.json()),
         enabled: !!user && !!orderId,
         retry: 1
@@ -34,6 +34,26 @@ export function useCreateOrder()
         onSuccess: () =>
         {
             queryClient.invalidateQueries({ queryKey: ['orders', user.id] });
+        },
+    });
+}
+
+export function useCancelOrder()
+{
+    const { data: user } = useCurrentUser();
+
+    return useMutation({
+        mutationFn: async ({ orderId }) =>
+        {
+            const response = await apiFetch(`/orders/${orderId}/cancel`, {
+                method: 'PUT',
+                credentials: 'include',
+            });
+            if (!response.ok) throw new Error('Failed to cancel order');
+        },
+        onSuccess: () =>
+        {
+            queryClient.invalidateQueries({ queryKey: ['order'] });
         },
     });
 }

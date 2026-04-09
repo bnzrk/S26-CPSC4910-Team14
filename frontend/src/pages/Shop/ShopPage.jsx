@@ -56,7 +56,6 @@ export default function ShopPage()
 
     const handleClickItem = (itemId) =>
     {
-        console.log(`Setting item id to ${itemId}`);
         setSelectedCatalogItemId(itemId)
         setCurrentModal(MODALS.purchase);
     }

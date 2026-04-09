@@ -154,8 +154,5 @@ export default function App()
       ? [sponsorOrg]
       : [];
 
-  if (!isLoading)
-    console.log(`Current user: ${JSON.stringify(user)}`);
-
   return <AppContent user={user} isUserLoading={isLoading} orgs={orgs} />;
 }

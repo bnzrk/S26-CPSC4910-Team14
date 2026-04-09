@@ -12,7 +12,6 @@ export default function AsyncButton({ className, text = '', icon: Icon, color, d
         mutationFn: action,
         onError: (err) =>
         {
-            console.log(err);
             setFlashError(true);
         }
     });
