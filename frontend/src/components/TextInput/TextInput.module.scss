@@ -1,8 +1,6 @@
 @use '@/styles/globals' as *;
 
 .textInput {
-
-
     margin-bottom: $grid-2x;
 }
 
@@ -51,6 +49,7 @@
     }
 
     input {
+        color: var(--color-text);
         padding-left: $grid-half;
         border: none;
         outline: none;
