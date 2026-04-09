@@ -29,7 +29,11 @@ export function useCreateOrder()
                 credentials: 'include',
                 body: JSON.stringify({ driverId, catalogId, catalogItemIds }),
             });
-            if (!response.ok) throw new Error('Failed to create order');
+            if (!response.ok)
+            {
+                const json = await response.json();
+                throw new Error(json?.error ?? 'Failed to create order');
+            }
         },
         onSuccess: () =>
         {
