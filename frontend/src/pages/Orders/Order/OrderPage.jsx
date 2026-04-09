@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/Toast/ToastContext";
 import { useParams } from "react-router-dom";
 import { useOrder, useCancelOrder } from "@/api/order";
 import { ORDER_STATUS } from "@/constants/orderStatuses";
+import { useOrgContext } from "@/contexts/OrgContext/OrgContext";
 import OrderItem from "./components/OrderItem";
 import CardHost from "@/components/CardHost/CardHost";
 import Modal from "@/components/Modal/Modal";
@@ -34,9 +35,20 @@ export default function OrderPage()
     const navigate = useNavigate();
     const { push } = useToast();
 
+    const { selectedOrgId } = useOrgContext();
+
     const { orderId } = useParams();
     const { data: order, isLoading: isOrderLoading, isError: isOrderError } = useOrder(orderId);
     const cancelOrder = useCancelOrder();
+
+    // Navigate to order list if selected org does not match order
+    useEffect(() =>
+    {  
+        if (order && selectedOrgId && order.sponsorOrgId !== selectedOrgId)
+        {
+            navigate("/orders");
+        }
+    }, [order, selectedOrgId]);
 
     const [currentModal, setCurrentModal] = useState(null);
 

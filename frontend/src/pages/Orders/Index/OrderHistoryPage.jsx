@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useOrgContext } from "@/contexts/OrgContext/OrgContext";
 import { useOrders } from "@/api/order";
@@ -26,7 +26,7 @@ export default function OrderHistoryPage()
     const [page, setPage] = useState(1);
 
     const [searchParams, setSearchParams] = useSearchParams();
-    const activeTab = searchParams.get('tab') || 0;
+    const activeTab = searchParams.get('tab') || 0;    
 
     const queryType = useMemo(
         () => activeTab == 0 ? "all" :

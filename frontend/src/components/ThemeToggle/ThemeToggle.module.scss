@@ -1,0 +1,50 @@
+.track {
+  display: inline-flex;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  gap: 2px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+
+  &:hover:not(.active) {
+    background: var(--color-surface);
+    color: var(--color-text);
+  }
+}
+
+.active {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}
+
+.optionIcon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.optionLabel {
+  line-height: 1;
+}
+
+/* Compact: icons only */
+.compact .option {
+  padding: 6px 10px;
+}

@@ -28,7 +28,7 @@ export default function ShopPage()
     const { push } = useToast();
 
     const { selectedOrgId, driverOrgs } = useOrgContext();
-    var org = driverOrgs && selectedOrgId ? driverOrgs[selectedOrgId] : null;
+    var org = driverOrgs && selectedOrgId ? driverOrgs.find(o => o.id == selectedOrgId) : null;
 
     var { data: points } = usePoints(selectedOrgId);
     const { data: catalog, isLoading: isCatalogLoading, isError: isCatalogError } = useCatalog(selectedOrgId);
@@ -73,7 +73,7 @@ export default function ShopPage()
         }
         catch(ex)
         {
-            push({ type: "error", message: "Order could not be placed." });
+            push({ type: "error", message: ex.message });
         }
     }
 
