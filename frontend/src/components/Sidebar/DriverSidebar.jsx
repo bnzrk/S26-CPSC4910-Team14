@@ -38,7 +38,7 @@ const NAV_GROUPS = [
     label: 'Account',
     items: [
       { label: 'Profile', to: '/profile', icon: 'user' },
-      { label: 'Settings', to: '/settings', icon: 'settings' },
+      { label: 'Settings', to: '/driver/settings', icon: 'settings' },
     ],
   },
 ];
