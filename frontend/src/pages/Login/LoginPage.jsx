@@ -38,15 +38,9 @@ export default function LoginPage() {
         return;
       }
   
-      const userData = await queryClient.fetchQuery({
-        queryKey: ["currentUser"],
-        queryFn: async () => {
-          const res = await apiFetch("/auth/me");
-          return res.json();
-        }
-      });
-  
-      const userType = userData?.user?.userType;
+      await queryClient.invalidateQueries(["currentUser"]);
+      const userType = user?.userType;
+      
       if (userType === USER_TYPES.SPONSOR) navigate("/org");
       else if (userType === USER_TYPES.ADMIN) navigate("/admin");
       else navigate("/driver");
