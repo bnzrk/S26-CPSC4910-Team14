@@ -17,6 +17,7 @@ import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPa
 import OrderHistoryPage from './pages/Orders/Index/OrderHistoryPage';
 import OrdersLayout from './pages/Orders/OrdersLayout';
 import OrderPage from './pages/Orders/Order/OrderPage';
+import AlertsPage from './pages/Alerts/AlertsPage';
 import UsersPage from './pages/Admin/Users/UsersPage';
 import ShopPage from './pages/Shop/ShopPage';
 import RegisterPage from './pages/Register/RegisterPage';
@@ -96,6 +97,7 @@ function AppContent({ user, isUserLoading, orgs })
           }>
             <Route index element={<DriverDashboardPage />} />
             <Route path="points" element={<PointsPage />} />
+            <Route path="alerts" element={<AlertsPage />} />
           </Route>
           <Route path='/org' element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.SPONSOR]}>

@@ -1,0 +1,7 @@
+@use '@/styles/globals' as *;
+
+.alerts {
+    display: flex;
+    flex-direction: column;
+    gap: $grid-1x;
+}

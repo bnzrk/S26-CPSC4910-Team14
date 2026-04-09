@@ -1,0 +1,83 @@
+@use '@/styles/globals' as *;
+
+.alert {
+    display: flex;
+    flex-direction: row;
+    gap: $grid-2x;
+    justify-content: space-between;
+    border: 1px solid var(--color-border);
+    padding: $grid-1x $grid-2x;
+    border-radius: var(--radius-md);
+
+    @media only screen and (max-width : $small-width) {
+        flex-direction: column;
+    }
+
+    .body {
+        display: flex;
+        flex-direction: column;
+        gap: $grid-half;
+
+        .message {
+            color: var(--color-text);
+            font-size: 1rem;
+        }
+
+        .footer {
+            font-size: 0.8rem;
+            color: var(--color-text-tertiary);
+        }
+    }
+
+    .dismiss {
+        color: var(--color-text-secondary);
+        border: none;
+        background: none;
+        cursor: pointer;
+        min-width: 24px;
+        min-height: 24px;
+    }
+
+    .icon {
+        color: var(--color-text);
+        min-width: 24px;
+        min-height: 24px;
+    }
+
+    .left,
+    .right {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: center;
+    }
+
+    .left {
+        gap: $grid-2x;
+    }
+
+    .right {
+        gap: $grid-1x;
+    }
+
+    .inlinePoints {
+        font-weight: bold;
+
+        &.positive {
+            color: var(--color-accent);
+        }
+
+        &.negative {
+            color: var(--color-warn);
+        }
+
+        svg {
+            margin-left: $grid-fourth;
+
+            width: 0.8rem;
+            height: 0.8rem;
+            max-width: 0.8rem;
+            max-height: 0.8rem;
+        }
+    }
+}

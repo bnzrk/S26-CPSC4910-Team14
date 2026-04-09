@@ -10,4 +10,5 @@ public class DriverUser
     public ICollection<SponsorOrg> SponsorOrgs { get; set; } = new List<SponsorOrg>();
     public ICollection<PointTransaction> PointTransactions { get; set; } = new List<PointTransaction>();
     public ICollection<Order> Orders { get; set; } = new List<Order>();
+    public ICollection<PointTransactionAlert> PointTransactionAlerts { get; set; } = new List<PointTransactionAlert>();
 }

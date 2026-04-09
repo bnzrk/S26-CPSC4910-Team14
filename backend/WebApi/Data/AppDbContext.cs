@@ -42,6 +42,9 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<Order> Orders { get; set; }
 
+    // Alerts
+    public DbSet<PointTransactionAlert> PointTransactionAlerts { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
