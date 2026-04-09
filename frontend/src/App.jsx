@@ -33,6 +33,8 @@ import SponsorCatalogPage from './pages/SponsorOrg/Catalog/SponsorCatalogPage';
 import ManageDriversPage from './pages/SponsorOrg/ManageDrivers/ManageDriversPage';
 import OrganizationsPage from './pages/Organizations/OrganizationsPage';
 import ComingSoonPage from './pages/ComingSoon/ComingSoonPage';
+import SponsorSettingsPage from './pages/SponsorOrg/SettingsPage/SettingsPage';
+import DriverSettingsPage from './pages/DriverDashboard/SettingsPage/SettingsPage';
 import AppLayout from './pages/AppLayout';
 import DriverDashboardPage from './pages/DriverDashboard/DriverDashboardPage';
 import AuditLogPage from './pages/Admin/AuditLogs/AuditLogPage';
@@ -98,6 +100,7 @@ function AppContent({ user, isUserLoading, orgs })
             <Route index element={<DriverDashboardPage />} />
             <Route path="points" element={<PointsPage />} />
             <Route path="alerts" element={<AlertsPage />} />
+            <Route path="settings" element={<DriverSettingsPage />} />
           </Route>
           <Route path='/org' element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.SPONSOR]}>
@@ -112,7 +115,8 @@ function AppContent({ user, isUserLoading, orgs })
             <Route path="applications" element={<SponsorDriverApplicationsPage />} />
             <Route path="catalog" element={<SponsorCatalogPage />} />
             <Route path="catalog" element={<SponsorCatalogPage />} />
-            <Route path="settings" element={<ComingSoonPage title="Settings" />} />
+            <Route path="manage-drivers" element={<ManageDriversPage />} />
+            <Route path="settings" element={<SponsorSettingsPage />} />
             <Route path="deliveries" element={<ComingSoonPage title="Deliveries" />} />
             <Route path="routes" element={<ComingSoonPage title="Routes" />} />
             <Route path="bulk" element={<SponsorBulkActionsPage />} />

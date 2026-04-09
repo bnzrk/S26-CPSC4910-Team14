@@ -63,23 +63,23 @@
 }
 
 .badge_pending {
-  background: #fef3c7;
+  background: var(--amber-100);
   color: #92400e;
 }
 
 .badge_accepted {
-  background: #d1fae5;
-  color: #065f46;
+  background: var(--green-100);
+  color: var(--color-accent-dark);
 }
 
 .badge_rejected {
-  background: #fee2e2;
+  background: var(--red-100);
   color: #991b1b;
 }
 
 .badge_unknown {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--gray-100);
+  color: var(--color-text-secondary);
 }
 
 /* Action buttons */
@@ -99,8 +99,8 @@
 }
 
 .acceptBtn {
-  background: var(--color-accent, #16a34a);
-  color: #fff;
+  background: var(--color-accent);
+  color: var(--color-surface);
 
   &:not(:disabled):hover {
     opacity: 0.85;
@@ -108,8 +108,8 @@
 }
 
 .rejectBtn {
-  background: #ef4444;
-  color: #fff;
+  background: var(--color-warn);
+  color: var(--color-surface);
 
   &:not(:disabled):hover {
     opacity: 0.85;
@@ -144,7 +144,7 @@
 }
 
 .error {
-  color: #dc2626;
+  color: var(--color-warn);
   font-size: 0.875rem;
   margin-bottom: $grid-1x;
 }
