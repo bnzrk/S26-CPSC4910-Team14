@@ -7,6 +7,7 @@ import SponsorSidebar from '@/components/Sidebar/SponsorSidebar';
 import DriverSidebar from '@/components/Sidebar/DriverSidebar';
 import Button from '@/components/Button/Button';
 import LogOutIcon from '@/assets/icons/log-out.svg?react';
+import HelpPanel from '@/components/HelpPanel/HelpPanel';
 import styles from './AppLayout.module.scss';
 import clsx from 'clsx';
 
@@ -88,6 +89,7 @@ export default function AppLayout({ children })
           <main className={clsx(styles.content)}>{children}</main>
         </div>
       </div>
+      <HelpPanel />
     </>
   );
 }

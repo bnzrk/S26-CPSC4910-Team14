@@ -8,15 +8,18 @@ import ThemeProvider from './contexts/ThemeContext';
 import App from './App.jsx'
 import './index.scss'
 import ToastHost from './components/Toast/ToastHost';
+import HelpProvider from './contexts/HelpContext';
 
-function ScrollRestore() {
-    const { pathname } = useLocation();
-    
-    useEffect(() => {
-        window.scrollTo(0, 0);
-    }, [pathname]);
-    
-    return null;
+function ScrollRestore()
+{
+  const { pathname } = useLocation();
+
+  useEffect(() =>
+  {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
 }
 
 createRoot(document.getElementById('root')).render(
@@ -25,9 +28,11 @@ createRoot(document.getElementById('root')).render(
       <ToastProvider>
         <BrowserRouter>
           <ThemeProvider>
-            <ToastHost />
-            <ScrollRestore />
-            <App />
+            <HelpProvider>
+              <ToastHost />
+              <ScrollRestore />
+              <App />
+            </HelpProvider>
           </ThemeProvider>
         </BrowserRouter>
       </ToastProvider>
