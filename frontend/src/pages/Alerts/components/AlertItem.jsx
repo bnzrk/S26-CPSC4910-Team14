@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ALERT_TYPES } from "@/constants/alertTypes";
+import { ALERT_TYPES, SPONSORSHIP_CHANGE_TYPE } from "@/constants/alertTypes";
 import { StarIcon } from "lucide-react";
 import BellIcon from "@/assets/icons/bell.svg?react";
 import Button from "@/components/Button/Button";
@@ -16,6 +16,16 @@ function PointChangeAlertBody({ alert })
             {metadata.sponsorName} {isPositive > 0 ? 'awared you' : 'deducted'} <span className={clsx(styles.inlinePoints, isPositive ? styles.positive : styles.negative)}>{metadata.balanceChange}<StarIcon /></span> points{isPositive ? '!' : '.'}
         </span>
     );
+}
+
+function SponsorshipAlertBody({ alert })
+{
+    const metadata = alert.metadata;
+    if (metadata.changeType == SPONSORSHIP_CHANGE_TYPE.Added)
+        return <span>You are now a driver for <b className={styles.accent}>{metadata.sponsorName}</b>!</span>
+    if (metadata.changeType == SPONSORSHIP_CHANGE_TYPE.Removed)
+        return <span>You were <span className={styles.warn}>removed</span> from <b className={styles.accent}>{metadata.sponsorName}</b>.</span>
+    return;
 }
 
 function formatTimestamp(date) {
@@ -40,6 +50,7 @@ export default function AlertItem({ alert, className })
                 <div className={styles.body}>
                     <div className={styles.message}>
                         {alert.type == ALERT_TYPES.PointChange && <PointChangeAlertBody alert={alert} />}
+                        {alert.type == ALERT_TYPES.SponsorshipChange && <SponsorshipAlertBody alert={alert} />}
                     </div>
                     <div className={styles.footer}>
                         {formatTimestamp(alert.timestampUtc)}

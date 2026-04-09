@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +35,7 @@ public class AlertsController : ControllerBase
         if (driver is null)
             return BadRequest("Could not resolve driver.");
 
-        var alerts = await _db.PointTransactionAlerts
+        var pointAlerts = await _db.PointTransactionAlerts
             .Where(a => a.DriverId == driver.Id)
             .OrderByDescending(a => a.TimestampUtc)
             .Select(a => new AlertModel
@@ -51,6 +52,29 @@ public class AlertsController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(alerts);
+        var sponsorshipAlerts = await _db.SponsorshipChangeAlerts
+            .Where(a => a.DriverId == driver.Id)
+            .OrderByDescending(a => a.TimestampUtc)
+            .Select(a => new AlertModel
+            {
+                Id = a.Id,
+                Type = AlertType.SponsorshipChange,
+                TimestampUtc = a.TimestampUtc,
+                Metadata = new SponsorshipChangeAlertMetadata
+                {
+                    SponsorName = a.SponsorOrg.SponsorName,
+                    ChangeType = a.ChangeType
+                }
+            })
+            .ToListAsync();
+
+        var allAlerts = new List<AlertModel>(pointAlerts.Count + sponsorshipAlerts.Count);
+        allAlerts.AddRange(pointAlerts);
+        allAlerts.AddRange(sponsorshipAlerts);
+        allAlerts = allAlerts.OrderByDescending(a => a.TimestampUtc).ToList();
+    
+        Console.WriteLine(allAlerts);
+
+        return Ok(allAlerts);
     }
 }

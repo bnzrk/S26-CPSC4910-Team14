@@ -182,7 +182,7 @@ export default function DriverSidebar({ className, onClose }) {
                   <span>{item.label}</span>
                 </span>
                 {item.badge && <NavBadge count={item.badge} color="green" />}
-                {item.to == '/alerts' && alerts && alerts?.length > 0 && <NavBadge count={alerts.length} color="green" />}
+                {item.to == '/driver/alerts' && alerts && alerts?.length > 0 && <NavBadge count={alerts.length} color="green" />}
               </Link>
             ))}
           </div>

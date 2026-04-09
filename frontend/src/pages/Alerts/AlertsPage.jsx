@@ -14,7 +14,7 @@ export default function AlertsPage()
             <Card title='Alerts'>
                 <div className={styles.alerts}>
                     {!alerts && <p>No alerts.</p>}
-                    {alerts && alerts.map((alert) => <AlertItem alert={alert} />)}
+                    {alerts && alerts.map((alert) => <AlertItem key={`${alert.type}_${alert.id}`} alert={alert} />)}
                 </div>
             </Card>
         </CardHost>

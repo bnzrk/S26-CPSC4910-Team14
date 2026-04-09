@@ -1,5 +1,6 @@
 using WebApi.Data;
 using WebApi.Data.Entities;
+using WebApi.Data.Enums;
 
 namespace WebApi.Features.Alerts;
 
@@ -30,8 +31,17 @@ public class AlertService : IAlertsService
         await _db.SaveChangesAsync();
     }
 
-    public async Task CreateSponsorshipChangeAlert(int driverId, int orgId)
+    public async Task CreateSponsorshipChangeAlert(int driverId, int orgId, DriverSponsorChangeType changeType)
     {
-        throw new NotImplementedException();
+        var alert = new SponsorshipChangeAlert
+        {
+            DriverId = driverId,
+            SponsorOrgId = orgId,
+            ChangeType = changeType,
+            TimestampUtc = DateTime.UtcNow
+        };
+
+        _db.SponsorshipChangeAlerts.Add(alert);
+        await _db.SaveChangesAsync();
     }
 }

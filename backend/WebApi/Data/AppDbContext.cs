@@ -44,6 +44,7 @@ public class AppDbContext : IdentityDbContext<User>
 
     // Alerts
     public DbSet<PointTransactionAlert> PointTransactionAlerts { get; set; }
+    public DbSet<SponsorshipChangeAlert> SponsorshipChangeAlerts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

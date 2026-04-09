@@ -30,6 +30,7 @@
     }
 
     .dismiss {
+        margin-left: auto;
         color: var(--color-text-secondary);
         border: none;
         background: none;
@@ -79,5 +80,13 @@
             max-width: 0.8rem;
             max-height: 0.8rem;
         }
+    }
+
+    .accent {
+        color: var(--color-accent);
+    }
+
+    .warn {
+        color: var(--color-warn);
     }
 }
