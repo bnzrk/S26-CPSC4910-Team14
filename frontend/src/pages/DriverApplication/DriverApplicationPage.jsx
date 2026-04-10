@@ -203,10 +203,10 @@ export default function DriverApplicationPage()
         )}
 
         {/* Organization */}
-        <Card title="Organization">
+        <Card title="Sponsor">
           <div className={styles.fieldGroup}>
             <div className={styles.field}>
-              <label className={styles.label}>Organization ID</label>
+              <label className={styles.label}>Sponsor</label>
               <select value={formData.orgId} onChange={e => updateField("orgId", e.target.value)}>
                 <option value="" disabled hidden>Select a sponsor</option>
                 {filteredOrgs && filteredOrgs.map((org) =>

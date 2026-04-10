@@ -6,6 +6,7 @@ import Avatar from '@/components/Avatar/Avatar';
 import Button from '@/components/Button/Button';
 import styles from './OrganizationsPage.module.scss';
 import clsx from 'clsx';
+import CardHost from '@/components/CardHost/CardHost';
 
 function getInitials(name) {
   if (!name) return '??';
@@ -22,14 +23,12 @@ export default function OrganizationsPage() {
   const orgList = orgs ?? [];
 
   return (
-    <div className={styles.page}>
-      <h1 className={styles.pageTitle}>Organizations</h1>
-
+    <CardHost className={styles.page}>
       {/* My Organizations */}
-      <Card title="My Organizations">
+      <Card title="Joined Sponsors">
         {orgList.length === 0 ? (
           <p className={styles.empty}>
-            You aren&apos;t affiliated with any organizations yet. Apply below to get started.
+            You aren&apos;t affiliated with any sponsors yet. Apply below to get started.
           </p>
         ) : (
           <div className={styles.orgList}>
@@ -53,7 +52,7 @@ export default function OrganizationsPage() {
                       <span className={clsx(styles.badge, styles.badgeCurrent)}>Current</span>
                     ) : (
                       <Button
-                        color="primary"
+                        color="secondary"
                         size="small"
                         onClick={() => setSelectedOrgId(org.id)}
                       >
@@ -70,14 +69,14 @@ export default function OrganizationsPage() {
       </Card>
 
       {/* Apply */}
-      <Card title="Apply to an Organization">
+      <Card title="Apply to a Sponsor">
         <p className={styles.applyBody}>
           Submit an application to join a sponsor&apos;s driver program. The sponsor will review and accept or reject your application.
         </p>
-        <Button color="primary" onClick={() => navigate('/driver-application')}>
+        <Button color="primary" onClick={() => navigate('/apply')}>
           Start Application
         </Button>
       </Card>
-    </div>
+    </CardHost>
   );
 }
