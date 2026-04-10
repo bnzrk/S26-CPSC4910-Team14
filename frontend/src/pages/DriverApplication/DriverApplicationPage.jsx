@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "@/api/apiFetch";
+import { useAvailableSponsorOrgs } from "@/api/sponsorOrg";
 import CardHost from "@/components/CardHost/CardHost";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
@@ -18,6 +19,8 @@ export default function DriverApplicationPage()
 {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  const { data: orgs } = useAvailableSponsorOrgs();
 
   const [formData, setFormData] = useState({
     orgId: "",
@@ -189,10 +192,6 @@ export default function DriverApplicationPage()
   return (
     <main>
       <CardHost>
-        <Button onClick={() => navigate("/driver/points")}>
-          Cancel
-        </Button>
-
         {submitStatus === "error" && (
           <InlineErrors errors={["Submission failed. Please try again."]} />
         )}
@@ -202,13 +201,12 @@ export default function DriverApplicationPage()
           <div className={styles.fieldGroup}>
             <div className={styles.field}>
               <label className={styles.label}>Organization ID</label>
-              <input
-                className={styles.input}
-                type="number"
-                value={formData.orgId}
-                onChange={e => updateField("orgId", e.target.value)}
-                placeholder="Enter your sponsor's organization ID"
-              />
+              <select value={formData.orgId} onChange={e => updateField("orgId", e.target.value)}>
+                <option value="" disabled hidden>Select a sponsor</option>
+                {orgs && orgs.map((org) =>
+                  <option key={org.id} value={org.id}>{org.name}</option>
+                )}
+              </select>
               {formErrors.orgId && <p className={styles.fieldError}>{formErrors.orgId}</p>}
             </div>
           </div>
@@ -391,10 +389,14 @@ export default function DriverApplicationPage()
           </div>
         </Card>
 
-        <Button color="primary" onClick={submitApplication} disabled={isLoading}>
-          {isLoading ? "Submitting…" : "Submit Application"}
-        </Button>
-
+        <div className={styles.appActions}>
+          <Button onClick={() => navigate("/driver/points")}>
+            Cancel
+          </Button>
+          <Button color="primary" onClick={submitApplication} disabled={isLoading}>
+            {isLoading ? "Submitting…" : "Submit Application"}
+          </Button>
+        </div>
       </CardHost>
     </main>
   );

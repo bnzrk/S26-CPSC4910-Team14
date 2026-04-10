@@ -1,9 +1,5 @@
 @use '@/styles/globals' as *;
 
-.page {
-  // flex child of SponsorOrgLayout — no additional wrapper needed
-}
-
 /* Application rows */
 .appRow {
   display: flex;
@@ -130,6 +126,8 @@
   font-weight: 500;
   color: var(--color-accent, #16a34a);
   text-decoration: none;
+  max-height: 600px;
+  overflow-y: auto;
 
   &:hover {
     text-decoration: underline;

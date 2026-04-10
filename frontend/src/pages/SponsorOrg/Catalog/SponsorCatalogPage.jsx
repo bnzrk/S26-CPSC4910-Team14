@@ -57,7 +57,7 @@ export default function SponsorCatalogPage()
 
         return products.reduce((acc, item) =>
         {
-            acc[item.id] = !catalog.items.some(
+            acc[item.id] = catalog.items.some(
                 (catalogItem) => catalogItem.externalId == item.id
             );
             return acc;
@@ -118,10 +118,13 @@ export default function SponsorCatalogPage()
             <EditCatalogItemModal
                 isOpen={currentModal == modals.updateItem}
                 onClose={() => setCurrentModal(null)}
-                item={catalog ? catalog.items.find((i) => i.id == selectedCatalogItemId) : null}
+                item={catalog ? catalog?.items.find((i) => i.id == selectedCatalogItemId) : null}
             />
             <CardHost>
                 <Card title='Catalog'>
+                    {(!catalog || catalog?.items.length == 0) &&
+                        <p>No items in your catalog yet.</p>
+                    }
                     <div className={styles.grid}>
                         {catalog && catalog.items.sort((a, b) => b.isAvailable - a.isAvailable).map((item) => (
                             <ShopItem
@@ -170,10 +173,10 @@ export default function SponsorCatalogPage()
                                     title={item.title}
                                     category={item.category.name}
                                     price={item.price}
-                                    available={productInCatalog[item.id]}
-                                    onClick={() => !productInCatalog[item.id] ? undefined : handleItemAddClick(item.id)}
+                                    available={!productInCatalog[item.id]}
+                                    onClick={() => productInCatalog[item.id] ? undefined : handleItemAddClick(item.id)}
                                 >
-                                    {!productInCatalog[item.id] && <InlineInfo className={styles.itemWarning} messages={['In Catalog']} />}
+                                    {productInCatalog[item.id] && <InlineInfo className={styles.itemWarning} messages={['In Catalog']} />}
                                 </ShopItem>
                             ))
                         }

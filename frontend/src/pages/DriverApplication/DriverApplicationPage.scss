@@ -1,124 +1,124 @@
 .application-page {
-    display: flex;
-    justify-content: center;
-    padding: 60px 20px;
-    background: #f9fafb;
-    min-height: 100vh;
-  }
-  
-  .application-card {
-    width: 420px;
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  .title {
-    font-size: 32px;
-    margin-bottom: 30px;
-    text-align: center;
-  }
-  
-  .section-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #111827;
-    text-transform: uppercase;
-    margin-top: 24px;
-    margin-bottom: 8px;
-  }
-  
-  .form-row {
-    display: flex;
-    gap: 12px;
-  }
-  
-  .form-row .form-field {
-    flex: 1;
-  }
-  
-  .form-field {
-    position: relative;
-    margin-bottom: 16px;
-  
-    input,
-    select {
-      width: 100%;
-      padding: 14px 12px;
-      border: 1px solid #d0d7de;
-      border-radius: 6px;
-      font-size: 15px;
-      outline: none;
-      background: white;
-    }
-  
-    label {
-      position: absolute;
-      top: 14px;
-      left: 12px;
-      font-size: 14px;
-      color: #6b7280;
-      pointer-events: none;
-      transition: 0.2s ease all;
-      background: white;
-      padding: 0 4px;
-    }
-  
-    input:focus + label,
-    input:not(:placeholder-shown) + label,
-    select:focus + label,
-    select:not([value=""]) + label {
-      top: -8px;
-      left: 10px;
-      font-size: 12px;
-      color: #17643a;
-    }
-  
-    input:focus,
-    select:focus {
-      border-color: #17643a;
-      box-shadow: 0 0 0 2px rgba(23, 100, 58, 0.1);
-    }
-  }
-  
-  .submit-btn {
+  display: flex;
+  justify-content: center;
+  padding: 60px 20px;
+  background: #f9fafb;
+  min-height: 100vh;
+}
+
+.application-card {
+  width: 420px;
+  background: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.title {
+  font-size: 32px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  text-transform: uppercase;
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.form-row .form-field {
+  flex: 1;
+}
+
+.form-field {
+  position: relative;
+  margin-bottom: 16px;
+
+  input,
+  select {
     width: 100%;
-    padding: 16px;
-    border: none;
+    padding: 14px 12px;
+    border: 1px solid #d0d7de;
     border-radius: 6px;
-    background: #17643a;
-    color: white;
-    font-size: 18px;
-    font-weight: 600;
-    margin-top: 10px;
-    cursor: pointer;
-  }
-  
-  .submit-btn:hover {
-    background: #14532d;
+    font-size: 15px;
+    outline: none;
+    background: white;
   }
 
-  /* Error messages for individual fields */
+  label {
+    position: absolute;
+    top: 14px;
+    left: 12px;
+    font-size: 14px;
+    color: #6b7280;
+    pointer-events: none;
+    transition: 0.2s ease all;
+    background: white;
+    padding: 0 4px;
+  }
+
+  input:focus+label,
+  input:not(:placeholder-shown)+label,
+  select:focus+label,
+  select:not([value=""])+label {
+    top: -8px;
+    left: 10px;
+    font-size: 12px;
+    color: #17643a;
+  }
+
+  input:focus,
+  select:focus {
+    border-color: #17643a;
+    box-shadow: 0 0 0 2px rgba(23, 100, 58, 0.1);
+  }
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 6px;
+  background: #17643a;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.submit-btn:hover {
+  background: #14532d;
+}
+
+/* Error messages for individual fields */
 .field-error {
-    color: #e53e3e; 
-    font-size: 0.85rem; 
-    margin-top: 4px;
-  }
-  
-  /* Success message at top */
-  .success-message {
-    color: #2f855a;
-    font-size: 0.95rem;
-    margin-bottom: 12px;
-  }
-  
-  /* General form error message at top */
-  .error-message {
-    color: #e53e3e; 
-    font-size: 0.95rem;
-    margin-bottom: 12px;
-  }
+  color: #e53e3e;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+/* Success message at top */
+.success-message {
+  color: #2f855a;
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+}
+
+/* General form error message at top */
+.error-message {
+  color: #e53e3e;
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+}

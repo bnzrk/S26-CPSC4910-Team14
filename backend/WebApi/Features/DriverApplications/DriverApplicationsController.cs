@@ -7,8 +7,8 @@ using WebApi.Data;
 using WebApi.Data.Entities;
 using WebApi.Data.Enums;
 using WebApi.Features.DriverApplications.Models;
-using WebApi.Features.Users;
 using WebApi.Audit;
+using WebApi.Features.Alerts;
 
 namespace WebApi.Features.DriverApplications;
 
@@ -19,15 +19,18 @@ public class DriverApplicationsController : ControllerBase
     private readonly AppDbContext _db;
     private readonly UserManager<User> _userManager;
     private readonly IAuditLogger _auditLogger;
+    private readonly IAlertsService _alertsService;
 
     public DriverApplicationsController(
         AppDbContext db,
         UserManager<User> userManager,
-        IAuditLogger auditLogger)
+        IAuditLogger auditLogger,
+        IAlertsService alertsService)
     {
         _db = db;
         _userManager = userManager;
         _auditLogger = auditLogger;
+        _alertsService = alertsService;
     }
 
     [HttpGet]
@@ -128,18 +131,28 @@ public class DriverApplicationsController : ControllerBase
             return authResult.Result;
 
         var application = authResult.Application!;
+        if (!application.DriverUserId.HasValue)
+            return BadRequest("This application does not belong to a driver yet.");
 
         application.Status = ApplicationStatus.Accepted;
         application.IsActive = false;
 
+        var driver = await _db.DriverUsers.Where(d => d.Id == application.DriverUserId.Value).SingleOrDefaultAsync();
+        if (driver is null)
+            return NotFound("Application's driver not found.");
+
+        driver.SponsorOrgs.Add(application.SponsorOrg);
+
         await _db.SaveChangesAsync();
         await _auditLogger.CreateApplicationStatusChangeAuditLog(applicationId, "Accepted", null);
+        await _alertsService.CreateSponsorshipChangeAlert(driver.Id, application.SponsorOrgId, DriverSponsorChangeType.Added);
+
         return Ok();
     }
 
     [HttpPost("{applicationId}/reject")]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
-    public async Task<ActionResult> RejectApplication(int applicationId, [FromBody] RejectApplicationModel? request)
+    public async Task<ActionResult> RejectApplication([FromRoute] int applicationId, [FromBody] RejectApplicationModel request)
     {
         var authResult = await GetAuthorizedApplication(applicationId);
         if (authResult.Result is not null)
@@ -149,7 +162,7 @@ public class DriverApplicationsController : ControllerBase
 
         application.Status = ApplicationStatus.Rejected;
         application.IsActive = false;
-        application.RejectionReason = request?.Reason;
+        application.RejectionReason = request.Reason;
 
         await _db.SaveChangesAsync();
         await _auditLogger.CreateApplicationStatusChangeAuditLog(applicationId, "Rejected", request?.Reason);
@@ -168,6 +181,7 @@ public class DriverApplicationsController : ControllerBase
             return (null, NotFound());
 
         var application = await _db.DriverApplications
+            .Include(a => a.SponsorOrg)
             .SingleOrDefaultAsync(a => a.Id == applicationId);
 
         if (application is null)
@@ -191,10 +205,7 @@ public class DriverApplicationsController : ControllerBase
             .AsNoTracking()
             .AnyAsync(a =>
                 a.Id == applicationId &&
-                a.DriverUserId != null &&
-                _db.DriverUsers.Any(d =>
-                    d.Id == a.DriverUserId &&
-                    d.SponsorOrgs.Any(o => o.Id == sponsorOrgId.Value)));
+                a.SponsorOrgId == sponsorOrgId);
     }
     #endregion
 }
