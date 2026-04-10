@@ -99,6 +99,12 @@ public class DriverApplicationsController : ControllerBase
         if (!sponsorOrgExists)
             return NotFound();
 
+        var driverAlreadyInOrg = await _db.DriverUsers
+            .AnyAsync(d => d.Id == driverId.Value && d.SponsorOrgs.Any(o => o.Id == request.SponsorOrgId));
+
+        if (driverAlreadyInOrg)
+            return BadRequest("Already a driver for this sponsor.");
+
         var application = new DriverApplication
         {
             DriverUserId = driverId,

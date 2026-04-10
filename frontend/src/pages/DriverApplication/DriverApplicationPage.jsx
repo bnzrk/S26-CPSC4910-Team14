@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "@/api/apiFetch";
 import { useAvailableSponsorOrgs } from "@/api/sponsorOrg";
+import { useOrgContext } from "@/contexts/OrgContext/OrgContext";
 import CardHost from "@/components/CardHost/CardHost";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
@@ -20,7 +21,9 @@ export default function DriverApplicationPage()
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  const { driverOrgs } = useOrgContext();
   const { data: orgs } = useAvailableSponsorOrgs();
+  const filteredOrgs = (driverOrgs && orgs) ? orgs.filter(o => !driverOrgs.some(d => d.id == o.id)) : null;
 
   const [formData, setFormData] = useState({
     orgId: "",
@@ -48,9 +51,12 @@ export default function DriverApplicationPage()
     const orgIdFromUrl = searchParams.get("orgId");
     if (orgIdFromUrl)
     {
-      updateField("orgId", orgIdFromUrl);
+      if (orgs && driverOrgs && filteredOrgs.some(o => o.id == orgIdFromUrl))
+        updateField("orgId", orgIdFromUrl);
+      else
+        updateField("orgId", "");
     }
-  }, []);
+  }, [orgs, driverOrgs]);
 
   function updateField(field, value)
   {
@@ -203,7 +209,7 @@ export default function DriverApplicationPage()
               <label className={styles.label}>Organization ID</label>
               <select value={formData.orgId} onChange={e => updateField("orgId", e.target.value)}>
                 <option value="" disabled hidden>Select a sponsor</option>
-                {orgs && orgs.map((org) =>
+                {filteredOrgs && filteredOrgs.map((org) =>
                   <option key={org.id} value={org.id}>{org.name}</option>
                 )}
               </select>
