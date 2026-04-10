@@ -30,7 +30,6 @@ createRoot(document.getElementById('root')).render(
           <ThemeProvider>
             <HelpProvider>
               <ToastHost />
-              <ScrollRestore />
               <App />
             </HelpProvider>
           </ThemeProvider>

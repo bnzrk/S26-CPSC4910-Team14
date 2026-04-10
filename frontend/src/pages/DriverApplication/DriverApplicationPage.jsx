@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "@/api/apiFetch";
+import { useAvailableSponsorOrgs } from "@/api/sponsorOrg";
+import { useOrgContext } from "@/contexts/OrgContext/OrgContext";
 import CardHost from "@/components/CardHost/CardHost";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
@@ -18,6 +20,10 @@ export default function DriverApplicationPage()
 {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  const { driverOrgs } = useOrgContext();
+  const { data: orgs } = useAvailableSponsorOrgs();
+  const filteredOrgs = (driverOrgs && orgs) ? orgs.filter(o => !driverOrgs.some(d => d.id == o.id)) : null;
 
   const [formData, setFormData] = useState({
     orgId: "",
@@ -45,9 +51,12 @@ export default function DriverApplicationPage()
     const orgIdFromUrl = searchParams.get("orgId");
     if (orgIdFromUrl)
     {
-      updateField("orgId", orgIdFromUrl);
+      if (orgs && driverOrgs && filteredOrgs.some(o => o.id == orgIdFromUrl))
+        updateField("orgId", orgIdFromUrl);
+      else
+        updateField("orgId", "");
     }
-  }, []);
+  }, [orgs, driverOrgs]);
 
   function updateField(field, value)
   {
@@ -189,10 +198,6 @@ export default function DriverApplicationPage()
   return (
     <main>
       <CardHost>
-        <Button onClick={() => navigate("/driver/points")}>
-          Cancel
-        </Button>
-
         {submitStatus === "error" && (
           <InlineErrors errors={["Submission failed. Please try again."]} />
         )}
@@ -202,13 +207,12 @@ export default function DriverApplicationPage()
           <div className={styles.fieldGroup}>
             <div className={styles.field}>
               <label className={styles.label}>Organization ID</label>
-              <input
-                className={styles.input}
-                type="number"
-                value={formData.orgId}
-                onChange={e => updateField("orgId", e.target.value)}
-                placeholder="Enter your sponsor's organization ID"
-              />
+              <select value={formData.orgId} onChange={e => updateField("orgId", e.target.value)}>
+                <option value="" disabled hidden>Select a sponsor</option>
+                {filteredOrgs && filteredOrgs.map((org) =>
+                  <option key={org.id} value={org.id}>{org.name}</option>
+                )}
+              </select>
               {formErrors.orgId && <p className={styles.fieldError}>{formErrors.orgId}</p>}
             </div>
           </div>
@@ -391,10 +395,14 @@ export default function DriverApplicationPage()
           </div>
         </Card>
 
-        <Button color="primary" onClick={submitApplication} disabled={isLoading}>
-          {isLoading ? "Submitting…" : "Submit Application"}
-        </Button>
-
+        <div className={styles.appActions}>
+          <Button onClick={() => navigate("/driver/points")}>
+            Cancel
+          </Button>
+          <Button color="primary" onClick={submitApplication} disabled={isLoading}>
+            {isLoading ? "Submitting…" : "Submit Application"}
+          </Button>
+        </div>
       </CardHost>
     </main>
   );

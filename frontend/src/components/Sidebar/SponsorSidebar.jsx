@@ -22,7 +22,7 @@ const NAV_GROUPS = [
     items: [
       { label: 'Manage Drivers', to: '/org/drivers', badgeKey: 'pendingApps' },
       { label: 'Manage Users', to: '/org/users' },
-      { label: 'Bulk Actions', to: '/org/bulk'}
+      { label: 'Bulk Actions', to: '/org/bulk' }
       // { label: 'Deliveries', to: '/org/deliveries' },
       // { label: 'Routes', to: '/org/routes' },
     ],
@@ -30,7 +30,7 @@ const NAV_GROUPS = [
   {
     label: 'Rewards',
     items: [
-      { label: 'Point Rules', to: '/org/point-rules', badge: 8 },
+      { label: 'Point Rules', to: '/org/point-rules' },
       { label: 'Catalog', to: '/org/catalog' },
     ],
   },
@@ -52,7 +52,11 @@ async function handleLogout()
   {
     console.error("Logout failed:", err);
   }
-  queryClient.setQueryData(["currentUser"], null);
+  // Cancel queries, clear cache, set user to null;
+  await queryClient.cancelQueries();
+  queryClient.clear();
+  queryClient.setQueryData(['currentUser'], null);
+
   navigate("/login");
 }
 

@@ -7,6 +7,12 @@
   padding: $grid-1x 0;
 }
 
+.appActions {
+  display: flex;
+  flex-direction: row;
+  gap: $grid-2x;
+}
+
 .row {
   display: grid;
   grid-template-columns: 1fr 1fr;

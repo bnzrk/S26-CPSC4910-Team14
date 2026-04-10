@@ -155,8 +155,13 @@ export default function ProfilePage()
     {
       console.error("Logout failed:", err);
     }
-    queryClient.invalidateQueries(["currentUser"]);
-    navigate("/");
+
+    // Cancel queries, clear cache, set user to null;
+    await queryClient.cancelQueries();
+    queryClient.setQueryData(['currentUser'], null);
+    queryClient.clear();
+
+    navigate("/about");
   }
 
   return (

@@ -34,6 +34,22 @@ public class SponsorOrgsController : ControllerBase
     }
 
     #region Org
+    [HttpGet("available")]
+    [Authorize]
+    public async Task<ActionResult> GetAvailableOrgs()
+    {
+        var orgs = await _db.SponsorOrgs
+            .AsNoTracking()
+            .Select(o => new SimpleSponsorOrgModel
+            {
+               Id = o.Id,
+               Name = o.SponsorName 
+            })
+            .ToListAsync();
+
+        return Ok(orgs);
+    }
+
     [HttpGet]
     [Authorize(Policy = PolicyNames.AdminOnly)]
     public async Task<IActionResult> GetAllSponsorOrgs()
