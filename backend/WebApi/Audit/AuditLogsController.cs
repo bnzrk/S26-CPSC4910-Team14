@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using WebApi.Audit.Models;
 using WebApi.Data;
 using WebApi.Data.Entities;
 using WebApi.Data.Enums;
@@ -9,241 +11,269 @@ namespace WebApi.Features.Audit;
 
 [ApiController]
 [Route("/audit-logs")]
-[Authorize]
+[Authorize(Policy = PolicyNames.AdminOnly)]
 public class AuditLogsController : ControllerBase
 {
-    private readonly AuditDbContext _auditDb;
-    private readonly UserManager<User> _userManager;
     private readonly AppDbContext _db;
+    private readonly UserManager<User> _userManager;
 
-    public AuditLogsController(AuditDbContext auditDb, UserManager<User> userManager, AppDbContext db)
+    public AuditLogsController(AppDbContext db, UserManager<User> userManager)
     {
-        _auditDb = auditDb;
-        _userManager = userManager;
         _db = db;
-    }
-
-    private bool IsAdminOrSponsor()
-    {
-        var userTypeClaim = User.FindFirst("userType")?.Value;
-        return userTypeClaim == "Admin" || userTypeClaim == "Sponsor";
-    }
-
-    private async Task<int?> GetSponsorOrgId()
-    {
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null || user.UserType != UserType.Sponsor) return null;
-
-        return await _db.SponsorUsers
-            .Where(s => s.UserId == user.Id)
-            .Select(s => s.SponsorOrgId)
-            .SingleOrDefaultAsync();
-    }
-
-    private IQueryable<T> ApplyFilters<T>(IQueryable<T> query, string? email, DateTime? from, DateTime? to, int? sponsorOrgId) where T : class
-    {
-        return query;
-    }
-
-    // Generic method for paginated result
-    private async Task<IActionResult> GetPaginatedResult<T>(IQueryable<T> query, int page, int pageSize, Func<T, object> selector)
-    {
-        var totalCount = await query.CountAsync();
-        var data = await query
-            .OrderByDescending(e => EF.Property<DateTime>(e, "TimestampUtc"))
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(selector)
-            .ToListAsync();
-
-        return Ok(new { logs = data, totalCount, page, pageSize });
+        _userManager = userManager;
     }
 
     [HttpGet("logins")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
     public async Task<IActionResult> GetLoginLogs(
         [FromQuery] string? email,
         [FromQuery] DateTime? from,
-        [FromQuery] DateTime? to,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 50)
+        [FromQuery] DateTime? to)
     {
-        if (!IsAdminOrSponsor()) return Forbid();
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
 
-        var query = _auditDb.LoginAuditLogs.AsNoTracking();
-        var sponsorOrgId = await GetSponsorOrgId();
-        if (sponsorOrgId.HasValue) query = query.Where(l => l.OrgId == sponsorOrgId.Value);
-        if (!string.IsNullOrWhiteSpace(email)) query = query.Where(l => l.Email.Contains(email));
-        if (from.HasValue) query = query.Where(l => l.TimestampUtc >= from.Value);
-        if (to.HasValue) query = query.Where(l => l.TimestampUtc <= to.Value);
+        var query = _db.LoginAuditLogs.AsNoTracking();
 
-        return await GetPaginatedResult(query, page, pageSize, l => new
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor)
         {
-            l.Id,
-            l.TimestampUtc,
-            l.Email,
-            l.Successful,
-            Type = "Login"
-        });
+            var sponsorOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => (int?)s.SponsorOrgId).SingleOrDefaultAsync();
+            if (!sponsorOrgId.HasValue)
+                return BadRequest("Could not resolve user's organization.");
+
+            // Filter logs for sponsor users and driver users in this sponsor's
+            query = query.Where(l =>
+                _db.SponsorUsers.Any(su => su.UserId == l.UserId && su.SponsorOrgId == sponsorOrgId) ||
+                _db.DriverUsers.Any(du => du.UserId == l.UserId && du.SponsorOrgs.Any(so => so.Id == sponsorOrgId)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(email))
+            query = query.Where(l => l.Email.Contains(email));
+
+        if (from.HasValue)
+            query = query.Where(l => l.TimestampUtc >= from.Value);
+
+        if (to.HasValue)
+            query = query.Where(l => l.TimestampUtc <= to.Value);
+
+        var logs = await query
+            .OrderByDescending(l => l.TimestampUtc)
+            .Select(l => new LoginLogModel
+            {
+                Id = l.Id,
+                TimestampUtc = l.TimestampUtc,
+                Email = l.Email,
+                Successful = l.Successful
+            })
+            .ToListAsync();
+
+        return Ok(logs);
     }
 
     [HttpGet("point-transactions")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
     public async Task<IActionResult> GetPointTransactionLogs(
         [FromQuery] string? email,
+        [FromQuery] int? sponsorOrgId,
         [FromQuery] DateTime? from,
-        [FromQuery] DateTime? to,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 50)
+        [FromQuery] DateTime? to)
     {
-        if (!IsAdminOrSponsor()) return Forbid();
+        var userId = _userManager.GetUserId(User);
 
-        var query = _auditDb.PointTransactionAuditLogs.AsNoTracking();
-        var sponsorOrgId = await GetSponsorOrgId();
-        if (sponsorOrgId.HasValue) query = query.Where(l => l.SponsorOrgId == sponsorOrgId.Value);
-        if (!string.IsNullOrWhiteSpace(email)) query = query.Where(l => l.DriverEmail.Contains(email) || l.ActorUserEmail.Contains(email));
-        if (from.HasValue) query = query.Where(l => l.TimestampUtc >= from.Value);
-        if (to.HasValue) query = query.Where(l => l.TimestampUtc <= to.Value);
+        var query = _db.PointTransactionAuditLogs.AsNoTracking();
 
-        return await GetPaginatedResult(query, page, pageSize, l => new
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor)
         {
-            l.Id,
-            l.TimestampUtc,
-            l.ActorUserEmail,
-            l.DriverEmail,
-            l.SponsorOrgName,
-            l.BalanceChange,
-            l.Reason,
-            Type = "PointTransaction"
-        });
-    }
+            if (sponsorOrgId.HasValue)
+                return BadRequest("Sponsors should not specify an organization.");
 
-    [HttpGet("driver-sponsor-changes")]
-    public async Task<IActionResult> GetDriverSponsorChangeLogs(
-        [FromQuery] string? email,
-        [FromQuery] DateTime? from,
-        [FromQuery] DateTime? to,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 50)
-    {
-        if (!IsAdminOrSponsor()) return Forbid();
+            sponsorOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => (int?)s.SponsorOrgId).SingleOrDefaultAsync();
+            if (!sponsorOrgId.HasValue)
+                return BadRequest("Could not resolve user's organization.");
+        }
 
-        var query = _auditDb.DriverSponsorChangeAuditLogs.AsNoTracking();
-        var sponsorOrgId = await GetSponsorOrgId();
-        if (sponsorOrgId.HasValue) query = query.Where(l => l.SponsorOrgId == sponsorOrgId.Value);
-        if (!string.IsNullOrWhiteSpace(email)) query = query.Where(l => l.DriverEmail.Contains(email) || l.ActorUserEmail.Contains(email));
-        if (from.HasValue) query = query.Where(l => l.TimestampUtc >= from.Value);
-        if (to.HasValue) query = query.Where(l => l.TimestampUtc <= to.Value);
-
-        return await GetPaginatedResult(query, page, pageSize, l => new
-        {
-            l.Id,
-            l.TimestampUtc,
-            l.ActorUserEmail,
-            l.DriverEmail,
-            l.SponsorOrgName,
-            ChangeType = l.ChangeType.ToString(),
-            Type = "DriverSponsorChange"
-        });
-    }
-
-    [HttpGet("password-changes")]
-    public async Task<IActionResult> GetPasswordChangeLogs(
-        [FromQuery] string? email,
-        [FromQuery] DateTime? from,
-        [FromQuery] DateTime? to,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 50)
-    {
-        if (!IsAdminOrSponsor()) return Forbid();
-
-        var query = _auditDb.PasswordChangeAuditLogs.AsNoTracking();
-        var sponsorOrgId = await GetSponsorOrgId();
-        if (sponsorOrgId.HasValue) query = query.Where(l => l.OrgId == sponsorOrgId.Value);
-        if (!string.IsNullOrWhiteSpace(email)) query = query.Where(l => l.Email.Contains(email));
-        if (from.HasValue) query = query.Where(l => l.TimestampUtc >= from.Value);
-        if (to.HasValue) query = query.Where(l => l.TimestampUtc <= to.Value);
-
-        return await GetPaginatedResult(query, page, pageSize, l => new
-        {
-            l.Id,
-            l.TimestampUtc,
-            l.Email,
-            ChangeType = l.ChangeType.ToString(),
-            l.Successful,
-            Type = "PasswordChange"
-        });
-    }
-
-    [HttpGet("catalog-changes")]
-    public async Task<IActionResult> GetCatalogChangeLogs(
-        [FromQuery] string? email,
-        [FromQuery] DateTime? from,
-        [FromQuery] DateTime? to,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 50)
-    {
-        if (!IsAdminOrSponsor()) return Forbid();
-
-        var query = _auditDb.CatalogChangeAuditLogs.AsNoTracking();
-        var sponsorOrgId = await GetSponsorOrgId();
-        if (sponsorOrgId.HasValue) query = query.Where(l => l.SponsorOrgId == sponsorOrgId.Value);
-        if (!string.IsNullOrWhiteSpace(email)) query = query.Where(l => l.ActorUserEmail.Contains(email));
-        if (from.HasValue) query = query.Where(l => l.TimestampUtc >= from.Value);
-        if (to.HasValue) query = query.Where(l => l.TimestampUtc <= to.Value);
-
-        return await GetPaginatedResult(query, page, pageSize, l => new
-        {
-            l.Id,
-            l.TimestampUtc,
-            l.ActorUserEmail,
-            l.SponsorOrgId,
-            l.ChangeType,
-            l.ExternalItemId,
-            Type = "CatalogChange"
-        });
-    }
-
-    [HttpGet("driver-points-history")]
-    public async Task<IActionResult> GetDriverPointsHistory([FromQuery] int? driverId)
-    {
-        if (!IsAdminOrSponsor())
-            return Forbid();
-
-        var sponsorOrgId = await GetSponsorOrgId();
-
-        var query = _auditDb.PointTransactionAuditLogs.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(email))
+            query = query.Where(l => l.DriverEmail.Contains(email) || l.ActorUserEmail.Contains(email));
 
         if (sponsorOrgId.HasValue)
             query = query.Where(l => l.SponsorOrgId == sponsorOrgId.Value);
 
-        if (driverId.HasValue)
-            query = query.Where(l => l.DriverId == driverId.Value);
+        if (from.HasValue)
+            query = query.Where(l => l.TimestampUtc >= from.Value);
+
+        if (to.HasValue)
+            query = query.Where(l => l.TimestampUtc <= to.Value);
 
         var logs = await query
-            .OrderBy(l => l.DriverId)
-            .ThenBy(l => l.TimestampUtc)
+            .OrderByDescending(l => l.TimestampUtc)
+            .Select(l => new
+            {
+                l.Id,
+                l.TimestampUtc,
+                l.ActorUserEmail,
+                l.DriverEmail,
+                l.SponsorOrgName,
+                l.BalanceChange,
+                l.Reason,
+                Type = "PointTransaction"
+            })
             .ToListAsync();
 
-        var driverTotals = new Dictionary<int, int>();
+        return Ok(logs);
+    }
 
-        var report = logs.Select(l =>
+    [HttpGet("driver-sponsor-changes")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<IActionResult> GetDriverSponsorChangeLogs(
+        [FromQuery] string? email,
+        [FromQuery] int? sponsorOrgId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var query = _db.DriverSponsorChangeAuditLogs.AsNoTracking();
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor)
         {
-            if (!driverTotals.ContainsKey(l.DriverId))
-                driverTotals[l.DriverId] = 0;
+            if (sponsorOrgId.HasValue)
+                return BadRequest("Sponsors should not specify an organization.");
 
-            driverTotals[l.DriverId] += l.BalanceChange;
+            sponsorOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => (int?)s.SponsorOrgId).SingleOrDefaultAsync();
+            if (!sponsorOrgId.HasValue)
+                return BadRequest("Could not resolve user's organization.");
+        }
 
-            return new
+        if (!string.IsNullOrWhiteSpace(email))
+            query = query.Where(l => l.DriverEmail.Contains(email) || l.ActorUserEmail.Contains(email));
+
+        if (sponsorOrgId.HasValue)
+            query = query.Where(l => l.SponsorOrgId == sponsorOrgId.Value);
+
+        if (from.HasValue)
+            query = query.Where(l => l.TimestampUtc >= from.Value);
+
+        if (to.HasValue)
+            query = query.Where(l => l.TimestampUtc <= to.Value);
+
+        var logs = await query
+            .OrderByDescending(l => l.TimestampUtc)
+            .Select(l => new SponsorChangeLogModel
             {
-                l.DriverId,
-                l.DriverEmail,
-                TotalPoints = driverTotals[l.DriverId],
-                PointsChanged = l.BalanceChange,
-                Date = l.TimestampUtc,
-                SponsorName = l.ActorUserEmail,
-                l.Reason
-            };
-        }).ToList();
+                Id = l.Id,
+                TimestampUtc = l.TimestampUtc,
+                ActorUserEmail = l.ActorUserEmail,
+                DriverEmail = l.DriverEmail,
+                SponsorOrgName = l.SponsorOrgName,
+                ChangeType = l.ChangeType.ToString()
+            })
+            .ToListAsync();
 
-        return Ok(report);
+        return Ok(logs);
+    }
+
+    [HttpGet("password-changes")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<IActionResult> GetPasswordChangeLogs(
+        [FromQuery] string? email,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var query = _db.PasswordChangeAuditLogs.AsNoTracking();
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor)
+        {
+            var sponsorOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => (int?)s.SponsorOrgId).SingleOrDefaultAsync();
+            if (!sponsorOrgId.HasValue)
+                return BadRequest("Could not resolve user's organization.");
+
+            query = query = query.Where(l =>
+                _db.SponsorUsers.Any(su => su.UserId == l.TargetUserId && su.SponsorOrgId == sponsorOrgId) ||
+                _db.DriverUsers.Any(du => du.UserId == l.TargetUserId && du.SponsorOrgs.Any(so => so.Id == sponsorOrgId)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(email))
+            query = query.Where(l => l.TargetUserEmail.Contains(email));
+
+        if (from.HasValue)
+            query = query.Where(l => l.TimestampUtc >= from.Value);
+
+        if (to.HasValue)
+            query = query.Where(l => l.TimestampUtc <= to.Value);
+
+        var logs = await query
+            .OrderByDescending(l => l.TimestampUtc)
+            .Select(l => new
+            {
+                l.Id,
+                l.TimestampUtc,
+                l.TargetUserEmail,
+                ChangeType = l.ChangeType.ToString(),
+                l.Successful,
+                Type = "PasswordChange"
+            })
+            .ToListAsync();
+
+        return Ok(logs);
+    }
+
+    [HttpGet("catalog-changes")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<IActionResult> GetCatalogChangeLogs(
+        [FromQuery] string? email,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var query = _db.CatalogChangeAuditLogs.AsNoTracking();
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor)
+        {
+            var sponsorOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => (int?)s.SponsorOrgId).SingleOrDefaultAsync();
+            if (!sponsorOrgId.HasValue)
+                return BadRequest("Could not resolve user's organization.");
+
+            query = query.Where(l => l.SponsorOrgId == sponsorOrgId);
+        }
+
+        if (!string.IsNullOrWhiteSpace(email))
+            query = query.Where(l => l.ActorUserEmail.Contains(email));
+
+        if (from.HasValue)
+            query = query.Where(l => l.TimestampUtc >= from.Value);
+
+        if (to.HasValue)
+            query = query.Where(l => l.TimestampUtc <= to.Value);
+
+        var logs = await query
+            .OrderByDescending(l => l.TimestampUtc)
+            .Select(l => new
+            {
+                l.Id,
+                l.TimestampUtc,
+                l.ActorUserEmail,
+                l.SponsorOrgId,
+                l.ChangeType,
+                l.ExternalItemId,
+                Type = "CatalogChange"
+            })
+            .ToListAsync();
+
+        return Ok(logs);
     }
 }

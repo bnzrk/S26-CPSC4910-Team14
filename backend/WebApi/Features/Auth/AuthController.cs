@@ -68,26 +68,13 @@ public class AuthController : ControllerBase
             lockoutOnFailure: false
         );
 
-        // Include OrgId if sponsor
-        int? orgId = null;
-        if (user.UserType == UserType.Sponsor)
-        {
-            var sponsorOrg = await _db.SponsorUsers
-                .AsNoTracking()
-                .Where(s => s.User.Id == user.Id)
-                .Select(s => s.SponsorOrgId)
-                .SingleOrDefaultAsync();
-
-            orgId = sponsorOrg;
-        }
-
         if (!result.Succeeded)
         {
-            await _auditLogger.CreateLoginAuditLog(login.Email, false);
+            await _auditLogger.CreateLoginAuditLog(null, user.Email!, false);
             return BadRequest("Invalid email or password.");
         }
 
-        await _auditLogger.CreateLoginAuditLog(login.Email, true);
+        await _auditLogger.CreateLoginAuditLog(user.Id, user.Email!, true);
 
         user.LastLoginUtc = DateTime.UtcNow;
         await _db.SaveChangesAsync();
