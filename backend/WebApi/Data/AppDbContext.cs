@@ -46,6 +46,7 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<PointTransactionAlert> PointTransactionAlerts { get; set; }
     public DbSet<SponsorshipChangeAlert> SponsorshipChangeAlerts { get; set; }
     public DbSet<OrderAlert> OrderAlerts { get; set; }
+    public DbSet<DriverAlertSettings> DriverAlertSettings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -145,6 +146,13 @@ public class AppDbContext : IdentityDbContext<User>
                     j => j.HasOne<SponsorOrg>().WithMany().HasForeignKey("SponsorOrgId"),
                     j => j.HasOne<DriverUser>().WithMany().HasForeignKey("DriverUserId"));
         });
+
+        modelBuilder.Entity<DriverAlertSettings>(b =>
+            b.HasOne(x => x.Driver)
+                .WithOne(x => x.AlertSettings)
+                .HasForeignKey<DriverAlertSettings>(x => x.DriverId)
+                .OnDelete(DeleteBehavior.Cascade)
+        );
 
         var nullableDateOnlyConverter = new ValueConverter<DateOnly?, DateTime?>(
             v => v.HasValue ? v.Value.ToDateTime(TimeOnly.MinValue) : null,

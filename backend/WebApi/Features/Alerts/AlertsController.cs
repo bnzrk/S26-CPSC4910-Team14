@@ -166,4 +166,57 @@ public class AlertsController : ControllerBase
 
         return Ok(allAlerts);
     }
+
+    [HttpGet("settings")]
+    [Authorize(Policy = PolicyNames.DriverOnly)]
+    public async Task<ActionResult<AlertSettingsModel>> GetAlertSettings()
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var driver = await _db.DriverUsers
+            .Include(d => d.AlertSettings)
+            .SingleOrDefaultAsync(d => d.UserId == userId);
+
+        if (driver is null)
+            return NotFound();
+
+        if (driver.AlertSettings is null)
+        {
+            driver.AlertSettings = new DriverAlertSettings();
+            await _db.SaveChangesAsync();
+        }
+
+        return Ok(new AlertSettingsModel
+        {
+            IsOrderAlertsEnabled = driver.AlertSettings.IsOrderAlertsEnabled,
+            IsPointChangeAlertsEnabled = driver.AlertSettings.IsPointChangeAlertsEnabled,
+        });
+    }
+
+    [HttpPut("settings")]
+    [Authorize(Policy = PolicyNames.DriverOnly)]
+    public async Task<ActionResult> UpdateAlertSettings([FromBody] AlertSettingsModel request)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var driver = await _db.DriverUsers
+            .Include(d => d.AlertSettings)
+            .SingleOrDefaultAsync(d => d.UserId == userId);
+
+        if (driver is null)
+            return NotFound();
+
+        if (driver.AlertSettings is null)
+            driver.AlertSettings = new DriverAlertSettings();
+
+        driver.AlertSettings.IsOrderAlertsEnabled = request.IsOrderAlertsEnabled;
+        driver.AlertSettings.IsPointChangeAlertsEnabled = request.IsPointChangeAlertsEnabled;
+        await _db.SaveChangesAsync();
+
+        return Ok();
+    }
 }
