@@ -18,6 +18,62 @@ export function useAlerts()
     });
 }
 
+export function useAlertSettings()
+{
+    const { data: user } = useCurrentUser();
+    const isDriver = user?.userType === USER_TYPES.DRIVER;
+
+    return useQuery({
+        queryKey: ["alertSettings", user?.id],
+        queryFn: async () => apiFetch(`/alerts/settings`).then(r => r.json()),
+        enabled: !!user && isDriver,
+        retry: 0
+    });
+}
+
+export function useUpdateAlertSettings()
+{
+    const { data: user } = useCurrentUser();
+
+    return useMutation({
+        mutationFn: async (settings) =>
+            apiFetch(`/alerts/settings`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(settings),
+            }).then(r =>
+            {
+                if (!r.ok) throw new Error("Failed to update alert settings");
+            }),
+
+        onMutate: async (newSettings) =>
+        {
+            const queryKey = ["alertSettings", user?.id];
+
+            await queryClient.cancelQueries({ queryKey });
+
+            const previous = queryClient.getQueryData(queryKey);
+
+            queryClient.setQueryData(queryKey, newSettings);
+
+            return { previous };
+        },
+
+        onError: (_err, _newSettings, context) =>
+        {
+            if (context?.previous)
+            {
+                queryClient.setQueryData(["alertSettings", user?.id], context.previous);
+            }
+        },
+
+        onSettled: () =>
+        {
+            queryClient.invalidateQueries({ queryKey: ["alertSettings", user?.id] });
+        },
+    });
+}
+
 export function useDismissAlert()
 {
     const { data: user } = useCurrentUser();

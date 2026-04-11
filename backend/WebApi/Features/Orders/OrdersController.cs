@@ -165,7 +165,13 @@ public class OrdersController : ControllerBase
 
             await dbTransaction.CommitAsync();
 
-            await _alertsService.CreateOrderAlert(order);
+            // Push alert if setting enabled
+            var isAlertEnabled = await _db.DriverAlertSettings
+                .Where(s => s.DriverId == order.DriverId)
+                .Select(s => (bool?)s.IsOrderAlertsEnabled)
+                .SingleOrDefaultAsync();
+            if (isAlertEnabled.HasValue && isAlertEnabled.Value)
+                await _alertsService.CreateOrderAlert(order);
 
             return Ok(new CreateOrderResultModel
             {

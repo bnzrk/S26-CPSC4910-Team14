@@ -42,8 +42,8 @@ public class SponsorOrgsController : ControllerBase
             .AsNoTracking()
             .Select(o => new SimpleSponsorOrgModel
             {
-               Id = o.Id,
-               Name = o.SponsorName 
+                Id = o.Id,
+                Name = o.SponsorName
             })
             .ToListAsync();
 
@@ -331,7 +331,7 @@ public class SponsorOrgsController : ControllerBase
         await _auditLogger.CreateDriverSponsorChangeAuditLog(driverId, driver.User.Email!, org.Id, org.SponsorName, DriverSponsorChangeType.Removed);
         await _alertsService.CreateSponsorshipChangeAlert(driverId, org.Id, DriverSponsorChangeType.Removed);
 
-        return Ok();    
+        return Ok();
     }
     #endregion
 
