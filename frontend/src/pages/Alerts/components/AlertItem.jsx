@@ -46,14 +46,14 @@ function formatTimestamp(date)
     });
 }
 
-export default function AlertItem({ alert, className })
+export default function AlertItem({ alert, onDismiss, className })
 {
     const navigate = useNavigate();
 
     return (
         <div className={clsx(styles.alert, className)}>
-            <div className={styles.left}>
-                <BellIcon className={styles.icon} />
+            <BellIcon className={clsx(styles.icon, styles.left)} />
+            <div className={styles.middle}>
                 <div className={styles.body}>
                     <div className={styles.message}>
                         {alert.type == ALERT_TYPES.PointChange && <PointChangeAlertBody alert={alert} />}
@@ -64,11 +64,13 @@ export default function AlertItem({ alert, className })
                         {formatTimestamp(alert.timestampUtc)}
                     </div>
                 </div>
+                <div className={styles.actions}>
+                    {alert.type == ALERT_TYPES.PointChange && <Button text='View History' color='secondary' size='small' onClick={() => navigate("/driver/points")} />}
+                    {alert.type == ALERT_TYPES.Order && <Button text='View Order' color='secondary' size='small' onClick={() => navigate(`/orders/${alert.metadata.orderId}`)} />}
+                </div>
             </div>
             <div className={styles.right}>
-                {alert.type == ALERT_TYPES.PointChange && <Button text='View History' color='secondary' size='small' onClick={() => navigate("/driver/points")} />}
-                {alert.type == ALERT_TYPES.Order && <Button text='View Order' color='secondary' size='small' onClick={() => navigate(`/orders/${alert.metadata.orderId}`)} />}
-                <button className={styles.dismiss}><XIcon /></button>
+                <button className={styles.dismiss} onClick={onDismiss}><XIcon /></button>
             </div>
         </div>
     )
