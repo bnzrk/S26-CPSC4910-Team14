@@ -6,6 +6,7 @@ using WebApi.Audit.Models;
 using WebApi.Data;
 using WebApi.Data.Entities;
 using WebApi.Data.Enums;
+using WebApi.Helpers.Pagination;
 
 namespace WebApi.Features.Audit;
 
@@ -28,7 +29,9 @@ public class AuditLogsController : ControllerBase
     public async Task<IActionResult> GetLoginLogs(
         [FromQuery] string? email,
         [FromQuery] DateTime? from,
-        [FromQuery] DateTime? to)
+        [FromQuery] DateTime? to,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
     {
         var userId = _userManager.GetUserId(User);
         if (userId is null)
@@ -58,7 +61,7 @@ public class AuditLogsController : ControllerBase
         if (to.HasValue)
             query = query.Where(l => l.TimestampUtc <= to.Value);
 
-        var logs = await query
+        var pageQuery = query
             .OrderByDescending(l => l.TimestampUtc)
             .Select(l => new LoginLogModel
             {
@@ -66,10 +69,10 @@ public class AuditLogsController : ControllerBase
                 TimestampUtc = l.TimestampUtc,
                 Email = l.Email,
                 Successful = l.Successful
-            })
-            .ToListAsync();
+            });
 
-        return Ok(logs);
+        var logsResult = await PagedResult.ToPagedResultAsync(pageQuery, page, pageSize);
+        return Ok(logsResult);
     }
 
     [HttpGet("point-transactions")]
@@ -78,7 +81,9 @@ public class AuditLogsController : ControllerBase
         [FromQuery] string? email,
         [FromQuery] int? sponsorOrgId,
         [FromQuery] DateTime? from,
-        [FromQuery] DateTime? to)
+        [FromQuery] DateTime? to,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
     {
         var userId = _userManager.GetUserId(User);
 
@@ -107,7 +112,7 @@ public class AuditLogsController : ControllerBase
         if (to.HasValue)
             query = query.Where(l => l.TimestampUtc <= to.Value);
 
-        var logs = await query
+        var pageQuery = query
             .OrderByDescending(l => l.TimestampUtc)
             .Select(l => new
             {
@@ -119,10 +124,10 @@ public class AuditLogsController : ControllerBase
                 l.BalanceChange,
                 l.Reason,
                 Type = "PointTransaction"
-            })
-            .ToListAsync();
+            });
 
-        return Ok(logs);
+        var logsResult = await PagedResult.ToPagedResultAsync(query, page, pageSize);
+        return Ok(logsResult);
     }
 
     [HttpGet("driver-sponsor-changes")]
@@ -131,7 +136,9 @@ public class AuditLogsController : ControllerBase
         [FromQuery] string? email,
         [FromQuery] int? sponsorOrgId,
         [FromQuery] DateTime? from,
-        [FromQuery] DateTime? to)
+        [FromQuery] DateTime? to,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
     {
         var userId = _userManager.GetUserId(User);
         if (userId is null)
@@ -162,7 +169,7 @@ public class AuditLogsController : ControllerBase
         if (to.HasValue)
             query = query.Where(l => l.TimestampUtc <= to.Value);
 
-        var logs = await query
+        var pageQuery = query
             .OrderByDescending(l => l.TimestampUtc)
             .Select(l => new SponsorChangeLogModel
             {
@@ -171,11 +178,11 @@ public class AuditLogsController : ControllerBase
                 ActorUserEmail = l.ActorUserEmail,
                 DriverEmail = l.DriverEmail,
                 SponsorOrgName = l.SponsorOrgName,
-                ChangeType = l.ChangeType.ToString()
-            })
-            .ToListAsync();
+                ChangeType = Enum.GetName(l.ChangeType) ?? "N/A"
+            });
 
-        return Ok(logs);
+        var logsResult = await PagedResult.ToPagedResultAsync(query, page, pageSize);
+        return Ok(logsResult);
     }
 
     [HttpGet("password-changes")]
@@ -183,7 +190,9 @@ public class AuditLogsController : ControllerBase
     public async Task<IActionResult> GetPasswordChangeLogs(
         [FromQuery] string? email,
         [FromQuery] DateTime? from,
-        [FromQuery] DateTime? to)
+        [FromQuery] DateTime? to,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
     {
         var userId = _userManager.GetUserId(User);
         if (userId is null)
@@ -212,20 +221,19 @@ public class AuditLogsController : ControllerBase
         if (to.HasValue)
             query = query.Where(l => l.TimestampUtc <= to.Value);
 
-        var logs = await query
+        var pageQuery = query
             .OrderByDescending(l => l.TimestampUtc)
             .Select(l => new
             {
                 l.Id,
                 l.TimestampUtc,
                 l.TargetUserEmail,
-                ChangeType = l.ChangeType.ToString(),
-                l.Successful,
-                Type = "PasswordChange"
-            })
-            .ToListAsync();
+                ChangeType = Enum.GetName(l.ChangeType),
+                l.Successful
+            });
 
-        return Ok(logs);
+        var logsResult = await PagedResult.ToPagedResultAsync(query, page, pageSize);
+        return Ok(logsResult);
     }
 
     [HttpGet("catalog-changes")]
@@ -233,7 +241,9 @@ public class AuditLogsController : ControllerBase
     public async Task<IActionResult> GetCatalogChangeLogs(
         [FromQuery] string? email,
         [FromQuery] DateTime? from,
-        [FromQuery] DateTime? to)
+        [FromQuery] DateTime? to,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
     {
         var userId = _userManager.GetUserId(User);
         if (userId is null)
@@ -260,7 +270,7 @@ public class AuditLogsController : ControllerBase
         if (to.HasValue)
             query = query.Where(l => l.TimestampUtc <= to.Value);
 
-        var logs = await query
+        var pageQuery = query
             .OrderByDescending(l => l.TimestampUtc)
             .Select(l => new
             {
@@ -269,11 +279,10 @@ public class AuditLogsController : ControllerBase
                 l.ActorUserEmail,
                 l.SponsorOrgId,
                 l.ChangeType,
-                l.ExternalItemId,
-                Type = "CatalogChange"
-            })
-            .ToListAsync();
+                l.ExternalItemId
+            });
 
-        return Ok(logs);
+        var logsResult = await PagedResult.ToPagedResultAsync(query, page, pageSize);
+        return Ok(logsResult);
     }
 }

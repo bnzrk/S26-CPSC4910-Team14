@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/api/apiFetch';
+import PageControls from '@/components/PageControls/PageControls';
 import CardHost from '@/components/CardHost/CardHost';
 import Card from '@/components/Card/Card';
 import styles from './AuditLogPage.module.scss';
+
+const PAGE_SIZE = 10;
 
 const LOG_TYPES = [
   { key: 'logins', label: 'Logins' },
@@ -14,13 +17,15 @@ const LOG_TYPES = [
   { key: 'catalog-changes', label: 'Catalog Changes' },
 ];
 
-async function fetchLogs(type, filters)
+async function fetchLogs(type, filters, page = 1, pageSize = 5)
 {
   const params = new URLSearchParams();
   if (filters.email) params.set('email', filters.email);
   if (filters.from) params.set('from', filters.from);
   if (filters.to) params.set('to', filters.to);
   if (filters.sponsorOrgId) params.set('sponsorOrgId', filters.sponsorOrgId);
+  params.set('page', page);
+  params.set('pageSize', pageSize);
 
   const response = await apiFetch(`/audit-logs/${type}?${params.toString()}`);
   if (!response.ok) throw new Error('Failed to fetch audit logs');
@@ -49,21 +54,30 @@ export default function AuditLogPage()
   const [activeType, setActiveType] = useState('logins');
   const [filters, setFilters] = useState({ email: '', from: '', to: '', sponsorOrgId: '' });
   const [appliedFilters, setAppliedFilters] = useState({ email: '', from: '', to: '', sponsorOrgId: '' });
+  const [page, setPage] = useState(1);
+  const pageSize = PAGE_SIZE;
 
-  const { data: logs, isLoading, isError } = useQuery({
-    queryKey: ['auditLogs', activeType, appliedFilters],
-    queryFn: () => fetchLogs(activeType, appliedFilters),
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['auditLogs', activeType, appliedFilters, page],
+    queryFn: () => fetchLogs(activeType, appliedFilters, page, pageSize),
+    keepPreviousData: true,
   });
+
+  const logs = data?.items ?? [];
+  const totalCount = data?.totalCount ?? 0;
+  const totalPages = Math.ceil(totalCount / pageSize);
 
   function handleApplyFilters()
   {
     setAppliedFilters({ ...filters });
+    setPage(1);
   }
 
   function handleClearFilters()
   {
     setFilters({ email: '', from: '', to: '', sponsorOrgId: '' });
     setAppliedFilters({ email: '', from: '', to: '', sponsorOrgId: '' });
+    setPage(1);
   }
 
   function formatDate(dateStr)
@@ -149,7 +163,7 @@ export default function AuditLogPage()
         </Card>
 
         {/* Results */}
-        <Card title={`${LOG_TYPES.find(t => t.key === activeType)?.label} (${logs?.length ?? 0})`}>
+        <Card title={`${LOG_TYPES.find(t => t.key === activeType)?.label} (${totalCount})`}>
           {isLoading && <p className={styles.muted}>Loading...</p>}
           {isError && <p className={styles.error}>Failed to load logs.</p>}
 
@@ -157,34 +171,45 @@ export default function AuditLogPage()
             <p className={styles.muted}>No logs found.</p>
           )}
 
-          {logs && logs.length > 0 && (
-            <div className={styles.tableWrapper}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    {Object.keys(logs[0]).map(key => (
-                      <th key={key}>{key}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {logs.map(log => (
-                    <tr key={log.id}>
-                      {Object.entries(log).map(([key, val]) => (
-                        <td key={key}>
-                          {typeof val === 'boolean'
-                            ? val ? '✓' : '✗'
-                            : key === 'timestampUtc'
-                              ? formatDate(val)
-                              : String(val ?? '-')}
-                        </td>
+          <PageControls
+            page={page}
+            totalPages={totalPages}
+            onNext={() => setPage(p => Math.min(p + 1, totalPages))}
+            onPrev={() => setPage(p => Math.max(p - 1, 1))}
+            onStart={() => setPage(1)}
+            onEnd={() => setPage(totalPages)}
+            showBookends={true}
+          >
+            {logs && logs.length > 0 && (
+
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      {Object.keys(logs[0]).map(key => (
+                        <th key={key}>{key}</th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {logs.map(log => (
+                      <tr key={log.id}>
+                        {Object.entries(log).map(([key, val]) => (
+                          <td key={key}>
+                            {typeof val === 'boolean'
+                              ? val ? '✓' : '✗'
+                              : key === 'timestampUtc'
+                                ? formatDate(val)
+                                : String(val ?? '-')}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </PageControls>
         </Card>
 
       </CardHost>

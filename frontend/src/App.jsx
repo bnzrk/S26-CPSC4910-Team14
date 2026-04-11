@@ -32,24 +32,11 @@ import OrderHistoryPage from './pages/Orders/Index/OrderHistoryPage';
 import OrdersLayout from './pages/Orders/OrdersLayout';
 import OrderPage from './pages/Orders/Order/OrderPage';
 import AlertsPage from './pages/Alerts/AlertsPage';
-import UsersPage from './pages/Admin/Users/UsersPage';
-import ShopPage from './pages/Shop/ShopPage';
-import RegisterPage from './pages/Register/RegisterPage';
-import AdminOrgsPage from './pages/Admin/Orgs/AdminOrgsPage';
-import AdminToolsLayout from './pages/Admin/AdminToolsLayout';
-import AdminBulkActionsPage from './pages/Admin/BulkActions/AdminBulkActionsPage';
 import SponsorBulkActionsPage from './pages/SponsorOrg/BulkActions/SponsorBulkActionsPage';
-import ProfilePage from './pages/Profile/ProfilePage';
-import DriverApplicationPage from "./pages/DriverApplication/DriverApplicationPage";
 import SponsorDriverApplicationsPage from './pages/SponsorOrg/Applications/SponsorDriverApplicationsPage';
 import SponsorCatalogPage from './pages/SponsorOrg/Catalog/SponsorCatalogPage';
-import ManageDriversPage from './pages/SponsorOrg/ManageDrivers/ManageDriversPage';
-import OrganizationsPage from './pages/Organizations/OrganizationsPage';
-import ComingSoonPage from './pages/ComingSoon/ComingSoonPage';
 import SponsorSettingsPage from './pages/SponsorOrg/SettingsPage/SettingsPage';
 import DriverSettingsPage from './pages/DriverDashboard/SettingsPage/SettingsPage';
-import AppLayout from './pages/AppLayout';
-import DriverDashboardPage from './pages/DriverDashboard/DriverDashboardPage';
 import AuditLogPage from './pages/Admin/AuditLogs/AuditLogPage';
 
 // Admin Pages
@@ -77,7 +64,7 @@ function AppContent({ user, isUserLoading, orgs }) {
           } />
 
           {/* Public pages */}
-          <Route path="/about" element={<AboutPage />} />
+          <Route path="/about" element={<GuestRoute><AboutPage /></GuestRoute>} />
           <Route path="/login" element={
             <GuestRoute>
               <LoginPage />
@@ -88,6 +75,8 @@ function AppContent({ user, isUserLoading, orgs }) {
               <RegisterPage />
             </GuestRoute>
           } />
+
+          {/* Driver pages */}
           <Route path="/driver-application" element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
               <DriverApplicationPage />
@@ -185,7 +174,7 @@ function AppContent({ user, isUserLoading, orgs }) {
 export default function App() {
   const { data: user, isLoading } = useCurrentUser();
   const isDriver = user?.userType === USER_TYPES.DRIVER;
-  const isSponsor = user?.userType === USER_TYPES.SPONSOR;
+  const isSponsor = user?.userType === USER_TYPES.SPONSOR; 
   const { data: driverOrgs } = useDriverOrgs();
   const { data: sponsorOrg } = useSponsorOrg();
 
