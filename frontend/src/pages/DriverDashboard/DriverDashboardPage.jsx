@@ -47,7 +47,7 @@ export default function DriverDashboardPage()
     const hasError = (!pointsLoading && !!pointsError && !points) || (!historyLoading && !!historyError && !points);
     const balance = points?.balance ?? 0;
 
-    return (org ?
+    return (
         <div className={styles.dashboard}>
             {hasError && (
                 <InlineErrors errors={['Something went wrong loading your points.']} />
@@ -73,12 +73,12 @@ export default function DriverDashboardPage()
                 <ActiveChallenges />
                 <ActivityFeed history={historyLoading ? null : history} />
             </div>
-        </div> :
-        <div className={styles.noOrg}>
-            <div className={styles.promptWrapper}>
-                <span>Apply to a sponsor to start earning rewards!</span>
-                <Button color='primary' text='Apply Now' onClick={() => navigate("/apply")}/>
-            </div>
         </div>
+        // <div className={styles.noOrg}>
+        //     <div className={styles.promptWrapper}>
+        //         <span>Apply to a sponsor to start earning rewards!</span>
+        //         <Button color='primary' text='Apply Now' onClick={() => navigate("/apply")}/>
+        //     </div>
+        // </div>
     );
 }
