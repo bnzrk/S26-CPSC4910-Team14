@@ -12,7 +12,7 @@ namespace WebApi.Features.Audit;
 
 [ApiController]
 [Route("/audit-logs")]
-[Authorize(Policy = PolicyNames.AdminOnly)]
+[Authorize(Policy = PolicyNames.AdminOrSponsor)]
 public class AuditLogsController : ControllerBase
 {
     private readonly AppDbContext _db;
@@ -25,7 +25,6 @@ public class AuditLogsController : ControllerBase
     }
 
     [HttpGet("logins")]
-    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
     public async Task<IActionResult> GetLoginLogs(
         [FromQuery] string? email,
         [FromQuery] DateTime? from,
@@ -76,7 +75,6 @@ public class AuditLogsController : ControllerBase
     }
 
     [HttpGet("point-transactions")]
-    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
     public async Task<IActionResult> GetPointTransactionLogs(
         [FromQuery] string? email,
         [FromQuery] int? sponsorOrgId,
@@ -131,7 +129,6 @@ public class AuditLogsController : ControllerBase
     }
 
     [HttpGet("driver-sponsor-changes")]
-    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
     public async Task<IActionResult> GetDriverSponsorChangeLogs(
         [FromQuery] string? email,
         [FromQuery] int? sponsorOrgId,
@@ -186,7 +183,6 @@ public class AuditLogsController : ControllerBase
     }
 
     [HttpGet("password-changes")]
-    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
     public async Task<IActionResult> GetPasswordChangeLogs(
         [FromQuery] string? email,
         [FromQuery] DateTime? from,
@@ -237,7 +233,6 @@ public class AuditLogsController : ControllerBase
     }
 
     [HttpGet("catalog-changes")]
-    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
     public async Task<IActionResult> GetCatalogChangeLogs(
         [FromQuery] string? email,
         [FromQuery] DateTime? from,
