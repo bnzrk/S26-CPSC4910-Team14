@@ -144,8 +144,7 @@ export default function ProfilePage()
     }
   }
 
-  if (isLoading) return <div className={styles.page}><p className={styles.muted}>Loading...</p></div>;
-  if (isError) return <div className={styles.page}><p className={styles.error}>Failed to load profile.</p></div>;
+  if (isError && !isLoading && !profile) return <div className={styles.page}><p className={styles.error}>Failed to load profile.</p></div>;
 
   async function handleLogout()
   {
@@ -156,8 +155,13 @@ export default function ProfilePage()
     {
       console.error("Logout failed:", err);
     }
-    queryClient.invalidateQueries(["currentUser"]);
-    navigate("/");
+
+    // Cancel queries, clear cache, set user to null;
+    await queryClient.cancelQueries();
+    queryClient.setQueryData(['currentUser'], null);
+    queryClient.clear();
+
+    navigate("/about");
   }
 
   return (
@@ -271,7 +275,7 @@ export default function ProfilePage()
           </button>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <p style={{ color: '#d32f2f', fontWeight: '500' }}>Are you sure? This cannot be undone.</p>
+            <p style={{ color: 'var(--color-warn)', fontWeight: '500' }}>Are you sure? This cannot be undone.</p>
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               <button className={styles.buttonDelete} onClick={handleDeleteAccount}>
                 Yes, Delete My Account

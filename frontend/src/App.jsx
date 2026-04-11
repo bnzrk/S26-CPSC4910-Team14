@@ -28,9 +28,28 @@ import PointRulesPage from './pages/SponsorOrg/PointsRules/PointRulesPage';
 import SponsorUsersPage from './pages/SponsorOrg/Users/SponsorUsersPage';
 import ManageDriversPage from './pages/SponsorOrg/ManageDrivers/ManageDriversPage';
 import SponsorDriverPage from './pages/SponsorOrg/Drivers/Driver/SponsorDriverPage';
+import OrderHistoryPage from './pages/Orders/Index/OrderHistoryPage';
+import OrdersLayout from './pages/Orders/OrdersLayout';
+import OrderPage from './pages/Orders/Order/OrderPage';
+import AlertsPage from './pages/Alerts/AlertsPage';
+import UsersPage from './pages/Admin/Users/UsersPage';
+import ShopPage from './pages/Shop/ShopPage';
+import RegisterPage from './pages/Register/RegisterPage';
+import AdminOrgsPage from './pages/Admin/Orgs/AdminOrgsPage';
+import AdminToolsLayout from './pages/Admin/AdminToolsLayout';
+import AdminBulkActionsPage from './pages/Admin/BulkActions/AdminBulkActionsPage';
+import SponsorBulkActionsPage from './pages/SponsorOrg/BulkActions/SponsorBulkActionsPage';
+import ProfilePage from './pages/Profile/ProfilePage';
+import DriverApplicationPage from "./pages/DriverApplication/DriverApplicationPage";
 import SponsorDriverApplicationsPage from './pages/SponsorOrg/Applications/SponsorDriverApplicationsPage';
 import SponsorCatalogPage from './pages/SponsorOrg/Catalog/SponsorCatalogPage';
-import SponsorBulkActionsPage from './pages/SponsorOrg/BulkActions/SponsorBulkActionsPage';
+import ManageDriversPage from './pages/SponsorOrg/ManageDrivers/ManageDriversPage';
+import OrganizationsPage from './pages/Organizations/OrganizationsPage';
+import ComingSoonPage from './pages/ComingSoon/ComingSoonPage';
+import SponsorSettingsPage from './pages/SponsorOrg/SettingsPage/SettingsPage';
+import DriverSettingsPage from './pages/DriverDashboard/SettingsPage/SettingsPage';
+import AppLayout from './pages/AppLayout';
+import DriverDashboardPage from './pages/DriverDashboard/DriverDashboardPage';
 import AuditLogPage from './pages/Admin/AuditLogs/AuditLogPage';
 
 // Admin Pages
@@ -59,19 +78,51 @@ function AppContent({ user, isUserLoading, orgs }) {
 
           {/* Public pages */}
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
-          <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
-
-          {/* Driver routes */}
-          <Route path="/driver" element={
+          <Route path="/login" element={
+            <GuestRoute>
+              <LoginPage />
+            </GuestRoute>
+          } />
+          <Route path="/register" element={
+            <GuestRoute>
+              <RegisterPage />
+            </GuestRoute>
+          } />
+          <Route path="/driver-application" element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+              <DriverApplicationPage />
+            </ProtectedRoute>
+          } />
+          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path='/shop' element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+              <ShopPage />
+            </ProtectedRoute>
+          } />
+          <Route path='/orders' element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+              <OrdersLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<OrderHistoryPage />} />
+            <Route path=":orderId" element={<OrderPage />} />
+          </Route>
+          <Route path='/organizations' element={
+            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
+              <DriverLayout>
+                <OrganizationsPage />
+              </DriverLayout>
+            </ProtectedRoute>
+          } />
+          <Route path='/driver' element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
               <DriverLayout />
             </ProtectedRoute>
           }>
             <Route index element={<DriverDashboardPage />} />
             <Route path="points" element={<PointsPage />} />
-            <Route path="shop" element={<ShopPage />} />
-            <Route path="organizations" element={<OrganizationsPage />} />
+            <Route path="alerts" element={<AlertsPage />} />
+            <Route path="settings" element={<DriverSettingsPage />} />
           </Route>
 
           <Route path="/driver-application" element={
@@ -93,7 +144,8 @@ function AppContent({ user, isUserLoading, orgs }) {
             <Route path="drivers/:driverId" element={<SponsorDriverPage />} />
             <Route path="applications" element={<SponsorDriverApplicationsPage />} />
             <Route path="catalog" element={<SponsorCatalogPage />} />
-            <Route path="settings" element={<ComingSoonPage title="Settings" />} />
+            <Route path="manage-drivers" element={<ManageDriversPage />} />
+            <Route path="settings" element={<SponsorSettingsPage />} />
             <Route path="deliveries" element={<ComingSoonPage title="Deliveries" />} />
             <Route path="routes" element={<ComingSoonPage title="Routes" />} />
             <Route path="bulk" element={<SponsorBulkActionsPage />} />

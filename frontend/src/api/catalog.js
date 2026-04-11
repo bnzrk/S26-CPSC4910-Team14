@@ -1,4 +1,5 @@
-import { useQuery, keepPreviousData, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useQuery, keepPreviousData, useMutation } from "@tanstack/react-query";
+import { queryClient } from "./queryClient";
 import { useCurrentUser } from "./currentUser";
 import { apiFetch } from "./apiFetch";
 
@@ -17,8 +18,6 @@ export function useCatalog(orgId)
 
 export function useAddCatalogItem(orgId)
 {
-    const queryClient = useQueryClient();
-
     return useMutation({
         mutationFn: async ({ externalItemId, catalogPrice }) =>
         {
@@ -39,8 +38,6 @@ export function useAddCatalogItem(orgId)
 
 export function useRemoveCatalogItem(orgId)
 {
-    const queryClient = useQueryClient();
-
     return useMutation({
         mutationFn: async ({ id }) =>
         {
@@ -59,8 +56,6 @@ export function useRemoveCatalogItem(orgId)
 
 export function useUpdateCatalogItem(orgId)
 {
-    const queryClient = useQueryClient();
-
     return useMutation({
         mutationFn: async ({ id, price }) =>
         {

@@ -8,6 +8,31 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <title>DrivePoints</title>
+    <script>
+      (function () {
+        var path = window.location.pathname;
+        var publicRoutes = ['/', '/about', '/login', '/register'];
+        var isPublic = false;
+        for (var i = 0; i < publicRoutes.length; i++) {
+          if (path === publicRoutes[i]) { isPublic = true; break; }
+        }
+        if (isPublic) {
+          document.documentElement.removeAttribute('data-theme');
+          return;
+        }
+        var lastUser = localStorage.getItem('drivepoints-last-user');
+        var stored = lastUser ? localStorage.getItem('drivepoints-theme-' + lastUser) : null;
+        var theme;
+        if (stored === 'light' || stored === 'dark') {
+          theme = stored;
+        } else if (stored === 'system') {
+          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        } else {
+          theme = 'light';
+        }
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

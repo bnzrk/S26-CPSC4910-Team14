@@ -29,7 +29,7 @@ public class CatalogsController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult<List<CatalogItemModel>>> GetCatalogItems(int orgId)
+    public async Task<ActionResult<CatalogModel>> GetCatalog(int orgId)
     {
         var userId = _userManager.GetUserId(User);
         if (userId is null)

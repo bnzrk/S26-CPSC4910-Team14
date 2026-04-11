@@ -87,7 +87,6 @@ export default function ManageDriverPointsModal({ isOpen, onClose, onSuccess, dr
             onSuccess();
         } catch (err)
         {
-            console.log(err);
             push({ type: 'error', message: 'Change failed. Please try again.' });
             return Promise.reject();
         }

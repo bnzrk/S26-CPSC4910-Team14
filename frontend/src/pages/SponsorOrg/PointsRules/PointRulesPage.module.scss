@@ -141,9 +141,9 @@
 }
 
 .error {
-  background: #fdecea;
+  background: var(--red-100);
   border: 1px solid #f5c6cb;
-  color: #d32f2f;
+  color: var(--color-warn);
   border-radius: 4px;
   padding: 0.5rem 0.85rem;
   font-size: 0.9rem;
@@ -180,12 +180,12 @@
 }
 
 .positive {
-  color: #0A6847;
+  color: var(--color-accent);
   font-weight: 600;
 }
 
 .negative {
-  color: #d32f2f;
+  color: var(--color-warn);
   font-weight: 600;
 }
 
@@ -219,7 +219,7 @@
   cursor: pointer;
 
   &:hover:not(:disabled) {
-    background: #085c3d;
+    background: var(--color-accent-dark);
   }
 }
 
@@ -239,7 +239,7 @@
 
 .buttonDelete {
   background: transparent;
-  color: #d32f2f;
+  color: var(--color-warn);
   border: 1px solid #f5c6cb;
   border-radius: 4px;
   padding: 0.35rem 0.75rem;
@@ -247,7 +247,7 @@
   cursor: pointer;
 
   &:hover:not(:disabled) {
-    background: #fdecea;
+    background: var(--red-100);
   }
 }
 

@@ -1,0 +1,73 @@
+@use '@/styles/globals' as *;
+
+.invite {
+    background-color: var(--gray-50);
+    box-shadow: none;
+
+    .inviteLinkRow {
+        display: flex;
+        flex-direction: row;
+        gap: $grid-1x;
+        align-items: center;
+    }
+
+    .inviteLink {
+        background: none;
+        border-width: 1px;
+
+        input {
+            font-family: var(--font-body);
+            color: var(--color-text-secondary);
+            font-size: 0.8rem;
+            font-weight: bold;
+            width: fit-content;
+        }
+    }
+
+    .copyButton {
+        border: none;
+        width: fit-content;
+        background: none;
+
+        &:hover {
+            border: none;
+            background: none;
+        }
+    }
+
+    .copyLabel {
+        color: var(--color-secondary);
+        font-size: 0.8rem;
+    }
+}
+
+.errorMessage {
+  color: var(--color-warn);
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+}
+
+.applications {
+    .applicationsList {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    textarea {
+        font-size: 0.8rem;
+        font-family: var(--font-body);
+        min-height: 80px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        padding: $grid-1x;
+        font-size: var(--font-size-medium);
+        background: var(--color-surface);
+        color: var(--color-text);
+
+        &:focus {
+            outline: none;
+            border-color: var(--color-accent);
+        }
+    }
+}

@@ -36,6 +36,7 @@ export function usePointHistory({ orgId, page, pageSize, sign, from, to })
       const res = await apiFetch(`/drivers/me/point-transactions?${params.toString()}`);
       return res.json();
     },
+    enabled: !!orgId,
     placeholderData: keepPreviousData,
   });
 }

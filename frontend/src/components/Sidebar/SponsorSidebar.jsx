@@ -21,13 +21,15 @@ const NAV_GROUPS = [
     items: [
       { label: 'Manage Drivers', to: '/org/drivers', badgeKey: 'pendingApps' },
       { label: 'Manage Users', to: '/org/users' },
-      { label: 'Bulk Actions', to: '/org/bulk' },
+      { label: 'Bulk Actions', to: '/org/bulk' }
+      // { label: 'Deliveries', to: '/org/deliveries' },
+      // { label: 'Routes', to: '/org/routes' },
     ],
   },
   {
     label: 'Rewards',
     items: [
-      { label: 'Point Rules', to: '/org/point-rules', badge: 8 },
+      { label: 'Point Rules', to: '/org/point-rules' },
       { label: 'Catalog', to: '/org/catalog' },
     ],
   },
@@ -46,8 +48,12 @@ async function handleLogout(navigate) {
   } catch (err) {
     console.error('Logout failed:', err);
   }
+  // Cancel queries, clear cache, set user to null;
+  await queryClient.cancelQueries();
+  queryClient.clear();
   queryClient.setQueryData(['currentUser'], null);
-  navigate('/login');
+
+  navigate("/login");
 }
 
 export default function SponsorSidebar({ className, onClose }) {
@@ -91,9 +97,7 @@ export default function SponsorSidebar({ className, onClose }) {
     <aside className={clsx(className, styles.sidebar)}>
       <div className={styles.logoArea}>
         <div className={styles.left}>
-          <span className={styles.logo} onClick={() => navigate('/')}>
-            DrivePoints
-          </span>
+          <span className={styles.logo} onClick={() => { onClose(); navigate("/"); }}>DrivePoints</span>
           <span className={styles.portalBadge}>Sponsor Portal</span>
         </div>
         <div className={styles.close} onClick={onClose}>
@@ -125,6 +129,7 @@ export default function SponsorSidebar({ className, onClose }) {
                   key={item.to}
                   to={item.to}
                   className={clsx(styles.navItem, isActive && styles.active)}
+                  onClick={onClose}
                 >
                   <span>{item.label}</span>
                   {count > 0 && <NavBadge count={count} color="green" />}

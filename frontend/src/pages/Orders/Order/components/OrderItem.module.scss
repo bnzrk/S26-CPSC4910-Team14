@@ -1,0 +1,46 @@
+@use '@/styles/globals' as *;
+
+.item {
+    display: flex;
+    flex-direction: row;
+    gap: $grid-2x;
+
+    .thumbnail {
+        width: 100%;
+        height: min-content;
+        max-width: 120px;
+        width: 120px;
+        aspect-ratio: 1 / 1;
+    }
+
+    .details {
+        display: flex;
+        flex-direction: column;
+        gap: $grid-1x;
+
+        .body {
+            display: flex;
+            flex-direction: column;
+            gap: $grid-1x;
+        }
+
+        .title {
+            font-family: var(--font-body);
+            font-size: $grid-2x;
+            font-weight: bold;
+            color: var(--color-text);
+        }
+
+        .quantity {
+            color: var(--color-text);
+        }
+
+        .points {
+            font-weight: bold;
+            width: fit-content;
+            border: 2px solid var(--color-accent);
+            color: var(--color-accent);
+            background: none;
+        }
+    }
+}

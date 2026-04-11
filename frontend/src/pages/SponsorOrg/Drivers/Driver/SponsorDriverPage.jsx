@@ -21,8 +21,18 @@ import clsx from "clsx";
 
 function formatDate(dateString, includeTime = false)
 {
-    const timeString = dateString?.split("T")[1];
-    return `${dateString?.split("T")[0]} ${includeTime ? `at ${timeString}` : ''}`;
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const datePart = dateString.split("T")[0];
+    if (!includeTime) return datePart;
+
+    const timePart = date.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+    });
+
+    return `${datePart} at ${timePart}`;
 }
 
 export default function SponsorDriverPage()
@@ -72,7 +82,6 @@ export default function SponsorDriverPage()
             navigate("/org/drivers");
         } catch (err)
         {
-            console.log(err);
             push({ type: 'error', message: 'Failed to remove driver.' });
             return Promise.reject();
         }
@@ -95,16 +104,16 @@ export default function SponsorDriverPage()
                 driver={driver}
             />
             <Modal isOpen={currentModal == modals.removeDriver} onClose={() => setCurrentModal(null)}>
-                <Modal.Header title='Remove Driver'/>
+                <Modal.Header title='Remove Driver' />
                 <Modal.Body>
                     Remove this driver from your organization?
                 </Modal.Body>
                 <Modal.Buttons position='right'>
                     <Button
                         text='Cancel'
-                        onClick={() => setCurrentModal(null)} 
+                        onClick={() => setCurrentModal(null)}
                     />
-                    <AsyncButton 
+                    <AsyncButton
                         text='Remove'
                         color='warn'
                         action={handleRemoveDriver}
@@ -121,7 +130,7 @@ export default function SponsorDriverPage()
                             </div>
                             <div className={styles.dates}>
                                 <div>Date Created: {formatDate(driver?.dateCreatedUtc)}</div>
-                                <div>Last Login: {(driver.DateCreatedUtc) ? formatDate(driver?.lastLoginUtc, true) : 'Never'}</div>
+                                <div>Last Login: {(driver?.lastLoginUtc) ? formatDate(driver?.lastLoginUtc, true) : 'Never'}</div>
                             </div>
                             <div className={styles.buttonGroup}>
                                 <Button
@@ -137,11 +146,11 @@ export default function SponsorDriverPage()
                                     text='Edit Profile'
                                     onClick={() => setCurrentModal(modals.editProfile)}
                                 />
-                                <Button 
-                                    className={clsx(styles.editButton, styles.button)} 
-                                    color='warn' 
-                                    icon={UserRemoveIcon} 
-                                    text='Remove Driver' 
+                                <Button
+                                    className={clsx(styles.editButton, styles.button)}
+                                    color='warn'
+                                    icon={UserRemoveIcon}
+                                    text='Remove Driver'
                                     onClick={() => setCurrentModal(modals.removeDriver)}
                                 />
                             </div>

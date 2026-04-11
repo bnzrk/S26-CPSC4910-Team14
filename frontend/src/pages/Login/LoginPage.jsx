@@ -19,7 +19,7 @@ export default function LoginPage() {
     e.preventDefault();
     setErrorMsg('');
     setIsLoading(true);
-
+  
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
@@ -27,24 +27,24 @@ export default function LoginPage() {
         credentials: 'include',
         body: JSON.stringify({ email, password, rememberMe }),
       });
-
+  
       if (response.status === 400) {
         setErrorMsg('Incorrect email or password.');
         return;
       }
-
+  
       if (!response.ok) {
         setErrorMsg('Something went wrong. Please try again.');
         return;
       }
-      
+  
       await queryClient.invalidateQueries(["currentUser"]);
-
       const userType = user?.userType;
+      
       if (userType === USER_TYPES.SPONSOR) navigate("/org");
       else if (userType === USER_TYPES.ADMIN) navigate("/admin");
       else navigate("/driver");
-
+  
     } catch (err) {
       setErrorMsg('Unable to connect to the server. Please try again.');
     } finally {

@@ -78,11 +78,29 @@
   letter-spacing: -0.5px;
 }
 
+.helpBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  padding: $grid-1x;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    color: var(--color-text);
+    background: var(--color-bg);
+  }
+}
+
 .mobileMenu {
   display: none;
 }
 
-@media only screen and (max-width : $small-width) {
+@media only screen and (max-width : $medium-width) {
   .navbar {
     padding: 0 $grid-2x;
   }

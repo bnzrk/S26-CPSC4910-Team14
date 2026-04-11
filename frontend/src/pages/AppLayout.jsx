@@ -7,6 +7,7 @@ import SponsorSidebar from '@/components/Sidebar/SponsorSidebar';
 import DriverSidebar from '@/components/Sidebar/DriverSidebar';
 import Button from '@/components/Button/Button';
 import LogOutIcon from '@/assets/icons/log-out.svg?react';
+import HelpPanel from '@/components/HelpPanel/HelpPanel';
 import styles from './AppLayout.module.scss';
 import clsx from 'clsx';
 
@@ -40,7 +41,7 @@ export default function AppLayout({ children })
 
   useEffect(() =>
   {
-    const mediaQuery = window.matchMedia('(max-width: 540px)');
+    const mediaQuery = window.matchMedia('(max-width: 720px)');
     const handleResize = () =>
     {
       if (!mediaQuery.matches)
@@ -55,7 +56,7 @@ export default function AppLayout({ children })
 
   useEffect(() =>
   {
-    const isMobile = window.matchMedia('(max-width: 540px)').matches;
+    const isMobile = window.matchMedia('(max-width: 720px)').matches;
     if (isMobile && bodyRef.current)
     {
       bodyRef.current.style.overflow = sidebarOpen ? 'hidden' : '';
@@ -88,6 +89,7 @@ export default function AppLayout({ children })
           <main className={clsx(styles.content)}>{children}</main>
         </div>
       </div>
+      <HelpPanel />
     </>
   );
 }
