@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation, keepPreviousData } from "@tanstack/react-query";
 import { useCurrentUser } from "./currentUser";
 import { apiFetch } from "./apiFetch";
 import { USER_TYPES } from "../constants/userTypes";
@@ -33,9 +33,10 @@ export function useDriverUsers({ page = 1, pageSize = 10, query })
         params.append("query", query);
 
     return useQuery({
-        queryKey: ["drivers", user?.id],
+        queryKey: ["drivers", user?.id, query],
         queryFn: async () => apiFetch(`/drivers?${params.toString()}`).then(r => r.json()),
         enabled: !!user && (isAdmin || isSponsor),
+        placeholderData: keepPreviousData,
         retry: 1
     });
 }

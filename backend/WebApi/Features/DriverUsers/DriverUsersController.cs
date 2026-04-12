@@ -178,6 +178,8 @@ public class DriverUsersController : ControllerBase
         if (orgId.HasValue)
             dbQuery = dbQuery.Where(d => d.SponsorOrgs.Any(o => o.Id == orgId.Value));
 
+        Console.WriteLine($"--------------------------- Query: {query}");
+
         if (!String.IsNullOrEmpty(query))
         {
             string[] tokens = query?.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? [];

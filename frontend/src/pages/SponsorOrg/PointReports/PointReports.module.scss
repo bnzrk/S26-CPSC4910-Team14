@@ -3,14 +3,70 @@
 .filterToggleGroup {
     display: flex;
     gap: 0;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     overflow: hidden;
-    border: 1px solid var(--border-color, #d1d5db);
+    border: 1px solid var(--color-border);
     width: fit-content;
+    margin-top: $grid-1x;
+}
+
+.transactionTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+
+    th {
+        text-align: left;
+        padding: 0.5rem 0.75rem;
+        border-bottom: 2px solid var(--color-border);
+        color: var(--color-text-secondary);
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid var(--color-border);
+        color: var(--color-text);
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+}
+
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: $grid-2x;
+
+    .filterGroup {
+        display: flex;
+        flex-direction: column;
+        gap: $grid-half;
+
+        .filterInput {
+            margin-top: $grid-1x;
+        }
+    }
+
+    input {
+        font-family: var(--font-body);
+        font-size: 0.9rem;
+    }
+}
+
+.dateRange {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: $grid-2x;
 }
 
 .filterToggleBtn {
-    padding: 6px 18px;
+    padding: 8px 18px;
     font-size: 0.875rem;
     font-weight: 500;
     border: none;
@@ -30,15 +86,14 @@
 }
 
 .filterToggleBtnActive {
-    background: var(--toggle-active-bg, var(--color-accent));
+    background: var(--color-accent);
     color: var(--color-surface);
 }
 
 .driverSearchWrapper {
     margin-top: 12px;
     display: flex;
-    flex-direction: row;
-    align-items: center;
+    flex-direction: column;
     flex-wrap: nowrap;
     gap: 8px;
 }
@@ -70,12 +125,12 @@
     transition: background 0.12s ease;
 
     &:hover {
-        background: var(--dropdown-item-hover, #f3f4f6);
+        background: var(--color-accent-light);
     }
 }
 
 .driverResultItemSelected {
-    background: var(--dropdown-item-selected, #eff6ff);
+    background: var(--color-accent);
     color: var(--dropdown-item-selected-text, var(--color-accent));
     font-weight: 600;
 }
