@@ -37,7 +37,8 @@ import SponsorDriverApplicationsPage from './pages/SponsorOrg/Applications/Spons
 import SponsorCatalogPage from './pages/SponsorOrg/Catalog/SponsorCatalogPage';
 import SponsorSettingsPage from './pages/SponsorOrg/SettingsPage/SettingsPage';
 import DriverSettingsPage from './pages/DriverDashboard/SettingsPage/SettingsPage';
-import AuditLogPage from './pages/Admin/AuditLogs/AuditLogPage';
+import AuditLogPage from './pages/AuditLogs/AuditLogPage';
+import PointReports from './pages/SponsorOrg/PointReports/PointReports';
 
 // Admin Pages
 import AdminToolsLayout from './pages/Admin/AdminToolsLayout';
@@ -138,8 +139,8 @@ function AppContent({ user, isUserLoading, orgs }) {
             <Route path="deliveries" element={<ComingSoonPage title="Deliveries" />} />
             <Route path="routes" element={<ComingSoonPage title="Routes" />} />
             <Route path="bulk" element={<SponsorBulkActionsPage />} />
-            {/* Sponsor audit logs route */}
             <Route path="audit-logs" element={<AuditLogPage />} />
+            <Route path="point-reports" element={<PointReports />} />
           </Route>
 
           {/* Admin routes */}

@@ -34,6 +34,13 @@ const NAV_GROUPS = [
     ],
   },
   {
+    label: 'Reports',
+    items: [
+      { label: 'Point Tracking', to: '/org/point-reports' },
+      { label: 'Audit Logs', to: '/org/audit-logs' },
+    ],
+  },
+  {
     label: 'Account',
     items: [
       { label: 'My Profile', to: '/profile' },
@@ -84,14 +91,7 @@ export default function SponsorSidebar({ className, onClose }) {
     return s === 0 || (typeof s === 'string' && s.toLowerCase() === 'pending');
   }).length;
 
-  // add Admin section for sponsors
   const navGroups = [...NAV_GROUPS];
-  if (isSponsor) {
-    navGroups.push({
-      label: 'Admin',
-      items: [{ label: 'Audit Logs', to: '/org/audit-logs' }],
-    });
-  }
 
   return (
     <aside className={clsx(className, styles.sidebar)}>

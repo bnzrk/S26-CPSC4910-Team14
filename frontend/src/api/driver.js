@@ -19,6 +19,27 @@ export function useDriverOrgs(driverId)
     });
 }
 
+export function useDriverUsers({ page = 1, pageSize = 10, query })
+{
+    const { data: user } = useCurrentUser();
+    const isAdmin = user?.userType === USER_TYPES.ADMIN;
+    const isSponsor = user?.userType === USER_TYPES.SPONSOR;
+
+    const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(pageSize)
+    });
+    if (query)
+        params.append("query", query);
+
+    return useQuery({
+        queryKey: ["drivers", user?.id],
+        queryFn: async () => apiFetch(`/drivers?${params.toString()}`).then(r => r.json()),
+        enabled: !!user && (isAdmin || isSponsor),
+        retry: 1
+    });
+}
+
 export function useUpdateDriver()
 {
     const queryClient = useQueryClient();

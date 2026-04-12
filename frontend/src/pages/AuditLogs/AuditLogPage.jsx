@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/api/apiFetch';
+import { useCurrentUser } from '@/api/currentUser';
+import { useAvailableSponsorOrgs } from '@/api/sponsorOrg';
+import { USER_TYPES } from '@/constants/userTypes';
 import PageControls from '@/components/PageControls/PageControls';
 import CardHost from '@/components/CardHost/CardHost';
 import Card from '@/components/Card/Card';
@@ -86,7 +89,13 @@ export default function AuditLogPage()
     return new Date(dateStr).toLocaleString();
   }
 
-  const showSponsorFilter = activeType === 'point-transactions' || activeType === 'driver-sponsor-changes';
+  const { data: availableOrgs, isLoading: isOrgsLoading, isError: isOrgsError } = useAvailableSponsorOrgs();
+  const { data: user } = useCurrentUser();
+  const isSponsor = user?.userType === USER_TYPES.SPONSOR;
+
+  const showSponsorFilter = !isSponsor && (activeType === 'point-transactions' || activeType === 'driver-sponsor-changes');
+
+  console.log(availableOrgs);
 
   return (
     <main>
@@ -138,14 +147,18 @@ export default function AuditLogPage()
             </div>
             {showSponsorFilter && (
               <div className={styles.filterField}>
-                <label className={styles.filterLabel}>Sponsor Org ID</label>
-                <input
-                  type="number"
-                  className={styles.filterInput}
-                  placeholder="e.g. 1"
+                <label className={styles.filterLabel}>Sponsor Org</label>
+                <select
+                  className={styles.orgSelect}
                   value={filters.sponsorOrgId}
                   onChange={e => setFilters(f => ({ ...f, sponsorOrgId: e.target.value }))}
-                />
+                  disabled={isOrgsLoading || isOrgsError}
+                >
+                  <option key={-1} value={''}>All</option>
+                  {availableOrgs && availableOrgs.length > 0 && availableOrgs.map((org) =>
+                    <option key={org.id} value={org.id}>{org.name}</option>
+                  )}
+                </select>
               </div>
             )}
             <div className={styles.filterActions}>
