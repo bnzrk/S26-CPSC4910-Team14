@@ -90,8 +90,10 @@ Steps
 ## Deployment
 Frontend
 - Build using "npm run build" and deploy via static hosting
+
 Backend
 - Deploy ASP.NET API to Azure App Service, AWS, Docker container
+
 Database
 - Use cloud hosted SQL or Docker-based local
 
