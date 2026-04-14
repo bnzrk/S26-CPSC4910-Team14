@@ -1,7 +1,10 @@
+import { useToast } from "@/components/Toast/ToastContext";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useDriverUsers } from "@/api/driver";
 import { usePointTransactions } from "@/api/pointTransaction";
 import { useDebounce } from "@/helpers/debounce";
+import { apiFetch } from "@/api/apiFetch";
+import { queryClient } from "@/api/queryClient";
 import CardHost from "@/components/CardHost/CardHost";
 import Card from "@/components/Card/Card";
 import { DownloadIcon } from "lucide-react";
@@ -9,7 +12,6 @@ import TextInput from "@/components/TextInput/TextInput";
 import SearchInput from "@/components/SearchInput/SearchInput";
 import PageControls from "@/components/PageControls/PageControls";
 import styles from "./PointReports.module.scss";
-import clsx from "clsx";
 import Button from "@/components/Button/Button";
 
 function formatDate(dateStr)
@@ -18,38 +20,67 @@ function formatDate(dateStr)
     return new Date(dateStr).toLocaleString();
 }
 
-function exportToCSV(transactions)
+async function exportToCSV({ driverId, from, to, recordCount })
 {
-  if (!transactions || transactions.length === 0) return;
+    const params = new URLSearchParams();
+    if (driverId)
+        params.append("driverId", driverId);
+    if (to)
+        params.append("to", to);
+    if (from)
+        params.append("from", from);
+    params.append("page", 1);
+    params.append("pageSize", recordCount);
 
-  const headers = Object.keys(transactions[0]);
-  const rows = transactions.map(t => headers.map(h => JSON.stringify(t[h] ?? '')).join(','));
-  const csv = [headers.join(','), ...rows].join('\n');
+    const result = await queryClient.fetchQuery({
+        queryKey: ['pointTransactions', driverId, from, to, 1, recordCount],
+        queryFn: async () => apiFetch(`/point-transactions?${params.toString()}`).then(r => r.json()),
+        staleTime: 0,
+        gcTime: 0
+    });
 
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `point-logs-${new Date().toISOString().split('T')[0]}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+    const transactions = result?.items ?? [];
+    if (!transactions || transactions?.length == 0)
+        throw new Error("Could not fetch full transactions.");
+
+    const headers = Object.keys(transactions[0]);
+    const rows = transactions.map(t => headers.map(h => JSON.stringify(t[h] ?? '')).join(','));
+    const csv = [headers.join(','), ...rows].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `point-logs-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
 }
 
 export default function PointReports()
 {
-    // --- Driver filter state ---
+    const { push } = useToast();
+
+    // --- Pending filter state (what the user is editing) ---
     const [driverMode, setDriverMode] = useState("all");
     const [driverSearchQuery, setDriverSearchQuery] = useState("");
     const [selectedDriver, setSelectedDriver] = useState(null);
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [from, setFrom] = useState("");
+    const [to, setTo] = useState("");
     const dropdownRef = useRef(null);
+
+    // --- Applied filter state (what the query actually uses) ---
+    const [appliedFilters, setAppliedFilters] = useState({
+        driverId: undefined,
+        from: "",
+        to: "",
+    });
+
+    const [isExporting, setIsExporting] = useState(false);
 
     // --- Pagination state ---
     const [page, setPage] = useState(1);
     const pageSize = 6;
-
-    const [from, setFrom] = useState("");
-    const [to, setTo] = useState("");
 
     // --- Driver search (debounced) ---
     const searchDebounceMs = 200;
@@ -60,15 +91,15 @@ export default function PointReports()
         isError: isDriversError,
     } = useDriverUsers({ query: debouncedDriverSearch });
 
-    // --- Point tracking ---
+    // --- Point tracking (uses applied filters only) ---
     const {
         data: pointTransactionsResult,
         isLoading: isPointTransactionsLoading,
         isError: isPointTransactionsError
     } = usePointTransactions({
-        driverId: selectedDriver?.id ?? undefined,
-        from,
-        to,
+        driverId: appliedFilters.driverId,
+        from: appliedFilters.from,
+        to: appliedFilters.to,
         page,
         pageSize
     });
@@ -87,13 +118,21 @@ export default function PointReports()
         function handleClickOutside(e)
         {
             if (dropdownRef.current && !dropdownRef.current.contains(e.target))
-            {
                 setDropdownOpen(false);
-            }
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    function handleApplyFilters()
+    {
+        setAppliedFilters({
+            driverId: selectedDriver?.id ?? undefined,
+            from,
+            to,
+        });
+        setPage(1);
+    }
 
     function handleDriverModeChange(mode)
     {
@@ -104,7 +143,6 @@ export default function PointReports()
             setDriverSearchQuery("");
             setDropdownOpen(false);
         }
-        setPage(1);
     }
 
     function handleDriverSelect(driver)
@@ -112,13 +150,39 @@ export default function PointReports()
         setSelectedDriver(driver);
         setDriverSearchQuery("");
         setDropdownOpen(false);
-        setPage(1);
     }
 
     function handleClearDriver()
     {
         setSelectedDriver(null);
         setDriverSearchQuery("");
+    }
+
+    async function handleExport()
+    {
+        setIsExporting(true);
+        try
+        {
+            await exportToCSV({ driverId: appliedFilters.driverId, from: appliedFilters.from, to: appliedFilters.to, recordCount: totalCount });
+        }
+        catch (ex)
+        {
+            push({ type: "error", message: ex.message });
+        }
+        finally
+        {
+            setIsExporting(false);
+        }
+    }
+
+    function handleClearFilters()
+    {
+        setDriverMode("all");
+        setSelectedDriver(null);
+        setDriverSearchQuery("");
+        setFrom("");
+        setTo("");
+        setAppliedFilters({ driverId: undefined, from: "", to: "" });
         setPage(1);
     }
 
@@ -127,7 +191,25 @@ export default function PointReports()
 
     return (
         <CardHost>
-            <Card title='Filters'>
+            <Card
+                title='Filters'
+                headerRight={
+                    <div className={styles.filterActions}>
+                        <Button
+                            text='Clear'
+                            color='secondary'
+                            size='small'
+                            onClick={handleClearFilters}
+                        />
+                        <Button
+                            text='Apply'
+                            color='primary'
+                            size='small'
+                            onClick={handleApplyFilters}
+                        />
+                    </div>
+                }
+            >
                 <div className={styles.filters}>
                     {/* Driver mode toggle */}
                     <div className={styles.filterGroup}>
@@ -149,10 +231,8 @@ export default function PointReports()
                             </button>
                         </div>
 
-                        {/* Driver search — only shown in individual mode */}
                         {driverMode === "individual" && (
                             <div className={styles.driverSearchWrapper}>
-                                {/* Search input — always visible in individual mode */}
                                 <div className={styles.driverDropdown} ref={dropdownRef}>
                                     <SearchInput
                                         value={driverSearchQuery}
@@ -187,7 +267,6 @@ export default function PointReports()
                                         </div>
                                     )}
                                 </div>
-                                {/* Selected driver badge — shown above search when a driver is selected */}
                                 {selectedDriver && (
                                     <span className={styles.driverSelectedBadge}>
                                         {selectedDriver.email}
@@ -227,14 +306,14 @@ export default function PointReports()
                 </div>
             </Card>
 
-            <Card title='Point Transactions' headerRight={
+            <Card title={`Point Transactions (${totalCount ?? ''})`} headerRight={
                 <Button
                     text='Export CSV'
                     icon={DownloadIcon}
                     color='secondary'
                     size='small'
-                    onClick={() => exportToCSV(transactions)}
-                    disabled={!transactions || transactions?.length == 0}
+                    onClick={handleExport}
+                    disabled={isExporting || !transactions || transactions?.length == 0}
                 />
             }>
                 <PageControls
@@ -257,8 +336,8 @@ export default function PointReports()
                                     <th>Change Reason</th>
                                     <th>Change Date</th>
                                 </tr>
-                                {transactions.map((t) =>
-                                    <tr>
+                                {transactions.map((t, i) =>
+                                    <tr key={i}>
                                         <td>{t.driverName}</td>
                                         <td>{t.sponsorName}</td>
                                         <td>{t.driverTotalPoints}</td>

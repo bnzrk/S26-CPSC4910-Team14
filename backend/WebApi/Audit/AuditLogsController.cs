@@ -64,7 +64,6 @@ public class AuditLogsController : ControllerBase
             .OrderByDescending(l => l.TimestampUtc)
             .Select(l => new LoginLogModel
             {
-                Id = l.Id,
                 TimestampUtc = l.TimestampUtc,
                 Email = l.Email,
                 Successful = l.Successful
@@ -114,7 +113,6 @@ public class AuditLogsController : ControllerBase
             .OrderByDescending(l => l.TimestampUtc)
             .Select(l => new
             {
-                l.Id,
                 l.TimestampUtc,
                 l.ActorUserEmail,
                 l.DriverEmail,
@@ -124,7 +122,7 @@ public class AuditLogsController : ControllerBase
                 Type = "PointTransaction"
             });
 
-        var logsResult = await PagedResult.ToPagedResultAsync(query, page, pageSize);
+        var logsResult = await PagedResult.ToPagedResultAsync(pageQuery, page, pageSize);
         return Ok(logsResult);
     }
 
@@ -170,7 +168,6 @@ public class AuditLogsController : ControllerBase
             .OrderByDescending(l => l.TimestampUtc)
             .Select(l => new SponsorChangeLogModel
             {
-                Id = l.Id,
                 TimestampUtc = l.TimestampUtc,
                 ActorUserEmail = l.ActorUserEmail,
                 DriverEmail = l.DriverEmail,
@@ -178,7 +175,7 @@ public class AuditLogsController : ControllerBase
                 ChangeType = Enum.GetName(l.ChangeType) ?? "N/A"
             });
 
-        var logsResult = await PagedResult.ToPagedResultAsync(query, page, pageSize);
+        var logsResult = await PagedResult.ToPagedResultAsync(pageQuery, page, pageSize);
         return Ok(logsResult);
     }
 
@@ -221,14 +218,13 @@ public class AuditLogsController : ControllerBase
             .OrderByDescending(l => l.TimestampUtc)
             .Select(l => new
             {
-                l.Id,
                 l.TimestampUtc,
                 l.TargetUserEmail,
                 ChangeType = Enum.GetName(l.ChangeType),
                 l.Successful
             });
 
-        var logsResult = await PagedResult.ToPagedResultAsync(query, page, pageSize);
+        var logsResult = await PagedResult.ToPagedResultAsync(pageQuery, page, pageSize);
         return Ok(logsResult);
     }
 
@@ -269,7 +265,6 @@ public class AuditLogsController : ControllerBase
             .OrderByDescending(l => l.TimestampUtc)
             .Select(l => new
             {
-                l.Id,
                 l.TimestampUtc,
                 l.ActorUserEmail,
                 l.SponsorOrgId,
@@ -277,7 +272,7 @@ public class AuditLogsController : ControllerBase
                 l.ExternalItemId
             });
 
-        var logsResult = await PagedResult.ToPagedResultAsync(query, page, pageSize);
+        var logsResult = await PagedResult.ToPagedResultAsync(pageQuery, page, pageSize);
         return Ok(logsResult);
     }
 }

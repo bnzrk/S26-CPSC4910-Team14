@@ -135,6 +135,12 @@
     font-weight: 600;
 }
 
+.filterActions {
+    display: flex;
+    flex-direction: row;
+    gap: $grid-1x;
+}
+
 .driverResultEmpty {
     padding: 10px 14px;
     font-size: 0.875rem;

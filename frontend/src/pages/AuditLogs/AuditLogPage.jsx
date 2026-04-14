@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/api/apiFetch';
 import { useCurrentUser } from '@/api/currentUser';
 import { useAvailableSponsorOrgs } from '@/api/sponsorOrg';
+import { queryClient } from '@/api/queryClient';
 import { USER_TYPES } from '@/constants/userTypes';
 import PageControls from '@/components/PageControls/PageControls';
 import CardHost from '@/components/CardHost/CardHost';
@@ -35,7 +36,7 @@ async function fetchLogs(type, filters, page = 1, pageSize = 5)
   return response.json();
 }
 
-function exportToCSV(logs, type)
+function buildCSV(logs, type)
 {
   if (!logs || logs.length === 0) return;
 
@@ -52,12 +53,29 @@ function exportToCSV(logs, type)
   URL.revokeObjectURL(url);
 }
 
+async function exportToCSV(type, filters, totalCount)
+{
+  const result = await queryClient.fetchQuery({
+    queryKey: ['auditLogs', type, filters, 1, totalCount],
+    queryFn: () => fetchLogs(type, filters, 1, totalCount),
+    staleTime: 0,
+    gcTime: 0,
+  });
+
+  const logs = result?.items ?? [];
+  if (!logs || logs.length === 0)
+    throw new Error('No logs to export.');
+
+  buildCSV(logs, type);
+}
+
 export default function AuditLogPage()
 {
   const [activeType, setActiveType] = useState('logins');
   const [filters, setFilters] = useState({ email: '', from: '', to: '', sponsorOrgId: '' });
   const [appliedFilters, setAppliedFilters] = useState({ email: '', from: '', to: '', sponsorOrgId: '' });
   const [page, setPage] = useState(1);
+  const [isExporting, setIsExporting] = useState(false);
   const pageSize = PAGE_SIZE;
 
   const { data, isLoading, isError } = useQuery({
@@ -83,6 +101,23 @@ export default function AuditLogPage()
     setPage(1);
   }
 
+  async function handleExport()
+  {
+    setIsExporting(true);
+    try
+    {
+      await exportToCSV(activeType, appliedFilters, totalCount);
+    }
+    catch (ex)
+    {
+      console.error('Export failed:', ex.message);
+    }
+    finally
+    {
+      setIsExporting(false);
+    }
+  }
+
   function formatDate(dateStr)
   {
     if (!dateStr) return '-';
@@ -94,8 +129,6 @@ export default function AuditLogPage()
   const isSponsor = user?.userType === USER_TYPES.SPONSOR;
 
   const showSponsorFilter = !isSponsor && (activeType === 'point-transactions' || activeType === 'driver-sponsor-changes');
-
-  console.log(availableOrgs);
 
   return (
     <main>
@@ -166,10 +199,10 @@ export default function AuditLogPage()
               <button className={styles.btnSecondary} onClick={handleClearFilters}>Clear</button>
               <button
                 className={styles.btnExport}
-                onClick={() => exportToCSV(logs, activeType)}
-                disabled={!logs || logs.length === 0}
+                onClick={handleExport}
+                disabled={isExporting || !logs || logs.length === 0}
               >
-                Export CSV
+                {isExporting ? 'Exporting...' : 'Export CSV'}
               </button>
             </div>
           </div>
@@ -194,21 +227,20 @@ export default function AuditLogPage()
             showBookends={true}
           >
             {logs && logs.length > 0 && (
-
               <div className={styles.tableWrapper}>
                 <table className={styles.table}>
                   <thead>
                     <tr>
                       {Object.keys(logs[0]).map(key => (
-                        <th key={key}>{key}</th>
+                        <th key={`h_${key}`}>{key}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {logs.map(log => (
-                      <tr key={log.id}>
+                    {logs.map((log, i) => (
+                      <tr key={i}>
                         {Object.entries(log).map(([key, val]) => (
-                          <td key={key}>
+                          <td key={`d_${key}`}>
                             {typeof val === 'boolean'
                               ? val ? '✓' : '✗'
                               : key === 'timestampUtc'
