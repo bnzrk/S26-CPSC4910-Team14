@@ -1,0 +1,189 @@
+@use '@/styles/globals' as *;
+
+.filterToggleGroup {
+    display: flex;
+    gap: 0;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    width: fit-content;
+    margin-top: $grid-1x;
+}
+
+.transactionTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+
+    th {
+        text-align: left;
+        padding: 0.5rem 0.75rem;
+        border-bottom: 2px solid var(--color-border);
+        color: var(--color-text-secondary);
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid var(--color-border);
+        color: var(--color-text);
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+}
+
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: $grid-2x;
+
+    .filterGroup {
+        display: flex;
+        flex-direction: column;
+        gap: $grid-half;
+
+        .filterInput {
+            margin-top: $grid-1x;
+        }
+    }
+
+    input {
+        font-family: var(--font-body);
+        font-size: 0.9rem;
+    }
+}
+
+.dateRange {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: $grid-2x;
+}
+
+.filterToggleBtn {
+    padding: 8px 18px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    outline: none;
+
+    &:not(:last-child) {
+        border-right: 1px solid var(--color-border);
+    }
+
+    &:hover:not(.filterToggleBtnActive) {
+        background: var(--color-bg)
+    }
+}
+
+.filterToggleBtnActive {
+    background: var(--color-accent);
+    color: var(--color-surface);
+}
+
+.driverSearchWrapper {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 8px;
+}
+
+.driverDropdown {
+    position: relative;
+}
+
+.driverResultsList {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    box-shadow: 0 0px 6px rgba(0, 0, 0, 0.1);
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 50;
+    padding: 4px 0;
+}
+
+.driverResultItem {
+    padding: 8px 14px;
+    font-size: 0.875rem;
+    color: var(--color-text);
+    cursor: pointer;
+    transition: background 0.12s ease;
+
+    &:hover {
+        background: var(--color-accent-light);
+    }
+}
+
+.driverResultItemSelected {
+    background: var(--color-accent);
+    color: var(--dropdown-item-selected-text, var(--color-accent));
+    font-weight: 600;
+}
+
+.filterActions {
+    display: flex;
+    flex-direction: row;
+    gap: $grid-1x;
+}
+
+.driverResultEmpty {
+    padding: 10px 14px;
+    font-size: 0.875rem;
+    color: var(--color-text-tertiary);
+}
+
+.driverSelectedBadge {
+    height: fit-content;
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: color-mix(in srgb, var(--color-accent) 5%, transparent);
+    color: var(--badge-text, var(--color-accent));
+    border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.driverSelectedBadgeClear {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    opacity: 0.7;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.filterLabel {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted, #6b7280);
+    margin-bottom: 6px;
+}

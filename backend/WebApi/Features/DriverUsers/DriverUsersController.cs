@@ -149,6 +149,64 @@ public class DriverUsersController : ControllerBase
 
         return Ok(driver);
     }
+    
+    [HttpGet]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<ActionResult<PagedResult<DriverUserModel>>> GetDriverUsers(
+        int? orgId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? query = null)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor)
+        {
+            if (orgId.HasValue)
+                return BadRequest("Sponsors should use /me instead of an org id.");
+
+            orgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => (int?)s.SponsorOrgId).SingleOrDefaultAsync();
+            if (!orgId.HasValue)
+                return NotFound();
+        }
+
+        var dbQuery = _db.DriverUsers.AsNoTracking();
+
+        if (orgId.HasValue)
+            dbQuery = dbQuery.Where(d => d.SponsorOrgs.Any(o => o.Id == orgId.Value));
+
+        Console.WriteLine($"--------------------------- Query: {query}");
+
+        if (!String.IsNullOrEmpty(query))
+        {
+            string[] tokens = query?.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? [];
+            foreach (string token in tokens)
+            {
+                var t = token;
+                dbQuery = dbQuery.Where(d =>
+                    EF.Functions.Like(d.User.FirstName, t + "%") ||
+                    EF.Functions.Like(d.User.LastName, t + "%") ||
+                    EF.Functions.Like(d.User.Email!, t + "%"));
+            }
+        }
+
+        var pageQuery = dbQuery.Select(d => new DriverUserModel
+        {
+            Id = d.Id,
+            Email = d.User.Email!,
+            FirstName = d.User.FirstName,
+            LastName = d.User.LastName,
+            DateCreatedUtc = d.User.CreatedDateUtc,
+            LastLoginUtc = d.User.LastLoginUtc
+        });
+
+        var pageResult = await PagedResult.ToPagedResultAsync(pageQuery, page, pageSize);
+
+        return Ok(pageResult);
+    }
     #endregion
 
     #region Sponsor Orgs

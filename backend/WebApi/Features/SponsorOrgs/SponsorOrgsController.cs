@@ -273,7 +273,10 @@ public class SponsorOrgsController : ControllerBase
         if (userId is null)
             return Unauthorized();
 
-        var driver = await _db.DriverUsers.Include(d => d.User).SingleOrDefaultAsync(d => d.Id == driverId);
+        var driver = await _db.DriverUsers
+            .Include(d => d.User)
+            .Include(d => d.SponsorOrgs)
+            .SingleOrDefaultAsync(d => d.Id == driverId);
         if (driver is null)
             return NotFound("Driver does not exist.");
 

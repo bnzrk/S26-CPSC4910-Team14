@@ -9,13 +9,12 @@ import { apiFetch } from '@/api/apiFetch';
 import CloseIcon from '@/assets/icons/x.svg?react';
 import styles from './SponsorSidebar.module.scss';
 import clsx from 'clsx';
+import { queryClient } from '@/api/queryClient';
 
 const NAV_GROUPS = [
   {
     label: 'Overview',
-    items: [
-      { label: 'Dashboard', to: '/org' },
-    ],
+    items: [{ label: 'Dashboard', to: '/org' }],
   },
   {
     label: 'Fleet',
@@ -35,22 +34,26 @@ const NAV_GROUPS = [
     ],
   },
   {
+    label: 'Reports',
+    items: [
+      { label: 'Point Tracking', to: '/org/point-reports' },
+      { label: 'Audit Logs', to: '/org/audit-logs' },
+    ],
+  },
+  {
     label: 'Account',
     items: [
       { label: 'My Profile', to: '/profile' },
-      { label: 'Settings', to: '/org/settings' }
+      { label: 'Settings', to: '/org/settings' },
     ],
   },
 ];
 
-async function handleLogout()
-{
-  try
-  {
-    await apiFetch("/auth/logout", { method: "POST" });
-  } catch (err)
-  {
-    console.error("Logout failed:", err);
+async function handleLogout(navigate) {
+  try {
+    await apiFetch('/auth/logout', { method: 'POST' });
+  } catch (err) {
+    console.error('Logout failed:', err);
   }
   // Cancel queries, clear cache, set user to null;
   await queryClient.cancelQueries();
@@ -60,29 +63,35 @@ async function handleLogout()
   navigate("/login");
 }
 
-export default function SponsorSidebar({ className, onClose })
-{
+export default function SponsorSidebar({ className, onClose }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { data: org } = useSponsorOrg();
   const { data: user } = useCurrentUser();
+
+  const isSponsor = user?.userType?.toLowerCase() === 'sponsor';
+
   const orgInitials = org?.sponsorName
     ? org.sponsorName.slice(0, 2).toUpperCase()
     : 'SP';
   const orgName = org?.sponsorName ?? 'Your Org';
-  const userName = user?.firstName && user?.lastName
-    ? `${user.firstName} ${user.lastName}`
-    : user?.email ?? '';
+  const userName =
+    user?.firstName && user?.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user?.email ?? '';
+
   const { data: applications = [] } = useQuery({
     queryKey: ['sponsor-applications'],
     queryFn: () => apiFetch('/applications').then(r => r.json()),
     staleTime: 30_000,
   });
-  const pendingApps = applications.filter(a =>
-  {
+
+  const pendingApps = applications.filter(a => {
     const s = a.status;
     return s === 0 || (typeof s === 'string' && s.toLowerCase() === 'pending');
   }).length;
+
+  const navGroups = [...NAV_GROUPS];
 
   return (
     <aside className={clsx(className, styles.sidebar)}>
@@ -106,13 +115,14 @@ export default function SponsorSidebar({ className, onClose })
       </div>
 
       <nav className={styles.nav}>
-        {NAV_GROUPS.map(group => (
+        {navGroups.map(group => (
           <div key={group.label} className={styles.group}>
             <span className={styles.groupLabel}>{group.label}</span>
-            {group.items.map(item =>
-            {
-              const count = item.badgeKey === 'pendingApps' ? pendingApps : item.badge ?? 0;
-              const isActive = pathname === item.to ||
+            {group.items.map(item => {
+              const count =
+                item.badgeKey === 'pendingApps' ? pendingApps : item.badge ?? 0;
+              const isActive =
+                pathname === item.to ||
                 (item.to !== '/org' && pathname.startsWith(item.to));
               return (
                 <Link

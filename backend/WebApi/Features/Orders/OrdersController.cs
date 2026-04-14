@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using WebApi.Features.Catalogs;
 using WebApi.Helpers.Pagination;
 using WebApi.Features.Alerts;
+using WebApi.Audit;
 
 namespace WebApi.Features.Orders;
 
@@ -20,15 +21,22 @@ public class OrdersController : ControllerBase
     private readonly UserManager<User> _userManager;
     private readonly ICatalogsService _catalogService;
     private readonly IAlertsService _alertsService;
+    private readonly IAuditLogger _auditLogger;
 
     private readonly HashSet<string> _orderQueryTypes = new HashSet<string> { "all", "completed", "cancelled" };
 
-    public OrdersController(AppDbContext db, UserManager<User> userManager, ICatalogsService catalogService, IAlertsService alertsService)
+    public OrdersController(
+        AppDbContext db,
+        UserManager<User> userManager,
+        ICatalogsService catalogService,
+        IAlertsService alertsService,
+        IAuditLogger auditLogger)
     {
         _db = db;
         _userManager = userManager;
         _catalogService = catalogService;
         _alertsService = alertsService;
+        _auditLogger = auditLogger;
     }
 
     [HttpPost]
@@ -68,6 +76,7 @@ public class OrdersController : ControllerBase
 
         var orderDriver = await _db.DriverUsers
                .Include(d => d.SponsorOrgs)
+               .Include(d => d.User)
                .Where(d => d.Id == request.DriverId)
                .SingleOrDefaultAsync();
         if (orderDriver is null)
@@ -219,6 +228,7 @@ public class OrdersController : ControllerBase
             _db.PointTransactions.Add(pointTransaction);
             _db.Orders.Add(order);
             await _db.SaveChangesAsync();
+            await _auditLogger.CreatePointTransactionAuditLog(orderDriver.Id, orderDriver.User.Email!, catalog.SponsorOrgId, catalog.SponsorOrg.SponsorName, pointTransaction.BalanceChange, pointTransaction.Reason);
 
             await dbTransaction.CommitAsync();
 
@@ -493,7 +503,13 @@ public class OrdersController : ControllerBase
         if (userId is null)
             return Unauthorized();
 
-        var order = await _db.Orders.Include(o => o.Items).Where(o => o.Id == orderId).SingleOrDefaultAsync();
+        var order = await _db.Orders
+        .Include(o => o.SponsorOrg)
+        .Include(o => o.Driver)
+        .ThenInclude(d => d.User)
+        .Include(o => o.Items)
+        .Where(o => o.Id == orderId)
+        .SingleOrDefaultAsync();
         if (order is null)
             return NotFound();
 
@@ -532,22 +548,35 @@ public class OrdersController : ControllerBase
         }
         SetOrderStatus(order, OrderStatus.Canceled);
 
-        // If not already refunded, refund points
-        if (!order.IsRefunded)
+        await using var dbTransaction = await _db.Database.BeginTransactionAsync();
+        try
         {
-            _db.PointTransactions.Add(new PointTransaction
+            // If not already refunded, refund points
+            if (!order.IsRefunded)
             {
-                DriverUserId = order.DriverId,
-                SponsorOrgId = order.SponsorOrgId,
-                BalanceChange = order.Items.Sum(i => i.PricePoints),
-                TransactionDateUtc = DateTime.UtcNow,
-                Reason = "Refund"
-            });
-            order.IsRefunded = true;
-        }
-        await _db.SaveChangesAsync();
+                var balanceChange = order.Items.Sum(i => i.PricePoints);
+                var reason = "Refund";
+                _db.PointTransactions.Add(new PointTransaction
+                {
+                    DriverUserId = order.DriverId,
+                    SponsorOrgId = order.SponsorOrgId,
+                    BalanceChange = balanceChange,
+                    TransactionDateUtc = DateTime.UtcNow,
+                    Reason = reason
+                });
+                order.IsRefunded = true;
+                await _auditLogger.CreatePointTransactionAuditLog(order.DriverId, order.Driver.User.Email!, order.SponsorOrgId, order.SponsorOrg.SponsorName, balanceChange, reason);
+            }
+            await _db.SaveChangesAsync();
+            await dbTransaction.CommitAsync();
 
-        return Ok();
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            await dbTransaction.RollbackAsync();
+            return BadRequest(ex.Message);
+        }
     }
 
     private void SetOrderStatus(Order order, OrderStatus status)

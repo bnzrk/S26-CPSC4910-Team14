@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Data.Entities;
+using WebApi.Data.Entities.Audit;
 using System.Text.Json;
 
 namespace WebApi.Data;
@@ -47,6 +48,14 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<SponsorshipChangeAlert> SponsorshipChangeAlerts { get; set; }
     public DbSet<OrderAlert> OrderAlerts { get; set; }
     public DbSet<DriverAlertSettings> DriverAlertSettings { get; set; }
+
+    // Audit Logs
+    public DbSet<LoginAuditLog> LoginAuditLogs { get; set; }
+    public DbSet<PasswordChangeAuditLog> PasswordChangeAuditLogs { get; set; }
+    public DbSet<DriverSponsorChangeAuditLog> DriverSponsorChangeAuditLogs { get; set; }
+    public DbSet<PointTransactionAuditLog> PointTransactionAuditLogs { get; set; }
+    public DbSet<ApplicationStatusChangeAuditLog> ApplicationStatusChangeAuditLogs { get; set; }
+    public DbSet<CatalogChangeAuditLog> CatalogChangeAuditLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
