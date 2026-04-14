@@ -3,14 +3,18 @@
 .alert {
     display: flex;
     flex-direction: row;
-    gap: $grid-2x;
     justify-content: space-between;
+    align-items: center;
     border: 1px solid var(--color-border);
     padding: $grid-1x $grid-2x;
     border-radius: var(--radius-md);
 
-    @media only screen and (max-width : $small-width) {
-        flex-direction: column;
+    .info {
+        display: flex;
+        flex-direction: row;
+        gap: $grid-2x;
+        justify-content: space-between;
+        align-items: center;
     }
 
     .body {
@@ -46,6 +50,7 @@
     }
 
     .left,
+    .middle,
     .right {
         display: flex;
         flex-direction: row;
@@ -54,10 +59,30 @@
     }
 
     .left {
+        margin-right: $grid-2x;
+        flex-shrink: 1;
         gap: $grid-2x;
     }
 
+    .middle {
+        width: 100%;
+        justify-content: space-between;
+        flex-grow: 3;
+
+        @media only screen and (max-width : $medium-width) {
+            flex-direction: column;
+
+            .actions {
+                width: 100%;
+                justify-content: flex-start;
+                margin-top: $grid-1x;
+            }
+        }
+    }
+
     .right {
+        margin-left: $grid-2x;
+        flex-shrink: 1;
         gap: $grid-1x;
     }
 

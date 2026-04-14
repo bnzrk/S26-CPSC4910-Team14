@@ -1,3 +1,5 @@
+@use '@/styles/globals' as *;
+
 .page {
   min-height: 100vh;
   background-color: var(--color-bg);
@@ -13,6 +15,31 @@
   justify-content: space-between;
   gap: 2rem;
   flex-wrap: wrap;
+}
+
+.buttonRow {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.saveButton {
+  width: fit-content;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: $grid-3x;
+  gap: $grid-3x;
+}
+
+.checkboxRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: $grid-1x;
+  align-items: flex-start;
 }
 
 .info {

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { usePoints, usePointHistory } from '../../api/points';
 import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
 import InlineErrors from '@/components/InlineErrors/InlineErrors';
@@ -14,9 +15,11 @@ import FleetLeaderboard from './sections/FleetLeaderboard';
 import ActiveChallenges from './sections/ActiveChallenges';
 import RedeemRewards from './sections/RedeemRewards';
 import ActivityFeed from './sections/ActivityFeed';
+import Button from '@/components/Button/Button';
 
 export default function DriverDashboardPage()
 {
+    const navigate = useNavigate();
     const { selectedOrgId, driverOrgs } = useOrgContext();
 
     const org = useMemo(() =>
@@ -71,5 +74,11 @@ export default function DriverDashboardPage()
                 <ActivityFeed history={historyLoading ? null : history} />
             </div>
         </div>
+        // <div className={styles.noOrg}>
+        //     <div className={styles.promptWrapper}>
+        //         <span>Apply to a sponsor to start earning rewards!</span>
+        //         <Button color='primary' text='Apply Now' onClick={() => navigate("/apply")}/>
+        //     </div>
+        // </div>
     );
 }

@@ -76,9 +76,9 @@ function AppContent({ user, isUserLoading, orgs }) {
               <RegisterPage />
             </GuestRoute>
           } />
-
+          
           {/* Driver pages */}
-          <Route path="/driver-application" element={
+          <Route path="/apply" element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
               <DriverApplicationPage />
             </ProtectedRoute>
@@ -97,13 +97,6 @@ function AppContent({ user, isUserLoading, orgs }) {
             <Route index element={<OrderHistoryPage />} />
             <Route path=":orderId" element={<OrderPage />} />
           </Route>
-          <Route path='/organizations' element={
-            <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
-              <DriverLayout>
-                <OrganizationsPage />
-              </DriverLayout>
-            </ProtectedRoute>
-          } />
           <Route path='/driver' element={
             <ProtectedRoute allowedUserTypes={[USER_TYPES.DRIVER]}>
               <DriverLayout />
@@ -112,6 +105,7 @@ function AppContent({ user, isUserLoading, orgs }) {
             <Route index element={<DriverDashboardPage />} />
             <Route path="points" element={<PointsPage />} />
             <Route path="alerts" element={<AlertsPage />} />
+            <Route path="sponsors" element={<OrganizationsPage />} />
             <Route path="settings" element={<DriverSettingsPage />} />
           </Route>
 

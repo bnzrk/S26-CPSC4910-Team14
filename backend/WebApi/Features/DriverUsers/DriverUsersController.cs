@@ -449,7 +449,14 @@ public class DriverUsersController : ControllerBase
         await _auditLogger.CreatePointTransactionAuditLog(driver.Id, driver.User.Email!, org.Id, org.SponsorName, transaction.BalanceChange, transaction.Reason);
 
         if (isSponsor)
-            await _alertsService.CreatePointTransactionAlert(transaction);
+        {
+            var isAlertEnabled = await _db.DriverAlertSettings
+                .Where(s => s.DriverId == driverId)
+                .Select(s => (bool?)s.IsPointChangeAlertsEnabled)
+                .SingleOrDefaultAsync();
+            if (isAlertEnabled.HasValue && isAlertEnabled.Value)
+                await _alertsService.CreatePointTransactionAlert(transaction);
+        }
 
         return Created();
     }

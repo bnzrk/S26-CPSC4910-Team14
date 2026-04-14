@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApi.Data;
 
@@ -10,9 +11,11 @@ using WebApi.Data;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260411225726_RemoveSponsorshipAlertSetting")]
+    partial class RemoveSponsorshipAlertSetting
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -217,212 +220,6 @@ namespace WebApi.Migrations
                         .IsUnique();
 
                     b.ToTable("AdminUsers");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.Audit.ApplicationStatusChangeAuditLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("ActorUserEmail")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("ActorUserId")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("ApplicationId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("NewStatus")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("RejectionReason")
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime>("TimestampUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ApplicationStatusChangeAuditLogs");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.Audit.CatalogChangeAuditLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("ActorUserEmail")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("ActorUserId")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("ChangeType")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("ExternalItemId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SponsorOrgId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("TimestampUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CatalogChangeAuditLogs");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.Audit.DriverSponsorChangeAuditLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("ActorUserEmail")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("ActorUserId")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("ChangeType")
-                        .HasColumnType("int");
-
-                    b.Property<string>("DriverEmail")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("DriverId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SponsorOrgId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SponsorOrgName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime>("TimestampUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DriverSponsorChangeAuditLogs");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.Audit.LoginAuditLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<bool>("Successful")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<DateTime>("TimestampUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("LoginAuditLogs");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.Audit.PasswordChangeAuditLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("ActorUserEmail")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("ActorUserId")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("ChangeType")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("Successful")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("TargetUserEmail")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("TargetUserId")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime>("TimestampUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PasswordChangeAuditLogs");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.Audit.PointTransactionAuditLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("ActorUserEmail")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("ActorUserId")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("BalanceChange")
-                        .HasColumnType("int");
-
-                    b.Property<string>("DriverEmail")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("DriverId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("SponsorOrgId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SponsorOrgName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime>("TimestampUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PointTransactionAuditLogs");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.Catalog", b =>
