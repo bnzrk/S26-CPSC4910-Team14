@@ -8,18 +8,18 @@ namespace WebApi.Audit;
 
 public class AuditLogger : IAuditLogger
 {
-    private readonly AuditDbContext _auditDb;
+    private readonly AppDbContext _db;
     private readonly IHttpContextAccessor _http;
     private readonly UserManager<User> _userManager;
 
-    public AuditLogger(AuditDbContext auditDb, IHttpContextAccessor http, UserManager<User> userManager)
+    public AuditLogger(AppDbContext db, IHttpContextAccessor http, UserManager<User> userManager)
     {
-        _auditDb = auditDb;
+        _db = db;
         _http = http;
         _userManager = userManager;
     }
 
-    public async Task CreateLoginAuditLog(string email, bool successful)
+    public async Task CreateLoginAuditLog(string? userId, string email, bool successful)
     {
         var log = new LoginAuditLog
         {
@@ -27,24 +27,37 @@ public class AuditLogger : IAuditLogger
             Email = email,
             Successful = successful
         };
+        if (userId is not null)
+            log.UserId = userId;
 
-        _auditDb.LoginAuditLogs.Add(log);
-        await _auditDb.SaveChangesAsync();
+        _db.LoginAuditLogs.Add(log);
+        await _db.SaveChangesAsync();
     }
 
     public async Task CreatePasswordChangeAuditLog(string userId, string email, PasswordChangeType type, bool successful)
     {
+        var httpUser = _http.HttpContext?.User;
+        if (httpUser is null)
+            throw new Exception("Could not resolve user from http context.");
+
+        var user = await _userManager.GetUserAsync(httpUser);
+        if (user is null)
+            throw new Exception("Could not resolve user from http context.");
+
+
         var log = new PasswordChangeAuditLog
         {
+            ActorUserId = user.Id,
+            ActorUserEmail = user.Email!,
             TimestampUtc = DateTime.UtcNow,
-            UserId = userId,
-            Email = email,
+            TargetUserId = userId,
+            TargetUserEmail = email,
             ChangeType = type,
             Successful = successful
         };
 
-        _auditDb.PasswordChangeAuditLogs.Add(log);
-        await _auditDb.SaveChangesAsync();
+        _db.PasswordChangeAuditLogs.Add(log);
+        await _db.SaveChangesAsync();
     }
 
     public async Task CreateDriverSponsorChangeAuditLog(int driverId, string driverEmail, int orgId, string orgName, DriverSponsorChangeType type)
@@ -69,8 +82,8 @@ public class AuditLogger : IAuditLogger
             ChangeType = type
         };
 
-        _auditDb.DriverSponsorChangeAuditLogs.Add(log);
-        await _auditDb.SaveChangesAsync();
+        _db.DriverSponsorChangeAuditLogs.Add(log);
+        await _db.SaveChangesAsync();
     }
 
     public async Task CreatePointTransactionAuditLog(int driverId, string driverEmail, int orgId, string orgName, int balanceChange, string reason)
@@ -96,8 +109,8 @@ public class AuditLogger : IAuditLogger
             Reason = reason
         };
 
-        _auditDb.PointTransactionAuditLogs.Add(log);
-        await _auditDb.SaveChangesAsync();
+        _db.PointTransactionAuditLogs.Add(log);
+        await _db.SaveChangesAsync();
     }
     public async Task CreateApplicationStatusChangeAuditLog(int applicationId, string newStatus, string? rejectionReason)
     {
@@ -115,8 +128,8 @@ public class AuditLogger : IAuditLogger
             NewStatus = newStatus,
             RejectionReason = rejectionReason
         };
-        _auditDb.ApplicationStatusChangeAuditLogs.Add(log);
-        await _auditDb.SaveChangesAsync();
+        _db.ApplicationStatusChangeAuditLogs.Add(log);
+        await _db.SaveChangesAsync();
     }
     public async Task CreateCatalogChangeAuditLog(int sponsorOrgId, string changeType, int externalItemId)
     {
@@ -134,7 +147,7 @@ public class AuditLogger : IAuditLogger
             ChangeType = changeType,
             ExternalItemId = externalItemId
         };
-        _auditDb.CatalogChangeAuditLogs.Add(log);
-        await _auditDb.SaveChangesAsync();
+        _db.CatalogChangeAuditLogs.Add(log);
+        await _db.SaveChangesAsync();
     }
 }

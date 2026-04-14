@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApi.Data;
 
@@ -10,9 +11,11 @@ using WebApi.Data;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260411183929_AddAuditLogs")]
+    partial class AddAuditLogs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -497,29 +500,6 @@ namespace WebApi.Migrations
                     b.ToTable("CatalogItems");
                 });
 
-            modelBuilder.Entity("WebApi.Data.Entities.DriverAlertSettings", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<int>("DriverId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsOrderAlertsEnabled")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<bool>("IsPointChangeAlertsEnabled")
-                        .HasColumnType("tinyint(1)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DriverId")
-                        .IsUnique();
-
-                    b.ToTable("DriverAlertSettings");
-                });
-
             modelBuilder.Entity("WebApi.Data.Entities.DriverApplication", b =>
                 {
                     b.Property<int>("Id")
@@ -664,113 +644,6 @@ namespace WebApi.Migrations
                         });
                 });
 
-            modelBuilder.Entity("WebApi.Data.Entities.Order", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("CanceledDateUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DeliveryCompleteDateUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DeliveryStartDateUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("DriverId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsRefunded")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<DateTime>("PlacedDateUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("ShippedDateUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("SponsorOrgId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DriverId");
-
-                    b.HasIndex("SponsorOrgId");
-
-                    b.ToTable("Orders");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.OrderAlert", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<int>("DriverId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("OrderId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("TimestampUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DriverId");
-
-                    b.HasIndex("OrderId");
-
-                    b.ToTable("OrderAlerts");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.OrderItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("OrderId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PricePoints")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("PriceUsd")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("ThumbnailUrl")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<decimal>("VendorPriceUsd")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
-
-                    b.ToTable("OrderItems");
-                });
-
             modelBuilder.Entity("WebApi.Data.Entities.PointRule", b =>
                 {
                     b.Property<int>("Id")
@@ -825,30 +698,6 @@ namespace WebApi.Migrations
                     b.ToTable("PointTransactions");
                 });
 
-            modelBuilder.Entity("WebApi.Data.Entities.PointTransactionAlert", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<int>("DriverId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("TimestampUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("TransactionId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DriverId");
-
-                    b.HasIndex("TransactionId");
-
-                    b.ToTable("PointTransactionAlerts");
-                });
-
             modelBuilder.Entity("WebApi.Data.Entities.SponsorOrg", b =>
                 {
                     b.Property<int>("Id")
@@ -895,33 +744,6 @@ namespace WebApi.Migrations
                         .IsUnique();
 
                     b.ToTable("SponsorUsers");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.SponsorshipChangeAlert", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<int>("ChangeType")
-                        .HasColumnType("int");
-
-                    b.Property<int>("DriverId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SponsorOrgId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("TimestampUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DriverId");
-
-                    b.HasIndex("SponsorOrgId");
-
-                    b.ToTable("SponsorshipChangeAlerts");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.TeamMember", b =>
@@ -1301,17 +1123,6 @@ namespace WebApi.Migrations
                     b.Navigation("Catalog");
                 });
 
-            modelBuilder.Entity("WebApi.Data.Entities.DriverAlertSettings", b =>
-                {
-                    b.HasOne("WebApi.Data.Entities.DriverUser", "Driver")
-                        .WithOne("AlertSettings")
-                        .HasForeignKey("WebApi.Data.Entities.DriverAlertSettings", "DriverId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Driver");
-                });
-
             modelBuilder.Entity("WebApi.Data.Entities.DriverApplication", b =>
                 {
                     b.HasOne("WebApi.Data.Entities.DriverUser", "DriverUser")
@@ -1351,55 +1162,6 @@ namespace WebApi.Migrations
                     b.Navigation("AboutInfo");
                 });
 
-            modelBuilder.Entity("WebApi.Data.Entities.Order", b =>
-                {
-                    b.HasOne("WebApi.Data.Entities.DriverUser", "Driver")
-                        .WithMany("Orders")
-                        .HasForeignKey("DriverId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
-                        .WithMany()
-                        .HasForeignKey("SponsorOrgId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Driver");
-
-                    b.Navigation("SponsorOrg");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.OrderAlert", b =>
-                {
-                    b.HasOne("WebApi.Data.Entities.DriverUser", "Driver")
-                        .WithMany("OrderAlerts")
-                        .HasForeignKey("DriverId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WebApi.Data.Entities.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Driver");
-
-                    b.Navigation("Order");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.OrderItem", b =>
-                {
-                    b.HasOne("WebApi.Data.Entities.Order", "Order")
-                        .WithMany("Items")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Order");
-                });
-
             modelBuilder.Entity("WebApi.Data.Entities.PointRule", b =>
                 {
                     b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
@@ -1430,25 +1192,6 @@ namespace WebApi.Migrations
                     b.Navigation("SponsorOrg");
                 });
 
-            modelBuilder.Entity("WebApi.Data.Entities.PointTransactionAlert", b =>
-                {
-                    b.HasOne("WebApi.Data.Entities.DriverUser", "Driver")
-                        .WithMany("PointTransactionAlerts")
-                        .HasForeignKey("DriverId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WebApi.Data.Entities.PointTransaction", "Transaction")
-                        .WithMany()
-                        .HasForeignKey("TransactionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Driver");
-
-                    b.Navigation("Transaction");
-                });
-
             modelBuilder.Entity("WebApi.Data.Entities.SponsorUser", b =>
                 {
                     b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
@@ -1466,25 +1209,6 @@ namespace WebApi.Migrations
                     b.Navigation("SponsorOrg");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.SponsorshipChangeAlert", b =>
-                {
-                    b.HasOne("WebApi.Data.Entities.DriverUser", "Driver")
-                        .WithMany("SponsorshipChangeAlerts")
-                        .HasForeignKey("DriverId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WebApi.Data.Entities.SponsorOrg", "SponsorOrg")
-                        .WithMany()
-                        .HasForeignKey("SponsorOrgId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Driver");
-
-                    b.Navigation("SponsorOrg");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.TeamMember", b =>
@@ -1525,22 +1249,7 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Data.Entities.DriverUser", b =>
                 {
-                    b.Navigation("AlertSettings");
-
-                    b.Navigation("OrderAlerts");
-
-                    b.Navigation("Orders");
-
-                    b.Navigation("PointTransactionAlerts");
-
                     b.Navigation("PointTransactions");
-
-                    b.Navigation("SponsorshipChangeAlerts");
-                });
-
-            modelBuilder.Entity("WebApi.Data.Entities.Order", b =>
-                {
-                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.SponsorOrg", b =>

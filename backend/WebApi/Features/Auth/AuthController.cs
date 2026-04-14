@@ -8,6 +8,7 @@ using WebApi.Audit;
 using WebApi.Data.Enums;
 using WebApi.Features.Users;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace WebApi.Features.Auth;
 
@@ -38,6 +39,21 @@ public class AuthController : ControllerBase
         _usersService = usersService;
     }
 
+    // Helper to get current user + org
+    private async Task<(User user, int? orgId)> GetCurrentUserAndOrgId()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) throw new Exception("Could not resolve user.");
+
+        int? orgId = null;
+        var orgIdClaim = User.FindFirst("OrgId")?.Value;
+        if (!string.IsNullOrEmpty(orgIdClaim))
+            orgId = int.Parse(orgIdClaim);
+
+        return (user, orgId);
+    }
+
+    // Login
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginModel login)
     {
@@ -51,13 +67,14 @@ public class AuthController : ControllerBase
             isPersistent: login.RememberMe,
             lockoutOnFailure: false
         );
+
         if (!result.Succeeded)
         {
-            await _auditLogger.CreateLoginAuditLog(login.Email, false);
+            await _auditLogger.CreateLoginAuditLog(null, user.Email!, false);
             return BadRequest("Invalid email or password.");
         }
 
-        await _auditLogger.CreateLoginAuditLog(login.Email, true);
+        await _auditLogger.CreateLoginAuditLog(user.Id, user.Email!, true);
 
         user.LastLoginUtc = DateTime.UtcNow;
         await _db.SaveChangesAsync();
@@ -65,6 +82,7 @@ public class AuthController : ControllerBase
         return Ok();
     }
 
+    // Register
     [HttpPost("register")]
     [AllowAnonymous]
     public async Task<ActionResult> Register(RegisterModel request)
@@ -77,6 +95,7 @@ public class AuthController : ControllerBase
         return Created();
     }
 
+    // Logout
     [HttpPost("logout")]
     [Authorize]
     public async Task<ActionResult> Logout()
@@ -89,6 +108,7 @@ public class AuthController : ControllerBase
         return Ok();
     }
 
+    // Get current user
     [HttpGet("me")]
     [AllowAnonymous]
     public async Task<ActionResult> Me()
@@ -118,6 +138,7 @@ public class AuthController : ControllerBase
         });
     }
 
+    // Impersonation
     #region Impersonation
     [HttpPost("impersonation/start")]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]
@@ -134,11 +155,9 @@ public class AuthController : ControllerBase
         if (targetUser is null)
             return NotFound();
 
-        // Disallow impersonation of admin users
         if (targetUser.UserType == UserType.Admin)
             return Forbid();
 
-        // If sponsor, validate org of target user
         int? orgScopeId = null;
         var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
         if (isSponsor)
@@ -181,6 +200,7 @@ public class AuthController : ControllerBase
     }
     #endregion
 
+    // Profile
     #region Profile
     [HttpGet("profile")]
     [Authorize]
@@ -224,7 +244,7 @@ public class AuthController : ControllerBase
     [Authorize]
     public async Task<ActionResult> UpdatePassword([FromBody] UpdatePasswordModel request)
     {
-        var user = await _userManager.GetUserAsync(User);
+        var (user, orgId) = await GetCurrentUserAndOrgId();
         if (user is null) return Unauthorized();
 
         var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
