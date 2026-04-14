@@ -1,24 +1,36 @@
 import styles from './RewardBudget.module.scss';
 
-const SEGMENTS = [
-  { label: 'Paid Out', amount: '$3,840', pct: 77, color: 'var(--color-accent)' },
-  { label: 'Pending', amount: '$320', pct: 6, color: 'var(--amber-500)' },
-  { label: 'Available', amount: '$840', pct: 17, color: 'var(--gray-300)' },
-];
+const getSegments = (paidOut, pending, cap) =>
+{
+  const paidOutPct = Math.round((paidOut / cap) * 100);
+  const pendingPct = Math.round((pending / cap) * 100);
+  const availablePct = 100 - paidOutPct - pendingPct;
+  const available = cap - paidOut - pending;
 
-export default function RewardBudget() {
+  return [
+    { label: 'Paid Out', amount: `$${paidOut}`, pct: paidOutPct, color: 'var(--color-accent)' },
+    { label: 'Pending', amount: `$${pending}`, pct: pendingPct, color: 'var(--amber-500)' },
+    { label: 'Available', amount: `$${available}`, pct: availablePct, color: 'var(--gray-300)' },
+  ];
+};
+
+export default function RewardBudget({ paidOut = 0, pending = 0, cap = 5000 })
+{
+  const available = cap - paidOut >= 0 ? cap - paidOut : 0;
+  const segments = getSegments(paidOut, pending, available);
+
   return (
     <div className={styles.card}>
       <div className={styles.header}>
         <div>
           <h3 className={styles.title}>Reward Budget</h3>
-          <p className={styles.subtitle}>Feb 2026 · $5,000 cap</p>
+          <p className={styles.subtitle}>Feb 2026 · ${cap} cap</p>
         </div>
         <button className={styles.adjustBtn}>Adjust</button>
       </div>
 
       <div className={styles.bar}>
-        {SEGMENTS.map(s => (
+        {segments.map(s => (
           <div
             key={s.label}
             className={styles.barSegment}
@@ -29,7 +41,7 @@ export default function RewardBudget() {
       </div>
 
       <div className={styles.legend}>
-        {SEGMENTS.map(s => (
+        {segments.map(s => (
           <div key={s.label} className={styles.legendItem}>
             <span className={styles.legendDot} style={{ background: s.color }} />
             <div className={styles.legendText}>
@@ -42,7 +54,7 @@ export default function RewardBudget() {
       </div>
 
       <div className={styles.footer}>
-        <span className={styles.usedPill}>77% Used</span>
+        <span className={styles.usedPill}>{Math.round(((paidOut + pending) / cap) * 100)}% Used</span>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { useSponsorOrgDrivers } from '@/api/sponsorOrg';
-import { useMonthlyCatalogSpending } from '@/api/catalog';
+import { useMonthlySaleSummary, useSixMonthSummary } from '@/api/sales';
 import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
 import SponsorStatCards from './sections/SponsorStatCards';
 import FleetChart from './sections/FleetChart';
@@ -11,30 +11,56 @@ import FleetHealth from './sections/FleetHealth';
 import PointRulesSection from './sections/PointRulesSection';
 import styles from './SponsorDashboardPage.module.scss';
 
-export default function SponsorDashboardPage() {
+const DEFAULT_SPENDING_CAP = 1000;
+
+function getTrendPercent(current, previous)
+{
+  console.log(`${current}, ${previous}`);
+    
+  if (previous == 0)
+    return current > 0 ? 100 : 0;
+
+  return Math.round((current - previous) / previous * 100, 1);
+}
+
+export default function SponsorDashboardPage()
+{
   const { data: driversPage } = useSponsorOrgDrivers();
   const drivers = driversPage?.items ?? [];
   const driverCount = driversPage?.totalCount ?? drivers.length;
 
   const { selectedOrgId } = useOrgContext();
-  const { data: monthlyExpenses }  = useMonthlyCatalogSpending(selectedOrgId);
-  console.log(monthlyExpenses); 
+
+  // Monthly summary
+  const { data: summary, isLoading: isSummaryLoading, isError: isSummaryError } = useMonthlySaleSummary();
+  const pointsTrend = summary ? getTrendPercent(summary.pointsIssued, summary.prevPointsIssued) : 0;
+  const expenseTrend = summary ? getTrendPercent(summary.expenses, summary.prevExpenses) : 0;
+  const percentBudgetUsed = summary ? Math.round(((summary.expenses + summary.pendingExpenses) / DEFAULT_SPENDING_CAP) * 100) : 0;
+
+  // Six month summary
+  const { data: sixMonthSummary } = useSixMonthSummary();
 
   return (
     <div className={styles.dashboard}>
-      <SponsorStatCards driverCount={driverCount} pointsIssued={monthlyExpenses?.monthlyPointsIssued} rewardsPaid={monthlyExpenses?.monthlyExpensesUsd}/>
+      <SponsorStatCards
+        driverCount={driverCount}
+        pointsIssued={summary?.pointsIssued}
+        pointsIssuedTrend={pointsTrend}
+        rewardsPaid={summary?.expenses}
+        rewardsPaidTrend={expenseTrend}
+      />
 
-      <div className={styles.mainGrid}>
+      <div className={styles.mainGrid}> 
         <div className={styles.leftCol}>
-          <FleetChart />
+          <FleetChart driverCount={driverCount} summary={sixMonthSummary} budgetUsedPercent={percentBudgetUsed} />
           <FleetMonitorTable />
           <PointRulesSection />
         </div>
         <div className={styles.rightCol}>
-          <RewardBudget />
-          <FleetAlerts />
+          <RewardBudget paidOut={summary?.expenses} pending={summary?.pendingExpenses} cap={DEFAULT_SPENDING_CAP}/>
           <TopPerformers />
           <FleetHealth />
+          <FleetAlerts />
         </div>
       </div>
 
