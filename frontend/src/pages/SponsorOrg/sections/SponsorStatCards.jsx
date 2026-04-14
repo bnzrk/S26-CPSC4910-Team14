@@ -1,6 +1,13 @@
+import { formatUsd } from '@/helpers/formatting';
 import styles from './SponsorStatCards.module.scss';
 
-const CARDS = [
+function formatNumber(num) {
+  if (num >= 1_000_000) return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (num >= 1_000) return (num / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+  return num.toString();
+}
+
+const CARDS = ({ pointsIssued, rewardsPaid }) => [
   {
     label: 'Active Drivers',
     valueKey: 'driverCount',
@@ -19,7 +26,7 @@ const CARDS = [
   },
   {
     label: 'Points Issued',
-    value: '48.2K',
+    value: formatNumber(pointsIssued ?? 0),
     trend: '+12%',
     trendUp: true,
     iconBg: 'var(--blue-100)',
@@ -62,7 +69,7 @@ const CARDS = [
   },
   {
     label: 'Rewards Paid Out',
-    value: '$3,840',
+    value: formatUsd(rewardsPaid),
     trend: '-2%',
     trendUp: false,
     iconBg: 'var(--red-100)',
@@ -79,10 +86,13 @@ const CARDS = [
   },
 ];
 
-export default function SponsorStatCards({ driverCount }) {
+export default function SponsorStatCards({ driverCount, pointsIssued, rewardsPaid }) {
+  const cards = CARDS({ pointsIssued, rewardsPaid });
+  console.log(rewardsPaid);
+
   return (
     <div className={styles.grid}>
-      {CARDS.map(card => {
+      {cards.map(card => {
         const displayValue = card.valueKey === 'driverCount' ? driverCount ?? '—' : card.value;
         return (
           <div key={card.label} className={styles.card}>

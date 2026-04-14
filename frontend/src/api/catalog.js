@@ -1,7 +1,22 @@
 import { useQuery, keepPreviousData, useMutation } from "@tanstack/react-query";
 import { queryClient } from "./queryClient";
 import { useCurrentUser } from "./currentUser";
+import { USER_TYPES } from "@/constants/userTypes";
 import { apiFetch } from "./apiFetch";
+
+export function useMonthlyCatalogSpending(orgId)
+{
+    const { data: user } = useCurrentUser();
+    const isDriver = user?.userType === USER_TYPES.DRIVER;
+
+    return useQuery({
+        queryKey: ["monthlyCatalogSpending", orgId],
+        queryFn: async () => apiFetch(`/sponsor-orgs/${orgId}/catalog/monthly-spending`).then(r => r.json()),
+        enabled: !!user && !!orgId && !isDriver,
+        retry: 1,
+        placeholderData: keepPreviousData,
+    });
+}
 
 export function useCatalog(orgId)
 {

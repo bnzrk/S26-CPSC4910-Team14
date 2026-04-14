@@ -1,4 +1,6 @@
 import { useSponsorOrgDrivers } from '@/api/sponsorOrg';
+import { useMonthlyCatalogSpending } from '@/api/catalog';
+import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
 import SponsorStatCards from './sections/SponsorStatCards';
 import FleetChart from './sections/FleetChart';
 import RewardBudget from './sections/RewardBudget';
@@ -14,9 +16,13 @@ export default function SponsorDashboardPage() {
   const drivers = driversPage?.items ?? [];
   const driverCount = driversPage?.totalCount ?? drivers.length;
 
+  const { selectedOrgId } = useOrgContext();
+  const { data: monthlyExpenses }  = useMonthlyCatalogSpending(selectedOrgId);
+  console.log(monthlyExpenses); 
+
   return (
     <div className={styles.dashboard}>
-      <SponsorStatCards driverCount={driverCount} />
+      <SponsorStatCards driverCount={driverCount} pointsIssued={monthlyExpenses?.monthlyPointsIssued} rewardsPaid={monthlyExpenses?.monthlyExpensesUsd}/>
 
       <div className={styles.mainGrid}>
         <div className={styles.leftCol}>
