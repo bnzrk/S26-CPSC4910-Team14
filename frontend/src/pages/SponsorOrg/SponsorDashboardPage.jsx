@@ -14,9 +14,7 @@ import styles from './SponsorDashboardPage.module.scss';
 const DEFAULT_SPENDING_CAP = 1000;
 
 function getTrendPercent(current, previous)
-{
-  console.log(`${current}, ${previous}`);
-    
+{    
   if (previous == 0)
     return current > 0 ? 100 : 0;
 

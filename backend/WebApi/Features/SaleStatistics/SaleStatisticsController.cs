@@ -155,9 +155,9 @@ public class SaleStatisticsController : ControllerBase
         return Ok(pageResult);
     }
 
-    [HttpGet("invoice")]
+    [HttpGet("invoices")]
     [Authorize(Policy = PolicyNames.AdminOnly)]
-    public async Task<ActionResult> GetInvoice(
+    public async Task<ActionResult> GetInvoices(
     [FromQuery] int? orgId,
     [FromQuery] DateTime? from,
     [FromQuery] DateTime? to)

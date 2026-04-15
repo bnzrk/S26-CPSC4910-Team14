@@ -29,6 +29,28 @@ export function useSales({ orgId, driverId, to, from, page = 1, pageSize = 10 })
     });
 }
 
+export function useInvoices({ orgId, to, from })
+{
+    const { data: user } = useCurrentUser();
+    const isAdmin = user?.userType === USER_TYPES.ADMIN;
+
+    const params = new URLSearchParams();
+    if (orgId)
+        params.append("orgId", orgId);
+    if (to)
+        params.append("to", to);
+    if (from)
+        params.append("from", from);
+
+    return useQuery({
+        queryKey: ["invoices", orgId, to, from],
+        queryFn: async () => apiFetch(`/sales/invoices?${params.toString()}`).then(r => r.json()),
+        enabled: !!user && isAdmin,
+        placeholderData: keepPreviousData,
+        retry: 0
+    });
+}
+
 export function useMonthlySaleSummary(orgId)
 {
     const { data: user } = useCurrentUser();

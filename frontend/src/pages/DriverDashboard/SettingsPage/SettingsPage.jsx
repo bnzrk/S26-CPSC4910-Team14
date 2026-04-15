@@ -35,10 +35,7 @@ export default function DriverSettingsPage()
     localSettings.isOrderAlertsEnabled !== alertSettings.isOrderAlertsEnabled ||
     localSettings.isPointChangeAlertsEnabled !== alertSettings.isPointChangeAlertsEnabled
   );
-
-  console.log(localSettings);
-  console.log(alertSettings);
-
+  
   function handleCheckboxChange(e)
   {
     const { name, checked } = e.target;

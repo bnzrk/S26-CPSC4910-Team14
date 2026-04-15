@@ -8,6 +8,7 @@ const quickLinks = [
   { label: 'Users', description: 'Manage user accounts', path: '/admin/users' },
   { label: 'Bulk Actions', description: 'Perform actions in bulk', path: '/admin/bulk' },
   { label: 'Sales Reports', description: 'View sales by sponsor or driver', path: '/admin/sales' },
+  { label: 'Invoices', description: 'Generate sponsor invoices', path: '/admin/invoices' },
 ];
 
 export default function AdminDashboardPage() {
