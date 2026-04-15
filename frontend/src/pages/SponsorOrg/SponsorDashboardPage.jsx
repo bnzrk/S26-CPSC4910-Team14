@@ -1,6 +1,7 @@
 import { useSponsorOrgDrivers } from '@/api/sponsorOrg';
 import { useMonthlySaleSummary, useSixMonthSummary } from '@/api/sales';
 import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
+import { DEFAULT_BUDGET_CAP } from '@/constants/budget';
 import SponsorStatCards from './sections/SponsorStatCards';
 import FleetChart from './sections/FleetChart';
 import RewardBudget from './sections/RewardBudget';
@@ -10,8 +11,6 @@ import TopPerformers from './sections/TopPerformers';
 import FleetHealth from './sections/FleetHealth';
 import PointRulesSection from './sections/PointRulesSection';
 import styles from './SponsorDashboardPage.module.scss';
-
-const DEFAULT_SPENDING_CAP = 1000;
 
 function getTrendPercent(current, previous)
 {    
@@ -33,7 +32,7 @@ export default function SponsorDashboardPage()
   const { data: summary, isLoading: isSummaryLoading, isError: isSummaryError } = useMonthlySaleSummary();
   const pointsTrend = summary ? getTrendPercent(summary.pointsIssued, summary.prevPointsIssued) : 0;
   const expenseTrend = summary ? getTrendPercent(summary.expenses, summary.prevExpenses) : 0;
-  const percentBudgetUsed = summary ? Math.round(((summary.expenses + summary.pendingExpenses) / DEFAULT_SPENDING_CAP) * 100) : 0;
+  const percentBudgetUsed = summary ? Math.round(((summary.expenses + summary.pendingExpenses) / DEFAULT_BUDGET_CAP) * 100) : 0;
 
   // Six month summary
   const { data: sixMonthSummary } = useSixMonthSummary();
@@ -55,7 +54,7 @@ export default function SponsorDashboardPage()
           <PointRulesSection />
         </div>
         <div className={styles.rightCol}>
-          <RewardBudget paidOut={summary?.expenses} pending={summary?.pendingExpenses} cap={DEFAULT_SPENDING_CAP}/>
+          <RewardBudget paidOut={summary?.expenses} pending={summary?.pendingExpenses} cap={DEFAULT_BUDGET_CAP}/>
           <TopPerformers />
           <FleetHealth />
           <FleetAlerts />
