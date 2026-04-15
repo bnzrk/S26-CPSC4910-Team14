@@ -334,7 +334,7 @@ public class OrdersController : ControllerBase
                     orderQuery = orderQuery.Where(o => o.Status == OrderStatus.Delivered);
                     break;
                 case "cancelled":
-                    orderQuery = orderQuery.Where(o => o.Status == OrderStatus.Canceled);
+                    orderQuery = orderQuery.Where(o => o.Status == OrderStatus.Cancelled);
                     break;
             }
         }
@@ -486,7 +486,7 @@ public class OrdersController : ControllerBase
                 return NotFound();
         }
 
-        if (request.Status == OrderStatus.Canceled)
+        if (request.Status == OrderStatus.Cancelled)
             return BadRequest("Invalid status.");
 
         SetOrderStatus(order, request.Status);
@@ -542,11 +542,11 @@ public class OrdersController : ControllerBase
                 return NotFound();
         }
 
-        if (order.Status == OrderStatus.Canceled)
+        if (order.Status == OrderStatus.Cancelled)
         {
             return BadRequest("Order is already canceled.");
         }
-        SetOrderStatus(order, OrderStatus.Canceled);
+        SetOrderStatus(order, OrderStatus.Cancelled);
 
         await using var dbTransaction = await _db.Database.BeginTransactionAsync();
         try
@@ -581,7 +581,7 @@ public class OrdersController : ControllerBase
 
     private void SetOrderStatus(Order order, OrderStatus status)
     {
-        if (status != OrderStatus.Canceled)
+        if (status != OrderStatus.Cancelled)
             order.CanceledDateUtc = null;
 
         // Set status. If reverted to an earlier status, clear timestamps
@@ -604,7 +604,7 @@ public class OrdersController : ControllerBase
             case OrderStatus.Delivered:
                 order.DeliveryCompleteDateUtc = DateTime.UtcNow;
                 break;
-            case OrderStatus.Canceled:
+            case OrderStatus.Cancelled:
                 order.CanceledDateUtc = DateTime.UtcNow;
                 break;
             default:

@@ -5,14 +5,13 @@ using Microsoft.EntityFrameworkCore;
 using WebApi.Data;
 using WebApi.Data.Entities;
 using WebApi.Data.Enums;
-using WebApi.Features.PointTransactions.Models;
 using WebApi.Helpers.Pagination;
 
 namespace WebApi.Features.PointTransactions;
 
 [ApiController]
 [Authorize(Policy = PolicyNames.AdminOrSponsor)]
-[Route("/sale-stats")]
+[Route("/sales")]
 public class SaleStatisticsController : ControllerBase
 {
     private readonly AppDbContext _db;
@@ -116,6 +115,90 @@ public class SaleStatisticsController : ControllerBase
         return Ok(months);
     }
 
+    [HttpGet]
+    [Authorize(Policy = PolicyNames.AdminOnly)]
+    public async Task<ActionResult> GetSales(
+        [FromQuery] int? orgId = null,
+        [FromQuery] int? driverId = null,
+        [FromQuery] DateTime? from = null,
+        [FromQuery] DateTime? to = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10
+    )
+    {
+        var ordersQuery = _db.Orders
+            .Where(o => !o.IsRefunded);
+
+        // Date filter
+        if (from.HasValue)
+            ordersQuery = ordersQuery.Where(o => o.PlacedDateUtc >= from);
+        if (to.HasValue)
+            ordersQuery = ordersQuery.Where(o => o.PlacedDateUtc < to);
+        // Org and driver filter
+        if (orgId.HasValue)
+            ordersQuery = ordersQuery.Where(o => o.SponsorOrgId == orgId.Value);
+        if (driverId.HasValue)
+            ordersQuery = ordersQuery.Where(o => o.DriverId == driverId.Value);
+
+        var salesQuery = ordersQuery
+            .OrderByDescending(o => o.PlacedDateUtc)
+            .Select(o => new
+            {
+                SponsorName = o.SponsorOrg.SponsorName,
+                DriverName = o.Driver.User.FirstName + " " + o.Driver.User.LastName,
+                DriverEmail = o.Driver.User.Email!,
+                SaleDateUtc = o.PlacedDateUtc,
+                TotalUsd = o.Items.Sum(i => i.PriceUsd),
+            });
+
+        var pageResult = await PagedResult.ToPagedResultAsync(salesQuery, page, pageSize);
+        return Ok(pageResult);
+    }
+
+    [HttpGet("invoice")]
+    [Authorize(Policy = PolicyNames.AdminOnly)]
+    public async Task<ActionResult> GetInvoice(
+    [FromQuery] int? orgId,
+    [FromQuery] DateTime? from,
+    [FromQuery] DateTime? to)
+    {
+        var orgQuery = _db.SponsorOrgs.AsQueryable();
+        if (orgId.HasValue)
+            orgQuery = orgQuery.Where(o => o.Id == orgId.Value);
+
+        var invoices = await orgQuery
+            .Select(org => new
+            {
+                SponsorOrgId = org.Id,
+                SponsorOrgName = org.SponsorName,
+                DriverFees = org.DriverUsers
+                    .Select(driver => new
+                    {
+                        Id = driver.Id,
+                        Name = $"{driver.User.FirstName} {driver.User.LastName}",
+                        Email = driver.User.Email,
+                        FeeUsd = driver.Orders
+                            .Where(o => o.Status != OrderStatus.Cancelled
+                                && !o.IsRefunded
+                                && (from == null || o.PlacedDateUtc >= from)
+                                && (to == null || o.PlacedDateUtc <= to))
+                            .SelectMany(o => o.Items)
+                            .Sum(i => i.PriceUsd)
+                    })
+                    .ToList(),
+                TotalFeeUsd = org.DriverUsers
+                    .SelectMany(driver => driver.Orders
+                        .Where(o => o.Status != OrderStatus.Cancelled
+                            && !o.IsRefunded
+                            && (from == null || o.PlacedDateUtc >= from)
+                            && (to == null || o.PlacedDateUtc <= to))
+                        .SelectMany(o => o.Items))
+                    .Sum(i => i.PriceUsd)
+            }).ToListAsync();
+
+        return Ok(invoices);
+    }
+
     private async Task<Dictionary<DateTime, int>> GetPointsChartAsync(int orgId, DateTime from, DateTime to)
     {
         await using var db = _dbContextFactory.CreateDbContext();
@@ -136,7 +219,7 @@ public class SaleStatisticsController : ControllerBase
         await using var db = _dbContextFactory.CreateDbContext();
         var rows = await db.DriverUsers
             .SelectMany(d => d.Orders)
-            .Where(o => !o.IsRefunded && o.Status != OrderStatus.Canceled && o.SponsorOrgId == orgId && o.PlacedDateUtc >= from && o.PlacedDateUtc <= to)
+            .Where(o => !o.IsRefunded && o.Status != OrderStatus.Cancelled && o.SponsorOrgId == orgId && o.PlacedDateUtc >= from && o.PlacedDateUtc <= to)
             .GroupBy(o => new { o.PlacedDateUtc.Year, o.PlacedDateUtc.Month })
             .Select(g => new { g.Key.Year, g.Key.Month, Total = g.SelectMany(o => o.Items).Sum(i => i.VendorPriceUsd) })
             .ToListAsync();
@@ -152,7 +235,7 @@ public class SaleStatisticsController : ControllerBase
         await using var db = _dbContextFactory.CreateDbContext();
         var expenseQuery = db.DriverUsers
             .SelectMany(d => d.Orders)
-            .Where(o => !o.IsRefunded && o.Status > OrderStatus.Placed && o.Status != OrderStatus.Canceled && o.SponsorOrgId == orgId);
+            .Where(o => !o.IsRefunded && o.Status > OrderStatus.Placed && o.Status != OrderStatus.Cancelled && o.SponsorOrgId == orgId);
         if (from is not null)
             expenseQuery = expenseQuery.Where(o => o.PlacedDateUtc >= from);
         if (to is not null)
@@ -196,7 +279,7 @@ public class SaleStatisticsController : ControllerBase
         await using var db = _dbContextFactory.CreateDbContext();
         var expenseQuery = db.DriverUsers
             .SelectMany(d => d.Orders)
-            .Where(o => !o.IsRefunded && o.Status != OrderStatus.Canceled && o.SponsorOrgId == orgId);
+            .Where(o => !o.IsRefunded && o.Status != OrderStatus.Cancelled && o.SponsorOrgId == orgId);
         if (from is not null)
             expenseQuery = expenseQuery.Where(o => o.PlacedDateUtc >= from);
         if (to is not null)
