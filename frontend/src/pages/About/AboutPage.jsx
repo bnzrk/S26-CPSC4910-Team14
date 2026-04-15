@@ -40,6 +40,29 @@ export default function AboutPage() {
       <SponsorSection />
       <DriverSection />
       <MetricsBar />
+        <div style={{ textAlign: 'center', padding: '2rem', background: '#f9f9f9' }}>
+          <h2 style={{ marginBottom: '1rem' }}>Team Info</h2>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '3rem', flexWrap: 'wrap' }}>
+            <div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>Team {data.teamNumber}</div>
+              <div style={{ color: '#666' }}>Team</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{data.versionNumber}</div>
+              <div style={{ color: '#666' }}>Current Sprint</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>
+                {new Date(data.releaseDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </div>
+              <div style={{ color: '#666' }}>Release Date</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{data.teamMembers?.length ?? 0}</div>
+              <div style={{ color: '#666' }}>Team Members</div>
+            </div>
+          </div>
+        </div>
       <Testimonials />
       <CtaSection />
       <AboutFooter />
