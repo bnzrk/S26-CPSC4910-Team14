@@ -107,6 +107,7 @@ export function useSponsorOrgDrivers(orgId)
     });
 }
 
+// Also used for add/remove button on admin page
 export function useRemoveSponsorDriveUser(orgId)
 {
     const { data: user } = useCurrentUser();
