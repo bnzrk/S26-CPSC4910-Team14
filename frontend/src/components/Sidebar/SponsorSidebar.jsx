@@ -154,7 +154,7 @@ export default function SponsorSidebar({ className, onClose })
       </nav>
 
       <div className={styles.budgetArea}>
-        <BudgetWidget used={(summary?.expenses + summary?.pendingExpenses) ?? 0} total={DEFAULT_BUDGET_CAP} resetLabel={resetDateString} />
+        <BudgetWidget used={summary?.expenses + summary?.pendingExpenses} total={DEFAULT_BUDGET_CAP} resetLabel={resetDateString} />
       </div>
     </aside>
   );
