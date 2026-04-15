@@ -89,6 +89,7 @@ export default function SponsorOrgPage()
                     <ListItem icon={ListChecksIcon} label='Point Rules' showChevron={true} onClick={() => navigate("point-rules")}></ListItem>
                     <ListItem icon={TruckIcon} label='Drivers' showChevron={true} onClick={() => navigate("drivers")}></ListItem>
                     <ListItem icon={FileIcon} label='Driver Applications' showChevron={true} onClick={() => navigate("applications")}></ListItem>
+                    <ListItem icon={FileIcon} label='Reports' showChevron={true} onClick={() => navigate("reports")}></ListItem>
                 </Card>
             </CardHost>
         </main>
