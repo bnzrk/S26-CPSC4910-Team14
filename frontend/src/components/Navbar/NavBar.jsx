@@ -23,8 +23,9 @@ export default function Navbar({ toggleSidebar })
   const { openHelp } = useHelp();
 
   const isLoggedIn = !!currentUser;
-  const isDriver = currentUser?.userType === 'Driver';
-  const isAdmin = currentUser?.userType === 'Admin';
+  const isDriver = currentUser?.userType?.toLowerCase() === 'driver';
+  const isAdmin = currentUser?.userType?.toLowerCase() === 'admin';
+  const isSponsor = currentUser?.userType?.toLowerCase() === 'sponsor';
 
   const userInitials = currentUser?.firstName && currentUser?.lastName
     ? `${currentUser.firstName[0]}${currentUser.lastName[0]}`
@@ -35,9 +36,7 @@ export default function Navbar({ toggleSidebar })
       <nav className={styles.navbar}>
         <div className={styles.left}>
           {(!isLoggedIn || isAdmin) &&
-            <Link to="/" className={styles.home}>
-              DrivePoints
-            </Link>
+            <Link to="/" className={styles.home}>DrivePoints</Link>
           }
         </div>
 

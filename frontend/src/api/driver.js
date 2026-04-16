@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation, keepPreviousData } from "@tanstack/react-query";
 import { useCurrentUser } from "./currentUser";
 import { apiFetch } from "./apiFetch";
 import { USER_TYPES } from "../constants/userTypes";
@@ -15,6 +15,28 @@ export function useDriverOrgs(driverId)
         queryKey: ["driverOrgs", driverId],
         queryFn: async () => apiFetch(`/drivers/${driverPath}/sponsor-orgs`).then(r => r.json()),
         enabled: !!user && isDriver,
+        retry: 1
+    });
+}
+
+export function useDriverUsers({ page = 1, pageSize = 10, query })
+{
+    const { data: user } = useCurrentUser();
+    const isAdmin = user?.userType === USER_TYPES.ADMIN;
+    const isSponsor = user?.userType === USER_TYPES.SPONSOR;
+
+    const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(pageSize)
+    });
+    if (query)
+        params.append("query", query);
+
+    return useQuery({
+        queryKey: ["drivers", user?.id, query],
+        queryFn: async () => apiFetch(`/drivers?${params.toString()}`).then(r => r.json()),
+        enabled: !!user && (isAdmin || isSponsor),
+        placeholderData: keepPreviousData,
         retry: 1
     });
 }

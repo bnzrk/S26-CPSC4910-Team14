@@ -13,14 +13,6 @@ function formatRelative(dateStr) {
   return `${days}d ago`;
 }
 
-const MOCK_FEED = [
-  { icon: '🚚', iconBg: 'var(--green-100)', event: 'Chicago → Kansas City delivery completed', time: '2h ago', delta: '+650' },
-  { icon: '⭐', iconBg: '#fef3c7', event: 'Streak bonus unlocked — 10 days!', time: '5h ago', delta: '+200' },
-  { icon: '🎁', iconBg: 'var(--amber-100)', event: 'Fuel Card redeemed from catalog', time: '1d ago', delta: '-500' },
-  { icon: '🏆', iconBg: 'var(--blue-100)', event: 'Ranked #3 on Fleet Leaderboard', time: '2d ago', delta: '—' },
-  { icon: '🚚', iconBg: 'var(--green-100)', event: 'Dallas → Houston delivery completed', time: '3d ago', delta: '+420' },
-];
-
 function feedFromHistory(history) {
   return (history?.items ?? []).slice(0, 5).map(t => {
     const change = Number(t.balanceChange ?? 0);
@@ -37,7 +29,8 @@ function feedFromHistory(history) {
 }
 
 export default function ActivityFeed({ history }) {
-  const feed = history?.items?.length ? feedFromHistory(history) : MOCK_FEED;
+  const isLoading = history === null;
+  const feed = !isLoading ? feedFromHistory(history) : [];
 
   return (
     <div className={styles.card}>
@@ -47,23 +40,37 @@ export default function ActivityFeed({ history }) {
       </div>
 
       <div className={styles.list}>
-        {feed.map((item, i) => (
-          <div key={i} className={styles.row}>
-            <div className={styles.iconCircle} style={{ background: item.iconBg }}>
-              {item.icon}
+        {isLoading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className={styles.row}>
+              <div className={clsx(styles.bone, styles.boneCircle)} />
+              <div className={styles.boneText}>
+                <div className={clsx(styles.bone, styles.boneLine)} />
+                <div className={clsx(styles.bone, styles.boneLineShort)} />
+              </div>
             </div>
-            <div className={styles.text}>
-              <div className={styles.event}>{item.event}</div>
-              <div className={styles.time}>{item.time}</div>
+          ))
+        ) : feed.length === 0 ? (
+          <div className={styles.emptyMsg}>No recent activity.</div>
+        ) : (
+          feed.map((item, i) => (
+            <div key={i} className={styles.row}>
+              <div className={styles.iconCircle} style={{ background: item.iconBg }}>
+                {item.icon}
+              </div>
+              <div className={styles.text}>
+                <div className={styles.event}>{item.event}</div>
+                <div className={styles.time}>{item.time}</div>
+              </div>
+              <span className={clsx(
+                styles.delta,
+                item.delta.startsWith('+') ? styles.deltaPos : item.delta.startsWith('-') ? styles.deltaNeg : styles.deltaNeutral
+              )}>
+                {item.delta}
+              </span>
             </div>
-            <span className={clsx(
-              styles.delta,
-              item.delta.startsWith('+') ? styles.deltaPos : item.delta.startsWith('-') ? styles.deltaNeg : styles.deltaNeutral
-            )}>
-              {item.delta}
-            </span>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

@@ -42,3 +42,89 @@
     color: var(--color-text-tertiary);
     font-size: 0.9rem;
 }
+
+.orgMetaRow {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+    gap: 12px;
+    margin-top: 6px;
+}
+
+.orgMeta {
+    font-size: 0.85rem;
+    color: #6b7280;
+    white-space: nowrap;
+}
+
+.orgActions {
+    display: flex;
+    flex-direction: row; 
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-wrap: nowrap;   
+    margin-left: auto;
+    flex-shrink: 0;
+    button {
+        font-size: 0.75rem;
+        padding: 2px 8px;
+    }
+}
+
+.compactInput {
+    width: 90px;
+    height: 24px;
+    font-size: 0.75rem;
+    padding: 2px 4px;
+}
+
+.compactButton {
+    padding: 2px 6px !important;
+    font-size: 0.75rem !important;
+    height: 22px !important;
+    white-space: nowrap;
+}
+
+// For adding driver modal
+.modalBackdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.modal {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modalText {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.modalInput {
+    height: 30px;
+    padding: 4px 8px;
+    font-size: 0.85rem;
+}
+
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 10px;
+}

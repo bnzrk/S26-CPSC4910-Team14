@@ -219,6 +219,212 @@ namespace WebApi.Migrations
                     b.ToTable("AdminUsers");
                 });
 
+            modelBuilder.Entity("WebApi.Data.Entities.Audit.ApplicationStatusChangeAuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("ActorUserEmail")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ActorUserId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("ApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NewStatus")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("TimestampUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ApplicationStatusChangeAuditLogs");
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.Audit.CatalogChangeAuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("ActorUserEmail")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ActorUserId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ChangeType")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("ExternalItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SponsorOrgId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("TimestampUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CatalogChangeAuditLogs");
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.Audit.DriverSponsorChangeAuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("ActorUserEmail")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ActorUserId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("ChangeType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DriverEmail")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("DriverId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SponsorOrgId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SponsorOrgName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("TimestampUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DriverSponsorChangeAuditLogs");
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.Audit.LoginAuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("Successful")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime>("TimestampUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LoginAuditLogs");
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.Audit.PasswordChangeAuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("ActorUserEmail")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ActorUserId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("ChangeType")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Successful")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("TargetUserEmail")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TargetUserId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("TimestampUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PasswordChangeAuditLogs");
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.Audit.PointTransactionAuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("ActorUserEmail")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ActorUserId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("BalanceChange")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DriverEmail")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("DriverId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("SponsorOrgId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SponsorOrgName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("TimestampUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PointTransactionAuditLogs");
+                });
+
             modelBuilder.Entity("WebApi.Data.Entities.Catalog", b =>
                 {
                     b.Property<int>("Id")
@@ -289,6 +495,29 @@ namespace WebApi.Migrations
                         .IsUnique();
 
                     b.ToTable("CatalogItems");
+                });
+
+            modelBuilder.Entity("WebApi.Data.Entities.DriverAlertSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("DriverId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsOrderAlertsEnabled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsPointChangeAlertsEnabled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DriverId")
+                        .IsUnique();
+
+                    b.ToTable("DriverAlertSettings");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.DriverApplication", b =>
@@ -1072,6 +1301,17 @@ namespace WebApi.Migrations
                     b.Navigation("Catalog");
                 });
 
+            modelBuilder.Entity("WebApi.Data.Entities.DriverAlertSettings", b =>
+                {
+                    b.HasOne("WebApi.Data.Entities.DriverUser", "Driver")
+                        .WithOne("AlertSettings")
+                        .HasForeignKey("WebApi.Data.Entities.DriverAlertSettings", "DriverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Driver");
+                });
+
             modelBuilder.Entity("WebApi.Data.Entities.DriverApplication", b =>
                 {
                     b.HasOne("WebApi.Data.Entities.DriverUser", "DriverUser")
@@ -1285,6 +1525,8 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Data.Entities.DriverUser", b =>
                 {
+                    b.Navigation("AlertSettings");
+
                     b.Navigation("OrderAlerts");
 
                     b.Navigation("Orders");

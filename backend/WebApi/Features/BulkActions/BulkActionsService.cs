@@ -366,7 +366,6 @@ public class BulkActionsService : IBulkActionsService
                 };
                 driver.SponsorOrgs.Add(org);
 
-                Console.WriteLine($"Adding driver user: {driver.User.FirstName} {driver.User.LastName} {driver.User.Email}");
                 _db.DriverUsers.Add(driver);
                 addedUsers.Add(driver.User.Email, driver);
             }

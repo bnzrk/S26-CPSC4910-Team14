@@ -13,3 +13,60 @@
 .userItemButton {
     padding: 0 $grid-1x;
 }
+
+.userMeta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.userEmail {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.userActions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.orgInput {
+    width: 80px;
+    padding: 4px 6px;
+    font-size: 0.85rem;
+}
+
+.compactButton {
+    padding: 2px 6px !important;
+    font-size: 0.75rem !important;
+    height: 24px !important;
+    min-height: 24px !important;
+}
+
+.compactInput {
+    height: 24px;
+    font-size: 0.75rem;
+    padding: 2px 4px;
+    width: 70px;
+}
+
+.userMetaRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+}
+
+.userMeta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.userEmail {
+    font-size: 0.85rem;
+    color: #6b7280;
+}

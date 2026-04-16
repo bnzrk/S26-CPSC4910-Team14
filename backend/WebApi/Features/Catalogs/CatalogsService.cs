@@ -24,6 +24,8 @@ public class CatalogsService : ICatalogsService
     public async Task<CatalogModel> GetOrgCatalogAsync(int orgId)
     {
         var catalogId = await _db.Catalogs.Where(c => c.SponsorOrgId == orgId).Select(c => (int?)c.Id).SingleOrDefaultAsync();
+        var orgPointRatio = await _db.Catalogs.Where(c => c.SponsorOrgId == orgId).Select(c => c.SponsorOrg.PointRatio).SingleOrDefaultAsync();
+
         if (!catalogId.HasValue)
             throw new Exception("Catalog not found.");
 
@@ -54,6 +56,7 @@ public class CatalogsService : ICatalogsService
                 CategoryTitle = i.CategoryTitle,
                 ExternalPrice = i.ExternalPrice,
                 Price = i.CatalogPrice,
+                PricePoints = (int)(i.CatalogPrice / (orgPointRatio != 0m ? orgPointRatio : 1)),
                 Images = i.Images,
                 IsAvailable = i.IsAvailable
             });

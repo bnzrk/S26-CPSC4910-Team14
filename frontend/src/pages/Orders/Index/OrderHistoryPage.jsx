@@ -15,7 +15,7 @@ const TABS = {
     Cancelled: 2
 }
 
-const HISTORY_SIZE = 10;
+const HISTORY_SIZE = 6;
 
 export default function OrderHistoryPage()
 {
@@ -35,7 +35,7 @@ export default function OrderHistoryPage()
                     undefined,
         [activeTab]);
 
-    const { data: ordersResult, isLoading: isOrdersLoading, isError: isOrdersError } = useOrders({ orgId: selectedOrgId, page: 1, pageSize: HISTORY_SIZE, type: queryType });
+    const { data: ordersResult, isLoading: isOrdersLoading, isError: isOrdersError } = useOrders({ orgId: selectedOrgId, page: page, pageSize: HISTORY_SIZE, type: queryType });
     const totalCount = ordersResult?.totalCount ?? 1;
     const totalPages = useMemo(() =>
     {

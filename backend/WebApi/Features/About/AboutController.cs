@@ -87,4 +87,29 @@ public class AboutController : ControllerBase
 
         return Ok();
     }
+    [HttpPost("team-members")]
+    [Authorize(Policy = PolicyNames.AdminOnly)]
+    public async Task<ActionResult> AddTeamMember([FromBody] AddTeamMemberModel request)
+    {
+        var aboutInfo = await _db.AboutInfos
+            .OrderByDescending(a => a.ReleaseDateUtc)
+            .FirstOrDefaultAsync();
+
+        if (aboutInfo is null)
+            return NotFound();
+
+        var member = new TeamMember
+        {
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            Role = request.Role,
+            AboutInfoId = aboutInfo.Id,
+            DisplayOrder = 0
+        };
+
+        _db.TeamMembers.Add(member);
+        await _db.SaveChangesAsync();
+
+        return Ok();
+    }
 }

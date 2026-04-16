@@ -16,6 +16,19 @@ export function useAllSponsorOrgs()
     });
 }
 
+// Returns just the org name and id
+export function useAvailableSponsorOrgs()
+{
+    const { data: user } = useCurrentUser();
+
+    return useQuery({
+        queryKey: ["availableSponsorOrgs"],
+        queryFn: async () => apiFetch('/sponsor-orgs/available').then(r => r.json()),
+        enabled: !!user,
+        retry: 1
+    });
+}
+
 export function useCreateSponsorOrg()
 {
     const { data: user } = useCurrentUser();
@@ -94,6 +107,7 @@ export function useSponsorOrgDrivers(orgId)
     });
 }
 
+// Also used for add/remove button on admin page
 export function useRemoveSponsorDriveUser(orgId)
 {
     const { data: user } = useCurrentUser();

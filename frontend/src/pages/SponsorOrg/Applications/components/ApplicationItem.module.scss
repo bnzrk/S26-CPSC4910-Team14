@@ -1,0 +1,175 @@
+@use '@/styles/globals' as *;
+
+.applicationItem {
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+}
+
+.applicationSummary {
+    display: flex;
+    gap: $grid-2x;
+    justify-content: space-between;
+    align-items: center;
+    padding: $grid-1x $grid-2x;
+    cursor: pointer;
+    user-select: none;
+
+    .left {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: $grid-2x;
+    }
+
+    @media only screen and (max-width : $small-width) {
+        flex-direction: column;
+    }
+}
+
+.summaryMain {
+    display: flex;
+    flex-direction: column;
+}
+
+.summaryName {
+    font-size: 1rem;
+    color: var(--color-text);
+}
+
+.summaryDate {
+    font-size: 0.85rem;
+    color: var(--color-text-tertiary);
+}
+
+.summarySide {
+    display: flex;
+    flex-grow: 2;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    @media only screen and (max-width : $small-width) {
+        width: 100%;
+    }
+}
+
+.summaryActions {
+    display: flex;
+    flex-shrink: 1;
+    align-items: center;
+    gap: 0.5rem;
+
+    @media only screen and (max-width : $small-width) {
+        display: none;
+    }
+}
+
+.inlineActions {
+    display: none;
+
+    .acceptButton {
+        width: 100%;
+    }
+
+    @media only screen and (max-width : $small-width) {
+        display: flex;
+        margin-top: $grid-2x;
+        gap: $grid-1x;
+    }
+}
+
+.statusBadge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    text-transform: capitalize;
+
+    &.statusPending {
+        background-color: color-mix(in srgb, var(--amber-500) 10%, transparent);
+        color: var(--amber-500);
+    }
+
+    &.statusAccepted {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+
+    &.statusRejected {
+        background-color: #f8d7da;
+        color: #842029;
+    }
+
+    &.statusUnknown {
+        background-color: #e2e3e5;
+        color: #41464b;
+    }
+}
+
+.actionBtn {
+    padding: 0.3rem 0.75rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: opacity 0.15s;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.rejectInline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.applicationDetails {
+    padding: $grid-2x;
+    border-top: 1px solid var(--color-border);
+    background-color: var(--gray-50);
+}
+
+.sectionTitle {
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+    margin: $grid-2x 0 $grid-1x;
+
+    &:first-child {
+        margin-top: 0;
+    }
+}
+
+.detailsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 2fr));
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.detailBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    border: 1px solid var(--color-border);
+    padding: $grid-1x $grid-2x;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+}
+
+.detailLabel {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
+.detailValue {
+    font-size: 0.9rem;
+    color: var(--color-text);
+}

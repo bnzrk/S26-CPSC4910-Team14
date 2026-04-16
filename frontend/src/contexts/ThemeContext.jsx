@@ -17,7 +17,7 @@ function resolveTheme(preference) {
 function getPreferenceForUser(id) {
   const stored = localStorage.getItem(getStorageKey(id));
   if (stored === 'light' || stored === 'dark' || stored === 'system') return stored;
-  return 'system';
+  return 'light';
 }
 
 export default function ThemeProvider({ children }) {

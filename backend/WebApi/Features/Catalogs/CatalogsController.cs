@@ -27,6 +27,62 @@ public class CatalogsController : ControllerBase
         _auditLogger = auditLogger;
     }
 
+    [HttpGet("monthly-spending")]
+    [Authorize(Policy = PolicyNames.AdminOrSponsor)]
+    public async Task<ActionResult<CatalogSpendModel>> GetCatalogSpendingThisMonth(int orgId)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor)
+        {
+            var isInOrg = await _db.SponsorUsers
+                .AsNoTracking()
+                .AnyAsync(s => s.UserId == userId && s.SponsorOrgId == orgId);
+
+            if (!isInOrg)
+                return NotFound();
+        }
+
+        var firstOfMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var now = DateTime.UtcNow;
+
+        var monthlySpentPoints = await _db.DriverUsers
+            .SelectMany(d => d.Orders)
+            .Where(o => !o.IsRefunded && o.SponsorOrgId == orgId && o.PlacedDateUtc >= firstOfMonth && o.PlacedDateUtc <= now)
+            .SelectMany(o => o.Items)
+            .SumAsync(i => i.PricePoints);
+
+        var monthlySpentUsd = await _db.DriverUsers
+            .SelectMany(d => d.Orders)
+            .Where(o => !o.IsRefunded && o.SponsorOrgId == orgId && o.PlacedDateUtc >= firstOfMonth && o.PlacedDateUtc <= now)
+            .SelectMany(o => o.Items)
+            .SumAsync(i => i.PriceUsd);
+
+        var monthlyExpenseUsd = await _db.DriverUsers
+            .SelectMany(d => d.Orders)
+            .Where(o => !o.IsRefunded && o.SponsorOrgId == orgId && o.PlacedDateUtc >= firstOfMonth && o.PlacedDateUtc <= now)
+            .SelectMany(o => o.Items)
+            .SumAsync(i => i.VendorPriceUsd);
+
+        var monthlyIssuedPoints = await _db.PointTransactions
+            .Where(t => t.SponsorOrgId == orgId && t.BalanceChange > 0 && t.TransactionDateUtc >= firstOfMonth && t.TransactionDateUtc <= now)
+            .SumAsync(t => t.BalanceChange);
+
+        // add monthly pending expenses
+        // add previous month spending
+
+        return Ok(new CatalogSpendModel
+        {
+            MonthlyPointsIssued = monthlyIssuedPoints,
+            MonthlyPointsSpent = monthlySpentPoints,
+            MonthlyUsdSpent = monthlySpentUsd,
+            MonthlyExpensesUsd = monthlyExpenseUsd
+        });
+    }
+
     [HttpGet]
     [Authorize]
     public async Task<ActionResult<CatalogModel>> GetCatalog(int orgId)

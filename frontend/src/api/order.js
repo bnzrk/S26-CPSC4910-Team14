@@ -31,8 +31,14 @@ export function useCreateOrder()
             });
             if (!response.ok)
             {
-                const json = await response.json();
-                throw new Error(json?.error ?? 'Failed to create order');
+                const text = await response.text();
+                try
+                {
+                    return JSON.parse(text);
+                } catch
+                {
+                    return { success: false, errorType: 2, error: 'An unexpected error occurred. Please try again.' };
+                }
             }
         },
         onSuccess: () =>

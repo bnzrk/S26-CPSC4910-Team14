@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using WebApi.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
 using WebApi.Helpers.Pagination;
-using WebApi.Features.Auth.Models;
 using WebApi.Data;
+using WebApi.Features.Users.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace WebApi.Features.Users;
@@ -102,5 +102,26 @@ public class UsersController : ControllerBase
         var queryPageSize = pageSize is not null ? pageSize.Value : 20;
         var results = await PagedResult.ToPagedResultAsync(pageQuery, queryPage, queryPageSize);
         return Ok(results);
+    }
+
+    [HttpGet("{userId}")]
+    [Authorize(Policy = PolicyNames.AdminOnly)]
+    public async Task<ActionResult<UserModel>> GetUser(string userId)
+    {
+        var user = await _db.Users
+            .Where(u => u.Id == userId)
+            .Select(u => new UserModel
+            {
+                Id = u.Id,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Email = u.Email!,
+                UserType = u.UserType
+            })
+            .SingleOrDefaultAsync();
+        if (user is null)
+            return NotFound();
+            
+        return Ok(user);
     }
 }

@@ -25,7 +25,7 @@
         var theme;
         if (stored === 'light' || stored === 'dark') {
           theme = stored;
-        } else if (stored === 'system' || !stored) {
+        } else if (stored === 'system') {
           theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         } else {
           theme = 'light';

@@ -1,9 +1,11 @@
 import { useToast } from "@/components/Toast/ToastContext";
+import { queryClient } from "@/api/queryClient";
 import { useMemo, useState } from "react";
 import { useOrgContext } from "@/contexts/OrgContext/OrgContext";
 import { usePoints } from "@/api/points";
 import { useCatalog } from "@/api/catalog";
 import { useCreateOrder } from "@/api/order";
+import { ORDER_ERROR_TYPES } from "@/constants/orderErrorTypes";
 import CardHost from "@/components/CardHost/CardHost";
 import Card from "@/components/Card/Card";
 import ShopItem from "@/components/ShopItem/ShopItem";
@@ -14,10 +16,8 @@ import InlineInfo from "@/components/InlineInfo/InlineInfo";
 import Button from "@/components/Button/Button";
 import AsyncButton from "@/components/AsyncButton/AsyncButton";
 import StarIcon from "@/assets/icons/star.svg?react";
-import CartIcon from "@/assets/icons/shopping-cart.svg?react";
 import HandbagIcon from "@/assets/icons/handbag.svg?react";
 import styles from "./ShopPage.module.scss";
-import { Exception } from "sass";
 
 const MODALS = {
     purchase: "purchase"
@@ -32,6 +32,8 @@ export default function ShopPage()
 
     var { data: points } = usePoints(selectedOrgId);
     const { data: catalog, isLoading: isCatalogLoading, isError: isCatalogError } = useCatalog(selectedOrgId);
+
+    const [purchaseError, setPurchaseError] = useState("");
 
     const createOrder = useCreateOrder();
 
@@ -60,26 +62,50 @@ export default function ShopPage()
         setCurrentModal(MODALS.purchase);
     }
 
+    const handleClosePurchaseModal = () =>
+    {
+        if (!!purchaseError)
+            queryClient.invalidateQueries({ queryKey: ['catalog'] });
+        setPurchaseError("");
+        setCurrentModal(null);
+    }
+
     async function handlePurchase()
     {
         try
         {
             if (!selectedItem)
-                throw new Exception("No selected item.");
+                throw new Error("No selected item.");
 
-            await createOrder.mutateAsync({ catalogId: catalog.id , catalogItemIds: [selectedItem.id]});
-            setCurrentModal(null);
-            push({ type: "success", message: "Purchase successful!"});
+            const result = await createOrder.mutateAsync({ catalogId: catalog.id, catalogItemIds: [selectedItem.id] });
+
+            if (result?.successful === false)
+            {
+                if (result?.errorType == ORDER_ERROR_TYPES.InsufficientPoints || result?.errorType == ORDER_ERROR_TYPES.Unavailable)
+                {
+                    if (result?.error)
+                    {
+                        setPurchaseError(result.error);
+                    }
+                    else
+                        push({ type: "error", message: "An unexpected error occured." });
+                }
+
+            } else
+            {
+                push({ type: "success", message: "Purchase successful!" });
+                setCurrentModal(null);
+            }
         }
-        catch(ex)
+        catch (ex)
         {
-            push({ type: "error", message: ex.message });
+            push({ type: "error", message: "An unexpected error occured. Please try again." });
         }
     }
 
     return (
         <>
-            <Modal isOpen={currentModal == MODALS.purchase} onClose={() => setCurrentModal(null)}>
+            <Modal isOpen={currentModal == MODALS.purchase} onClose={handleClosePurchaseModal}>
                 <Modal.Header title='Purchase Item' />
                 <Modal.Body>
                     {selectedItem &&
@@ -116,12 +142,15 @@ export default function ShopPage()
                             {points && remainingBalance < 0 &&
                                 <InlineInfo type='warning' messages={["You do not have enough points to purchase this item."]} />
                             }
+                            {!!purchaseError &&
+                                <InlineInfo type='warning' messages={[purchaseError]} />
+                            }
                         </div>
                     }
                 </Modal.Body>
                 <Modal.Buttons position='right'>
-                    <Button text='Cancel' color='secondary' onClick={() => setCurrentModal(null)} />
-                    <AsyncButton text='Purchase' icon={HandbagIcon} color='primary' action={handlePurchase} disabled={remainingBalance < 0} />
+                    <Button text='Cancel' color='secondary' onClick={handleClosePurchaseModal} />
+                    <AsyncButton text='Purchase' icon={HandbagIcon} color='primary' action={handlePurchase} disabled={remainingBalance < 0 || !!purchaseError} />
                 </Modal.Buttons>
             </Modal>
 
@@ -138,7 +167,6 @@ export default function ShopPage()
                                     imageUrl={item.images[0]}
                                     title={item.title}
                                     category={item.categoryTitle}
-                                    price={item.price}
                                     points={org ? item.price / org.pointRatio : undefined}
                                     onClick={() => handleClickItem(item.id)}
                                 />

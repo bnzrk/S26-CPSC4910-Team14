@@ -18,6 +18,7 @@
 
     &.iconOnly {
         width: var(--btn-height, $grid-5x);
+        padding: 0;
 
         .icon {
             width: $grid-2x;

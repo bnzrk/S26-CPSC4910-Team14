@@ -33,3 +33,18 @@ export function useCreateAdminUser()
         },
     });
 }
+
+// Assign driver to org
+export function assignDriverToOrg(userId, orgId) {
+    return apiFetch(`/admin/users/${userId}/assign-org`, {
+      method: "POST",
+      body: JSON.stringify({ orgId }),
+    });
+  }
+  
+  // Remove driver from org
+  export function removeDriverFromOrg(userId) {
+    return apiFetch(`/admin/users/${userId}/remove-org`, {
+      method: "POST",
+    });
+  }

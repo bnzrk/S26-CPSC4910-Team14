@@ -273,17 +273,6 @@ export default function PointsPage()
             )}
           </Card>
         )}
-        {!org && (
-          <InlineInfo
-            type='info'
-            messages={[`Apply to a sponsor to start earning points!`]}
-          />
-        )}
-        <Button color="primary" onClick={() => navigate('/driver-application')}
-          style={{ fontFamily: 'var(--font-heading)' }}
-        >
-          + Apply to a Sponsor
-        </Button>
       </CardHost>
     </main>
   );

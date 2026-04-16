@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using WebApi.Features.Catalogs;
 using WebApi.Helpers.Pagination;
 using WebApi.Features.Alerts;
+using WebApi.Audit;
 
 namespace WebApi.Features.Orders;
 
@@ -20,15 +21,22 @@ public class OrdersController : ControllerBase
     private readonly UserManager<User> _userManager;
     private readonly ICatalogsService _catalogService;
     private readonly IAlertsService _alertsService;
+    private readonly IAuditLogger _auditLogger;
 
     private readonly HashSet<string> _orderQueryTypes = new HashSet<string> { "all", "completed", "cancelled" };
 
-    public OrdersController(AppDbContext db, UserManager<User> userManager, ICatalogsService catalogService, IAlertsService alertsService)
+    public OrdersController(
+        AppDbContext db,
+        UserManager<User> userManager,
+        ICatalogsService catalogService,
+        IAlertsService alertsService,
+        IAuditLogger auditLogger)
     {
         _db = db;
         _userManager = userManager;
         _catalogService = catalogService;
         _alertsService = alertsService;
+        _auditLogger = auditLogger;
     }
 
     [HttpPost]
@@ -40,48 +48,83 @@ public class OrdersController : ControllerBase
             return Unauthorized();
 
         var catalog = await _db.Catalogs
-        .AsNoTracking()
         .Include(c => c.SponsorOrg)
         .Where(c => c.Id == request.CatalogId)
         .SingleOrDefaultAsync();
         if (catalog is null)
-            return NotFound("Catalog not found.");
+            return NotFound(new CreateOrderResultModel
+            {
+                Successful = false,
+                ErrorType = OrderErrorType.InternalError,
+                Error = "Catalog not found."
+            });
 
         var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
         var isDriver = User.IsInRole(UserTypeRoles.Role(UserType.Driver));
         if (isDriver)
         {
             if (request.DriverId.HasValue)
-                return BadRequest("Drivers should not specify a driver id.");
+                return BadRequest(new CreateOrderResultModel
+                {
+                    Successful = false,
+                    ErrorType = OrderErrorType.InternalError,
+                    Error = "Drivers should not specify a driver id."
+                });
 
             request.DriverId = await _db.DriverUsers.Where(d => d.UserId == userId).Select(d => (int?)d.Id).SingleOrDefaultAsync();
         }
 
         var orderDriver = await _db.DriverUsers
                .Include(d => d.SponsorOrgs)
+               .Include(d => d.User)
                .Where(d => d.Id == request.DriverId)
                .SingleOrDefaultAsync();
         if (orderDriver is null)
-            return NotFound("Driver not found.");
+            return NotFound(new CreateOrderResultModel
+            {
+                Successful = false,
+                ErrorType = OrderErrorType.InternalError,
+                Error = "Driver not found."
+            });
 
         if (isSponsor)
         {
             // Get the sponsor user's org id
             var userOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => (int?)s.SponsorOrgId).SingleOrDefaultAsync();
             if (!userOrgId.HasValue)
-                return BadRequest("Could not resolve user org.");
+                return BadRequest(new CreateOrderResultModel
+                {
+                    Successful = false,
+                    ErrorType = OrderErrorType.InternalError,
+                    Error = "Could not resolve user org."
+                });
             // Ensure request catalog belongs to same org
             if (catalog.SponsorOrgId != userOrgId)
-                return NotFound("Catalog not found.");
+                return NotFound(new CreateOrderResultModel
+                {
+                    Successful = false,
+                    ErrorType = OrderErrorType.InternalError,
+                    Error = "Catalog not found."
+                });
             // Ensure driver is in sposnor's org
             var isInOrg = orderDriver.SponsorOrgs.Any(o => o.Id == userOrgId.Value);
             if (!isInOrg)
-                return NotFound("Driver not found.");
+                return NotFound(new CreateOrderResultModel
+                {
+                    Successful = false,
+                    ErrorType = OrderErrorType.InternalError,
+                    Error = "Driver not found."
+                });
         }
 
         var canAccessCatalog = orderDriver.SponsorOrgs.Any(o => o.Id == catalog.SponsorOrgId);
         if (!canAccessCatalog)
-            return NotFound("Catalog not found.");
+            return NotFound(new CreateOrderResultModel
+            {
+                Successful = false,
+                ErrorType = OrderErrorType.InternalError,
+                Error = "Catalog not found."
+            });
 
         // Fetch matching catalog items
         var catalogItems = await _db.CatalogItems
@@ -93,21 +136,26 @@ public class OrdersController : ControllerBase
             .Select(c => (decimal?)c.SponsorOrg.PointRatio)
             .SingleOrDefaultAsync();
         if (!catalogRatio.HasValue)
-            return BadRequest("Unable to resolve org point value.");
+            return BadRequest(new CreateOrderResultModel
+            {
+                Successful = false,
+                ErrorType = OrderErrorType.InternalError,
+                Error = "Unable to resolve org point value."
+            });
 
         // Compare to request ids and return error if any missing
         foreach (var id in request.CatalogItemIds)
         {
             if (!catalogItems.Any(i => i.Id == id))
-                return NotFound($"Catalog item with id {id} not found.");
+                return NotFound(new CreateOrderResultModel
+                {
+                    Successful = false,
+                    ErrorType = OrderErrorType.InternalError,
+                    Error = $"Catalog item with id {id} not found."
+                });
         }
         // Validate catalog items to ensure items still available
         await _catalogService.RefreshItemCachesAsync(request.CatalogItemIds);
-        foreach (var item in catalogItems)
-        {
-            if (!item.IsAvailable)
-                return NotFound($"Catalog item with id {item.Id} is no longer available.");
-        }
 
         await using var dbTransaction = await _db.Database.BeginTransactionAsync();
         try
@@ -123,8 +171,25 @@ public class OrdersController : ControllerBase
             foreach (var id in request.CatalogItemIds)
             {
                 var catalogItem = catalogItems.SingleOrDefault(i => i.Id == id);
+                var itemName = catalogItem is null ? "Item" : catalogItem.Title;
                 if (catalogItem is null)
-                    return NotFound($"Catalog item with id {id} not found.");
+                    return NotFound(new CreateOrderResultModel
+                    {
+                        Successful = false,
+                        ErrorType = OrderErrorType.InternalError,
+                        Error = $"Catalog item not found."
+                    });
+                
+                // Refresh the item so we can check that it is still available.
+                await _db.Entry(catalogItem).ReloadAsync();
+
+                if (catalogItem is null || !catalogItem.IsAvailable)
+                    return NotFound(new CreateOrderResultModel
+                    {
+                        Successful = false,
+                        ErrorType = OrderErrorType.Unavailable,
+                        Error = $"{itemName} is no longer available."
+                    });
 
                 order.Items.Add(new OrderItem
                 {
@@ -147,6 +212,7 @@ public class OrdersController : ControllerBase
                 return Ok(new CreateOrderResultModel
                 {
                     Successful = false,
+                    ErrorType = OrderErrorType.InsufficientPoints,
                     Error = "Not enough points."
                 });
 
@@ -162,10 +228,17 @@ public class OrdersController : ControllerBase
             _db.PointTransactions.Add(pointTransaction);
             _db.Orders.Add(order);
             await _db.SaveChangesAsync();
+            await _auditLogger.CreatePointTransactionAuditLog(orderDriver.Id, orderDriver.User.Email!, catalog.SponsorOrgId, catalog.SponsorOrg.SponsorName, pointTransaction.BalanceChange, pointTransaction.Reason);
 
             await dbTransaction.CommitAsync();
 
-            await _alertsService.CreateOrderAlert(order);
+            // Push alert if setting enabled
+            var isAlertEnabled = await _db.DriverAlertSettings
+                .Where(s => s.DriverId == order.DriverId)
+                .Select(s => (bool?)s.IsOrderAlertsEnabled)
+                .SingleOrDefaultAsync();
+            if (isAlertEnabled.HasValue && isAlertEnabled.Value)
+                await _alertsService.CreateOrderAlert(order);
 
             return Ok(new CreateOrderResultModel
             {
@@ -207,42 +280,51 @@ public class OrdersController : ControllerBase
 
             var userDriverId = await _db.DriverUsers.Where(d => d.UserId == userId).Select(d => (int?)d.Id).SingleOrDefaultAsync();
             driverId = userDriverId;
+
+            if (isDriver && !driverId.HasValue)
+                return BadRequest("Could not resolve driver.");
         }
-
-        if (!isDriver && !driverId.HasValue)
-            return BadRequest("Missing driver id.");
-
-        var driver = await _db.DriverUsers
-            .AsNoTracking()
-            .Include(d => d.SponsorOrgs)
-            .Where(d => d.Id == driverId)
-            .SingleOrDefaultAsync();
-        if (driver is null)
-            return NotFound("Driver not found.");
 
         if (isSponsor)
         {
             if (orgId.HasValue)
-                return BadRequest("Sponsors should not specific an org id.");
+                return BadRequest("Sponsors should not specify an org id.");
 
             // Get the sponsor user's org id
             var userOrgId = await _db.SponsorUsers.Where(s => s.UserId == userId).Select(s => (int?)s.SponsorOrgId).SingleOrDefaultAsync();
             if (!userOrgId.HasValue)
                 return BadRequest("Could not resolve user org.");
-            // Ensure driver is in sposnor's org
-            var isInOrg = driver.SponsorOrgs.Any(o => o.Id == userOrgId.Value);
-            if (!isInOrg)
-                return NotFound("Driver not found.");
+
+            if (driverId.HasValue)
+            {
+                var driver = await _db.DriverUsers
+                    .AsNoTracking()
+                    .Include(d => d.SponsorOrgs)
+                    .Where(d => d.Id == driverId)
+                    .SingleOrDefaultAsync();
+                if (driver is null)
+                    return NotFound("Driver not found.");
+
+                // Ensure driver is in sposnor's org
+                var isInOrg = driver.SponsorOrgs.Any(o => o.Id == userOrgId.Value);
+                if (!isInOrg)
+                    return NotFound("Driver not found.");
+            }
 
             orgId = userOrgId;
         }
 
-        var orderQuery = _db.Orders
-            .Where(o => o.DriverId == driverId);
+        if (!driverId.HasValue && !orgId.HasValue)
+            return NotFound("Missing driver or org id.");
+
+        var orderQuery = _db.Orders.AsQueryable();
+        if (driverId.HasValue)
+            orderQuery = orderQuery.Where(o => o.DriverId == driverId.Value);
 
         // Filter by org if specified 
         if (orgId.HasValue)
             orderQuery = orderQuery.Where(o => o.SponsorOrgId == orgId.Value);
+
         // Add any other query filters
         if (type is not null && type != "all")
         {
@@ -252,7 +334,7 @@ public class OrdersController : ControllerBase
                     orderQuery = orderQuery.Where(o => o.Status == OrderStatus.Delivered);
                     break;
                 case "cancelled":
-                    orderQuery = orderQuery.Where(o => o.Status == OrderStatus.Canceled);
+                    orderQuery = orderQuery.Where(o => o.Status == OrderStatus.Cancelled);
                     break;
             }
         }
@@ -404,7 +486,7 @@ public class OrdersController : ControllerBase
                 return NotFound();
         }
 
-        if (request.Status == OrderStatus.Canceled)
+        if (request.Status == OrderStatus.Cancelled)
             return BadRequest("Invalid status.");
 
         SetOrderStatus(order, request.Status);
@@ -421,7 +503,13 @@ public class OrdersController : ControllerBase
         if (userId is null)
             return Unauthorized();
 
-        var order = await _db.Orders.Include(o => o.Items).Where(o => o.Id == orderId).SingleOrDefaultAsync();
+        var order = await _db.Orders
+        .Include(o => o.SponsorOrg)
+        .Include(o => o.Driver)
+        .ThenInclude(d => d.User)
+        .Include(o => o.Items)
+        .Where(o => o.Id == orderId)
+        .SingleOrDefaultAsync();
         if (order is null)
             return NotFound();
 
@@ -454,34 +542,46 @@ public class OrdersController : ControllerBase
                 return NotFound();
         }
 
-        if (order.Status == OrderStatus.Canceled)
+        if (order.Status == OrderStatus.Cancelled)
         {
             return BadRequest("Order is already canceled.");
         }
-        SetOrderStatus(order, OrderStatus.Canceled);
+        SetOrderStatus(order, OrderStatus.Cancelled);
 
-        // If not already refunded, refund points
-        if (!order.IsRefunded)
+        await using var dbTransaction = await _db.Database.BeginTransactionAsync();
+        try
         {
-            Console.WriteLine("Adding refund transaction...");
-            _db.PointTransactions.Add(new PointTransaction
+            // If not already refunded, refund points
+            if (!order.IsRefunded)
             {
-                DriverUserId = order.DriverId,
-                SponsorOrgId = order.SponsorOrgId,
-                BalanceChange = order.Items.Sum(i => i.PricePoints),
-                TransactionDateUtc = DateTime.UtcNow,
-                Reason = "Refund"
-            });
-            order.IsRefunded = true;
-        }
-        await _db.SaveChangesAsync();
+                var balanceChange = order.Items.Sum(i => i.PricePoints);
+                var reason = "Refund";
+                _db.PointTransactions.Add(new PointTransaction
+                {
+                    DriverUserId = order.DriverId,
+                    SponsorOrgId = order.SponsorOrgId,
+                    BalanceChange = balanceChange,
+                    TransactionDateUtc = DateTime.UtcNow,
+                    Reason = reason
+                });
+                order.IsRefunded = true;
+                await _auditLogger.CreatePointTransactionAuditLog(order.DriverId, order.Driver.User.Email!, order.SponsorOrgId, order.SponsorOrg.SponsorName, balanceChange, reason);
+            }
+            await _db.SaveChangesAsync();
+            await dbTransaction.CommitAsync();
 
-        return Ok();
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            await dbTransaction.RollbackAsync();
+            return BadRequest(ex.Message);
+        }
     }
 
     private void SetOrderStatus(Order order, OrderStatus status)
     {
-        if (status != OrderStatus.Canceled)
+        if (status != OrderStatus.Cancelled)
             order.CanceledDateUtc = null;
 
         // Set status. If reverted to an earlier status, clear timestamps
@@ -504,7 +604,7 @@ public class OrdersController : ControllerBase
             case OrderStatus.Delivered:
                 order.DeliveryCompleteDateUtc = DateTime.UtcNow;
                 break;
-            case OrderStatus.Canceled:
+            case OrderStatus.Cancelled:
                 order.CanceledDateUtc = DateTime.UtcNow;
                 break;
             default:

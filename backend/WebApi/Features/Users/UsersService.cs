@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using WebApi.Data.Entities;
 using WebApi.Data.Enums;
 using WebApi.Data;
+using WebApi.Audit;
 
 namespace WebApi.Features.Users;
 
@@ -9,11 +10,13 @@ public class UsersService : IUsersService
 {
     private readonly AppDbContext _db;
     private readonly UserManager<User> _userManager;
+    private readonly IAuditLogger _auditLogger;
 
-    public UsersService(AppDbContext db, UserManager<User> userManager)
+    public UsersService(AppDbContext db, UserManager<User> userManager, IAuditLogger auditLogger)
     {
         _db = db;
         _userManager = userManager;
+        _auditLogger = auditLogger;
     }
 
     public async Task<IdentityResult> CreateAdminUser(string email, string password, string firstName, string lastName)
@@ -208,5 +211,32 @@ public class UsersService : IUsersService
     public async Task<IdentityResult> DeleteUser(User user)
     {
         return await _userManager.DeleteAsync(user);
+    }
+
+    public async Task<IdentityResult> UpdateUserAsync(string userId, string email, string firstName, string lastName)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null) throw new Exception($"User not found.");
+
+        user.FirstName = firstName;
+        user.LastName = lastName;
+        user.Email = email;
+        user.UserName = email;
+        user.NormalizedEmail = email.ToUpper();
+        user.NormalizedUserName = email.ToUpper();
+
+        var result = await _userManager.UpdateAsync(user);
+        return result;
+    }
+
+    public async Task<IdentityResult> ChangeUserPasswordAsync(string userId, string newPassword, PasswordChangeType changeType)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null) throw new Exception($"User not found.");
+
+        var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var result = await _userManager.ResetPasswordAsync(user, resetToken, newPassword);
+        await _auditLogger.CreatePasswordChangeAuditLog(user.Id, user.Email!, changeType, result.Succeeded);
+        return result;
     }
 }

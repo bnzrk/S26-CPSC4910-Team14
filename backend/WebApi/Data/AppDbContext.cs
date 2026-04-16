@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Data.Entities;
+using WebApi.Data.Entities.Audit;
 using System.Text.Json;
 
 namespace WebApi.Data;
@@ -46,6 +47,15 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<PointTransactionAlert> PointTransactionAlerts { get; set; }
     public DbSet<SponsorshipChangeAlert> SponsorshipChangeAlerts { get; set; }
     public DbSet<OrderAlert> OrderAlerts { get; set; }
+    public DbSet<DriverAlertSettings> DriverAlertSettings { get; set; }
+
+    // Audit Logs
+    public DbSet<LoginAuditLog> LoginAuditLogs { get; set; }
+    public DbSet<PasswordChangeAuditLog> PasswordChangeAuditLogs { get; set; }
+    public DbSet<DriverSponsorChangeAuditLog> DriverSponsorChangeAuditLogs { get; set; }
+    public DbSet<PointTransactionAuditLog> PointTransactionAuditLogs { get; set; }
+    public DbSet<ApplicationStatusChangeAuditLog> ApplicationStatusChangeAuditLogs { get; set; }
+    public DbSet<CatalogChangeAuditLog> CatalogChangeAuditLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -145,6 +155,13 @@ public class AppDbContext : IdentityDbContext<User>
                     j => j.HasOne<SponsorOrg>().WithMany().HasForeignKey("SponsorOrgId"),
                     j => j.HasOne<DriverUser>().WithMany().HasForeignKey("DriverUserId"));
         });
+
+        modelBuilder.Entity<DriverAlertSettings>(b =>
+            b.HasOne(x => x.Driver)
+                .WithOne(x => x.AlertSettings)
+                .HasForeignKey<DriverAlertSettings>(x => x.DriverId)
+                .OnDelete(DeleteBehavior.Cascade)
+        );
 
         var nullableDateOnlyConverter = new ValueConverter<DateOnly?, DateTime?>(
             v => v.HasValue ? v.Value.ToDateTime(TimeOnly.MinValue) : null,

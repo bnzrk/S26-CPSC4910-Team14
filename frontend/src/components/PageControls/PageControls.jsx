@@ -22,7 +22,7 @@ export default function PageControls({ page, totalPages, orientation = 'bottom',
                 {showBookends && <Button className={styles.controlButton} icon={StartIcon} onClick={onStart} disabled={!canGoPrev} />}
                 <Button className={styles.controlButton} icon={PrevIcon} onClick={onPrev} disabled={!canGoPrev} />
                 <span className={styles.pageInfo}>
-                    Page {page} of {totalPages}
+                    Page {totalPages > 0 ? page : 0} of {totalPages}
                 </span>
                 <Button className={styles.controlButton} icon={NextIcon} onClick={onNext} disabled={!canGoNext} />
                 {showBookends && <Button className={styles.controlButton} icon={EndIcon} onClick={onEnd} disabled={!canGoNext} />}
