@@ -133,18 +133,21 @@ export default function InvoicesPage()
 
     const [selectedInvoiceOrgId, setSelectedInvoiceOrgId] = useState("");
 
-    // Set initial selection
+    // Reset the selected invoice org whenever the fetched invoices change
     useEffect(() =>
     {
-        if (invoiceOrgs.length > 0 && !selectedInvoiceOrgId)
+        if (invoiceOrgs.length > 0)
         {
             setSelectedInvoiceOrgId(invoiceOrgs[0].id);
+        } else
+        {
+            setSelectedInvoiceOrgId("");
         }
-    }, [invoiceOrgs, selectedInvoiceOrgId]);
+    }, [invoices]); // depend on invoices, not invoiceOrgs (that's derived — would cause loops)
 
-    const id = appliedFilters?.orgId || selectedInvoiceOrgId;
-    const selectedInvoice =
-        invoices?.find(i => i.sponsorOrgId == id) ?? null;
+    const selectedInvoice = appliedFilters.orgId
+        ? (invoices?.[0] ?? null)
+        : (invoices?.find(i => i.sponsorOrgId == selectedInvoiceOrgId) ?? null);
 
     function handleApplyFilters()
     {
@@ -163,6 +166,8 @@ export default function InvoicesPage()
         setTo("");
         setAppliedFilters({ orgId: "", from: "", to: "" });
     }
+
+    console.log(invoices);
 
     return (
         <CardHost>
