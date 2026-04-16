@@ -44,14 +44,15 @@ export function useCreateOrder()
         onSuccess: () =>
         {
             queryClient.invalidateQueries({ queryKey: ['orders', user.id] });
+            queryClient.invalidateQueries({ queryKey: ['points'] });
+            queryClient.invalidateQueries({ queryKey: ['point-transactions'] });
+            queryClient.invalidateQueries({ queryKey: ['alerts'] });
         },
     });
 }
 
 export function useCancelOrder()
 {
-    const { data: user } = useCurrentUser();
-
     return useMutation({
         mutationFn: async ({ orderId }) =>
         {
@@ -64,6 +65,8 @@ export function useCancelOrder()
         onSuccess: () =>
         {
             queryClient.invalidateQueries({ queryKey: ['order'] });
+            queryClient.invalidateQueries({ queryKey: ['points'] });
+            queryClient.invalidateQueries({ queryKey: ['point-transactions'] });
         },
     });
 }
