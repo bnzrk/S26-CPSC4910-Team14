@@ -216,6 +216,68 @@ public class SponsorOrgsController : ControllerBase
         return Ok(pageResult);
     }
 
+    [HttpGet("{orgId}/top-drivers")]
+    [Authorize]
+    public async Task<ActionResult<List<TopDriverModel>>> GetTopDrivers(int orgId, [FromQuery] int limit = 10)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId is null)
+            return Unauthorized();
+
+        var orgExists = await _db.SponsorOrgs.AnyAsync(s => s.Id == orgId);
+        if (!orgExists)
+            return NotFound();
+
+        // Drivers may only view the leaderboard for orgs they belong to
+        var isDriver = User.IsInRole(UserTypeRoles.Role(UserType.Driver));
+        if (isDriver)
+        {
+            var belongsToOrg = await _db.DriverUsers
+                .AnyAsync(d => d.UserId == userId && d.SponsorOrgs.Any(o => o.Id == orgId));
+            if (!belongsToOrg)
+                return Forbid();
+        }
+
+        int? currentDriverId = null;
+        if (isDriver)
+        {
+            currentDriverId = await _db.DriverUsers
+                .Where(d => d.UserId == userId)
+                .Select(d => (int?)d.Id)
+                .SingleOrDefaultAsync();
+        }
+
+        var raw = await _db.SponsorOrgs
+            .AsNoTracking()
+            .Where(s => s.Id == orgId)
+            .SelectMany(s => s.DriverUsers)
+            .Select(d => new
+            {
+                d.Id,
+                d.User.FirstName,
+                d.User.LastName,
+                Points = d.PointTransactions
+                    .Where(p => p.SponsorOrgId == orgId)
+                    .Sum(p => p.BalanceChange),
+            })
+            .OrderByDescending(d => d.Points)
+            .Take(limit)
+            .ToListAsync();
+
+        var result = raw
+            .Select((d, i) => new TopDriverModel
+            {
+                Rank = i + 1,
+                FirstName = d.FirstName,
+                LastName = d.LastName,
+                Points = d.Points,
+                IsCurrentUser = d.Id == currentDriverId,
+            })
+            .ToList();
+
+        return Ok(result);
+    }
+
     [HttpGet("{orgId}/drivers/{driverId}")]
     [HttpGet("me/drivers/{driverId}")]
     [Authorize(Policy = PolicyNames.AdminOrSponsor)]

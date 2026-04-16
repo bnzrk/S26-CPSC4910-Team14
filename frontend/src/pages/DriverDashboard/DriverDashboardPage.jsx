@@ -4,6 +4,7 @@ import { usePoints, usePointHistory } from '../../api/points';
 import { useOrders } from '../../api/order';
 import { useAlerts } from '../../api/alert';
 import { useCatalog } from '../../api/catalog';
+import { useSponsorTopDrivers } from '../../api/sponsorOrg';
 import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
 import InlineErrors from '@/components/InlineErrors/InlineErrors';
 import styles from './DriverDashboardPage.module.scss';
@@ -11,11 +12,9 @@ import styles from './DriverDashboardPage.module.scss';
 import DashStatCards from './sections/DashStatCards';
 import PointsChart from './sections/PointsChart';
 import RecentDeliveriesTable from './sections/RecentDeliveriesTable';
-import NextDelivery from './sections/NextDelivery';
 import MonthlyGoal from './sections/MonthlyGoal';
 import DeliveryStreak from './sections/DeliveryStreak';
 import FleetLeaderboard from './sections/FleetLeaderboard';
-import ActiveChallenges from './sections/ActiveChallenges';
 import RedeemRewards from './sections/RedeemRewards';
 import ActivityFeed from './sections/ActivityFeed';
 import Button from '@/components/Button/Button';
@@ -59,6 +58,9 @@ export default function DriverDashboardPage()
     const { data: alerts, isLoading: alertsLoading } = useAlerts();
     const { data: catalog, isLoading: catalogLoading, error: catalogError, refetch: refetchCatalog } = useCatalog(selectedOrgId);
 
+    const { data: leaderboard, isLoading: leaderboardLoading, error: leaderboardError } =
+        useSponsorTopDrivers(selectedOrgId, 10);
+
     const hasError = (!pointsLoading && !!pointsError && !points) || (!historyLoading && !!historyError && !points);
     const balance = points?.balance ?? 0;
 
@@ -85,15 +87,18 @@ export default function DriverDashboardPage()
                 </div>
 
                 <div className={styles.rightCol}>
-                    <NextDelivery />
                     <MonthlyGoal currentPoints={Math.max(0, balance)} />
                     <DeliveryStreak />
-                    <FleetLeaderboard />
+                    <FleetLeaderboard
+                        board={leaderboard ?? null}
+                        boardLoading={leaderboardLoading}
+                        boardError={leaderboardError}
+                        orgName={org?.sponsorName}
+                    />
                 </div>
             </div>
 
             <div className={styles.bottomRow}>
-                <ActiveChallenges />
                 <ActivityFeed history={historyLoading ? null : history} />
                 <RedeemRewards
                     balance={balance}
