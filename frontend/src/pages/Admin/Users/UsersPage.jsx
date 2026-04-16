@@ -23,9 +23,11 @@ import clsx from "clsx";
 import { assignDriverToOrg, removeDriverFromOrg } from "@/api/admin";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/components/Toast/ToastContext";
+import { useNavigate } from "react-router-dom";
 
 export default function UsersPage()
 {
+    const navigate = useNavigate();
     const modals = {
         createUser: 'createUser',
     };
@@ -121,6 +123,8 @@ export default function UsersPage()
                                 key={user.id}
                                 icon={UserIcon}
                                 label={`${user.firstName} ${user.lastName}`}
+                                onClick={() => navigate('/admin/users/${user.id}')}
+                                
                                 right={user.userType != USER_TYPE_ENUM.ADMIN &&
                                     <Button
                                         size='small'
