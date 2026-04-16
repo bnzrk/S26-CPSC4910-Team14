@@ -16,9 +16,9 @@ export default function EditUserModal({ isOpen, user, onClose, onSuccess }) {
     useEffect(() => {
         if (user) {
             setFormData({
-                firstName: user.firstName || "",
-                lastName: user.lastName || "",
-                email: user.email || "",
+                firstName: user.firstName ?? "",
+                lastName: user.lastName ?? "",
+                email: user.email ?? "",
             });
         }
         // Reset password section when modal opens/closes
@@ -26,10 +26,10 @@ export default function EditUserModal({ isOpen, user, onClose, onSuccess }) {
         setNewPassword("");
     }, [user, isOpen]);
 
-    if (!isOpen) return null;
+    if (!isOpen || !user) return null;
 
     const handleSave = async () => {
-        await apiFetch(`/admins/users/${user.id}`, {
+        await apiFetch(`/admin/users/${user.id}`, {
             method: "PUT",
             body: JSON.stringify(formData),
         });
@@ -40,7 +40,7 @@ export default function EditUserModal({ isOpen, user, onClose, onSuccess }) {
     const handleChangePassword = async () => {
         if (!newPassword) return;
 
-        await apiFetch(`/admins/users/${user.id}/password`, {
+        await apiFetch(`/admin/users/${user.id}/password`, {
             method: "POST",
             body: JSON.stringify({ password: newPassword }),
         });
@@ -126,7 +126,7 @@ export default function EditUserModal({ isOpen, user, onClose, onSuccess }) {
                 )}
 
                 <hr className={styles.divider} />
-                
+
                 <div className={styles.actions}>
                     <Button text="Cancel" color="secondary" onClick={onClose} />
                     <Button text="Save" color="primary" onClick={handleSave} />

@@ -24,13 +24,13 @@ export default function AdminUserProfilePage() {
 
     const { data: user, isLoading } = useQuery({
         queryKey: ["user", userId],
-        queryFn: () => apiFetch(`/admin/users/${userId}`),
+        queryFn: () => apiFetch(`/admin/users/${user.id}`),
         enabled: !!userId,
     });
 
     const passwordMutation = useMutation({
         mutationFn: ({ userId, password }) =>
-            apiFetch(`/admin/users/${userId}/password`, {
+            apiFetch(`/admin/users/${user.id}/password`, {
                 method: "POST",
                 body: JSON.stringify({ password }),
             }),
