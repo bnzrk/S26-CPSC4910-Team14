@@ -1,6 +1,7 @@
 import { useQuery, keepPreviousData, useMutation } from "@tanstack/react-query";
 import { queryClient } from "./queryClient";
 import { useCurrentUser } from "./currentUser";
+import { USER_TYPES } from "@/constants/userTypes";
 import { apiFetch } from "./apiFetch";
 
 export function useCatalog(orgId)

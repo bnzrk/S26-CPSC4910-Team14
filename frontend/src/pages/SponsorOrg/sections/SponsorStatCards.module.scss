@@ -2,7 +2,7 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: $grid-2x;
 
   @media (max-width: 1400px) {
@@ -46,6 +46,13 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    max-width: 18px;
+    max-height: 18px;
+  }
 }
 
 .value {

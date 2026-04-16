@@ -33,7 +33,7 @@ AppBuilderExtensions.ConfigureAppCookie(builder);
 
 // DB Connection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContextFactory<AppDbContext>(options =>
 {
    options.UseMySQL(connectionString);
 });

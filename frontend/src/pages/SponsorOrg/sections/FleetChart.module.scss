@@ -49,15 +49,15 @@
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 
-  &:hover {
+  &:hover:not(.tabActive) {
     color: var(--color-text);
   }
 }
 
 .tabActive {
   background: var(--color-surface);
-  color: var(--color-text);
-  font-weight: 600;
+  color: var(--color-accent);
+  // font-weight: 600;
   box-shadow: var(--shadow-sm);
 }
 

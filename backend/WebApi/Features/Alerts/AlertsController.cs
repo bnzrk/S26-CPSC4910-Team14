@@ -161,8 +161,6 @@ public class AlertsController : ControllerBase
         allAlerts.AddRange(orderAlerts);
         allAlerts = allAlerts.OrderByDescending(a => a.TimestampUtc).ToList();
 
-        Console.WriteLine(allAlerts);
-
         return Ok(allAlerts);
     }
 
