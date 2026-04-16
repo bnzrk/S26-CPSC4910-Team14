@@ -124,7 +124,7 @@ export default function UsersPage()
                                 right={user.userType != USER_TYPE_ENUM.ADMIN &&
                                     <Button
                                         size='small'
-                                        className={clsx(styles.userItemButton)}
+                                        className={clsx(styles.compactButton)}
                                         icon={LoginIcon}
                                         text='Login-As'
                                         disabled={isImpersonatePending}
@@ -132,35 +132,12 @@ export default function UsersPage()
                                     />
                                 }
                             >
-                                <p className={styles.userEmail}>{user.email}</p>
-                                <UserTypeBadge type={user.userType} showIcon={true} />
-
-                                {/* Adding the add/remove org for user accounts */}
-                                <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-                                <input
-                                    type="number"
-                                    placeholder="Org ID"
-                                    value={selectedOrgId}
-                                    onChange={(e) => setSelectedOrgId(e.target.value)}
-                                    style={{ width: "90px" }}
-                                />
-                                <Button
-                                    size="small"
-                                    text="Add"
-                                    onClick={() =>
-                                        assignMutation.mutate({
-                                            userId: user.id,
-                                            orgId: Number(selectedOrgId),
-                                        })
-                                    }
-                                />
-                                <Button
-                                    size="small"
-                                    text="Remove"
-                                    color="secondary"
-                                    onClick={() => removeMutation.mutate(user.id)}
-                                />
+                                <div className={styles.userMeta}>
+                                    <p className={styles.userEmail}>{user.email}</p>
+                                    <UserTypeBadge type={user.userType} showIcon />
                                 </div>
+
+                                
                             </ListItem>
                         ))}
                         {(!users || users.items.length == 0) &&
