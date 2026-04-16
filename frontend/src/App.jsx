@@ -39,6 +39,8 @@ import SponsorSettingsPage from './pages/SponsorOrg/SettingsPage/SettingsPage';
 import DriverSettingsPage from './pages/DriverDashboard/SettingsPage/SettingsPage';
 import AuditLogPage from './pages/AuditLogs/AuditLogPage';
 import PointReports from './pages/SponsorOrg/PointReports/PointReports';
+import SponsorReportPage from './pages/SponsorOrg/Report/SponsorReportPage';
+
 
 // Admin Pages
 import AdminToolsLayout from './pages/Admin/AdminToolsLayout';
@@ -138,6 +140,7 @@ function AppContent({ user, isUserLoading, orgs }) {
             <Route path="bulk" element={<SponsorBulkActionsPage />} />
             <Route path="audit-logs" element={<AuditLogPage />} />
             <Route path="point-reports" element={<PointReports />} />
+            <Route path="reports" element={<SponsorReportPage />} />
           </Route>
 
           {/* Admin routes */}
