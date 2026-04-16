@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePoints, usePointHistory } from '../../api/points';
+import { useOrders } from '../../api/order';
+import { useAlerts } from '../../api/alert';
+import { useCatalog } from '../../api/catalog';
 import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
 import InlineErrors from '@/components/InlineErrors/InlineErrors';
 import styles from './DriverDashboardPage.module.scss';
@@ -44,6 +47,18 @@ export default function DriverDashboardPage()
         pageSize: 50,
     });
 
+    const startOfMonth = useMemo(() =>
+        new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(), []);
+
+    const { data: monthlyTxns, isLoading: monthlyLoading } = usePointHistory({
+        orgId: selectedOrgId, page: 1, pageSize: 1, sign: '+', from: startOfMonth,
+    });
+    const { data: orders, isLoading: ordersLoading } = useOrders({
+        orgId: selectedOrgId, pageSize: 1,
+    });
+    const { data: alerts, isLoading: alertsLoading } = useAlerts();
+    const { data: catalog, isLoading: catalogLoading, error: catalogError, refetch: refetchCatalog } = useCatalog(selectedOrgId);
+
     const hasError = (!pointsLoading && !!pointsError && !points) || (!historyLoading && !!historyError && !points);
     const balance = points?.balance ?? 0;
 
@@ -53,12 +68,20 @@ export default function DriverDashboardPage()
                 <InlineErrors errors={['Something went wrong loading your points.']} />
             )}
 
-            <DashStatCards totalPoints={balance} />
+            <DashStatCards
+                totalPoints={balance}
+                transactionsThisMonth={monthlyTxns?.totalCount ?? null}
+                transactionsLoading={monthlyLoading}
+                ordersCount={orders?.totalCount ?? null}
+                ordersLoading={ordersLoading}
+                alertsCount={alerts?.length ?? null}
+                alertsLoading={alertsLoading}
+            />
 
             <div className={styles.mainGrid}>
                 <div className={styles.leftCol}>
-                    <PointsChart history={history} />
-                    <RecentDeliveriesTable history={history} />
+                    <PointsChart history={historyLoading ? null : history} />
+                    <RecentDeliveriesTable history={historyLoading ? null : history} />
                 </div>
 
                 <div className={styles.rightCol}>
@@ -72,6 +95,13 @@ export default function DriverDashboardPage()
             <div className={styles.bottomRow}>
                 <ActiveChallenges />
                 <ActivityFeed history={historyLoading ? null : history} />
+                <RedeemRewards
+                    balance={balance}
+                    catalog={catalog}
+                    catalogLoading={catalogLoading}
+                    catalogError={catalogError}
+                    onRetry={refetchCatalog}
+                />
             </div>
         </div>
         // <div className={styles.noOrg}>

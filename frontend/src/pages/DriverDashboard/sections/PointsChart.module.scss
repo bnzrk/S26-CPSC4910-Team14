@@ -77,3 +77,15 @@
   font-weight: 700;
   color: var(--color-accent);
 }
+
+.chartCenter {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emptyMsg {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}

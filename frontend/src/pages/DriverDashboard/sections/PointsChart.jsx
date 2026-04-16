@@ -1,18 +1,10 @@
 import { useState, useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
+import Loader from '@/components/Loader/Loader';
 import styles from './PointsChart.module.scss';
 import clsx from 'clsx';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-const MOCK_MONTHLY = [
-  { month: 'Sep', points: 820 },
-  { month: 'Oct', points: 1400 },
-  { month: 'Nov', points: 950 },
-  { month: 'Dec', points: 1760 },
-  { month: 'Jan', points: 1100 },
-  { month: 'Feb', points: 1850 },
-];
 
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
@@ -28,8 +20,9 @@ export default function PointsChart({ history }) {
   const [view, setView] = useState('monthly');
 
   const data = useMemo(() => {
+    if (!history) return null;
     const items = history?.items ?? [];
-    if (!items.length) return MOCK_MONTHLY;
+    if (!items.length) return [];
 
     const byMonth = {};
     items.forEach(t => {
@@ -61,25 +54,33 @@ export default function PointsChart({ history }) {
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={data} margin={{ top: 8, right: 4, left: -16, bottom: 0 }} barSize={28}>
-          <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
-          <XAxis
-            dataKey="month"
-            tick={{ fontSize: 12, fill: 'var(--color-text-tertiary)' }}
-            axisLine={false}
-            tickLine={false}
-          />
-          <YAxis
-            tick={{ fontSize: 12, fill: 'var(--color-text-tertiary)' }}
-            axisLine={false}
-            tickLine={false}
-            tickFormatter={v => v >= 1000 ? `${v / 1000}k` : v}
-          />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--green-50)' }} />
-          <Bar dataKey="points" fill="var(--color-accent)" radius={[4, 4, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
+      {data === null ? (
+        <div className={styles.chartCenter}><Loader /></div>
+      ) : data.length === 0 ? (
+        <div className={styles.chartCenter}>
+          <span className={styles.emptyMsg}>No point history yet.</span>
+        </div>
+      ) : (
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={data} margin={{ top: 8, right: 4, left: -16, bottom: 0 }} barSize={28}>
+            <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
+            <XAxis
+              dataKey="month"
+              tick={{ fontSize: 12, fill: 'var(--color-text-tertiary)' }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <YAxis
+              tick={{ fontSize: 12, fill: 'var(--color-text-tertiary)' }}
+              axisLine={false}
+              tickLine={false}
+              tickFormatter={v => v >= 1000 ? `${v / 1000}k` : v}
+            />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--green-50)' }} />
+            <Bar dataKey="points" fill="var(--color-accent)" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      )}
     </div>
   );
 }
