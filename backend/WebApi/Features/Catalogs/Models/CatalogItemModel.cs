@@ -12,6 +12,7 @@ public class CatalogItemModel
     public required string CategoryTitle { get; set; }
     public decimal ExternalPrice { get; set; }
     public decimal Price { get; set; }
+    public int PricePoints { get; set; }
     public List<string> Images { get; set; } = new List<string>();
     public bool IsAvailable { get; set; }
 }

@@ -1,14 +1,6 @@
 import styles from './RecentDeliveriesTable.module.scss';
 import clsx from 'clsx';
 
-const MOCK_DELIVERIES = [
-  { route: 'Chicago, IL → Kansas City, MO', subtitle: '520 mi · Acme Freight', date: 'Feb 14, 2026', status: 'On Time', points: 650 },
-  { route: 'Dallas, TX → Houston, TX', subtitle: '239 mi · Acme Freight', date: 'Feb 12, 2026', status: 'Bonus', points: 420 },
-  { route: 'Denver, CO → Salt Lake City, UT', subtitle: '371 mi · Acme Freight', date: 'Feb 10, 2026', status: 'On Time', points: 510 },
-  { route: 'Atlanta, GA → Charlotte, NC', subtitle: '244 mi · Acme Freight', date: 'Feb 8, 2026', status: 'In Progress', points: 0 },
-  { route: 'Phoenix, AZ → Las Vegas, NV', subtitle: '297 mi · Acme Freight', date: 'Feb 6, 2026', status: 'On Time', points: 390 },
-];
-
 function formatDate(dateStr) {
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
@@ -71,14 +63,14 @@ function rowsFromHistory(history) {
 }
 
 export default function RecentDeliveriesTable({ history }) {
-  const rows = history?.items?.length ? rowsFromHistory(history) : MOCK_DELIVERIES;
+  const isLoading = history === null;
+  const rows = !isLoading ? rowsFromHistory(history) : [];
 
   return (
     <div className={styles.card}>
       <div className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className={styles.title}>Recent Deliveries</span>
-          <span className={styles.subtitle}>47 this month</span>
+          <span className={styles.title}>Recent Transactions</span>
         </div>
         <a href="#" className={styles.viewAll}>View all →</a>
       </div>
@@ -86,31 +78,46 @@ export default function RecentDeliveriesTable({ history }) {
       <table className={styles.table}>
         <thead>
           <tr>
-            <th>Route</th>
+            <th>Description</th>
             <th>Date</th>
             <th>Status</th>
             <th className={styles.right}>Points</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, i) => (
-            <tr key={i}>
-              <td>
-                <div className={styles.routeCell}>
-                  <RouteIcon status={row.status} />
-                  <div>
-                    <div className={styles.routeName}>{row.route}</div>
-                    {row.subtitle && <div className={styles.routeSub}>{row.subtitle}</div>}
-                  </div>
-                </div>
-              </td>
-              <td className={styles.dateCell}>{row.date}</td>
-              <td><StatusBadge status={row.status} /></td>
-              <td className={clsx(styles.right, row.points > 0 ? styles.pointsPos : row.points < 0 ? styles.pointsNeg : styles.pointsNeutral)}>
-                {row.points > 0 ? `+${row.points}` : row.points === 0 ? '—' : row.points}
-              </td>
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <tr key={i}>
+                <td><div className={clsx(styles.bone, styles.boneWide)} /></td>
+                <td><div className={clsx(styles.bone, styles.boneMed)} /></td>
+                <td><div className={clsx(styles.bone, styles.boneNarrow)} /></td>
+                <td className={styles.right}><div className={clsx(styles.bone, styles.boneShort)} /></td>
+              </tr>
+            ))
+          ) : rows.length === 0 ? (
+            <tr>
+              <td colSpan={4} className={styles.emptyCell}>No recent activity.</td>
             </tr>
-          ))}
+          ) : (
+            rows.map((row, i) => (
+              <tr key={i}>
+                <td>
+                  <div className={styles.routeCell}>
+                    <RouteIcon status={row.status} />
+                    <div>
+                      <div className={styles.routeName}>{row.route}</div>
+                      {row.subtitle && <div className={styles.routeSub}>{row.subtitle}</div>}
+                    </div>
+                  </div>
+                </td>
+                <td className={styles.dateCell}>{row.date}</td>
+                <td><StatusBadge status={row.status} /></td>
+                <td className={clsx(styles.right, row.points > 0 ? styles.pointsPos : row.points < 0 ? styles.pointsNeg : styles.pointsNeutral)}>
+                  {row.points > 0 ? `+${row.points}` : row.points === 0 ? '—' : row.points}
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>
