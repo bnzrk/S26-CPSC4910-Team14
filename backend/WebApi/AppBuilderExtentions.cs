@@ -42,7 +42,8 @@ public static class AppBuilderExtensions
             })
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<AppDbContext>()
-            .AddSignInManager();
+            .AddSignInManager()
+            .AddDefaultTokenProviders();
     }
 
     // Adds cookie authentication for users and requests.

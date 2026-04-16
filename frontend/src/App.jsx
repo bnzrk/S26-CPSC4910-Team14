@@ -48,6 +48,7 @@ import UsersPage from './pages/Admin/Users/UsersPage';
 import AdminBulkActionsPage from './pages/Admin/BulkActions/AdminBulkActionsPage';
 import SalesReports from './pages/Admin/SalesReports/SalesReports';
 import InvoicesPage from './pages/Admin/Invoices/InvoicesPage';
+import AdminUserProfilePage from "@/pages/Admin/Users/AdminUserProfilePage";
 
 import AppLayout from './pages/AppLayout';
 import './App.scss';
@@ -148,6 +149,7 @@ function AppContent({ user, isUserLoading, orgs }) {
             <Route index element={<AdminDashboardPage />} />
             <Route path="orgs" element={<AdminOrgsPage />} />
             <Route path="users" element={<UsersPage />} />
+            <Route path="/admin/users/:userId" element={<AdminUserProfilePage />} />
             <Route path="bulk" element={<AdminBulkActionsPage />} />
             <Route path="sales" element={<SalesReports />} />
             <Route path="invoices" element={<InvoicesPage />} />

@@ -20,9 +20,14 @@ import BuildingIcon from "@/assets/icons/building-2.svg?react";
 import UserIcon from "@/assets/icons/user.svg?react";
 import styles from "./UsersPage.module.scss"
 import clsx from "clsx";
+import { assignDriverToOrg, removeDriverFromOrg } from "@/api/admin";
+import { useMutation } from "@tanstack/react-query";
+import { useToast } from "@/components/Toast/ToastContext";
+import { useNavigate } from "react-router-dom";
 
 export default function UsersPage()
 {
+    const navigate = useNavigate();
     const modals = {
         createUser: 'createUser',
     };
@@ -65,6 +70,23 @@ export default function UsersPage()
         setPage(totalPages);
     }
 
+    const { push } = useToast();
+    const [selectedOrgId, setSelectedOrgId] = useState("");
+    const assignMutation = useMutation({
+        mutationFn: ({ userId, orgId }) => assignDriverToOrg(userId, orgId),
+        onSuccess: () => push({ type: "success", message: "Driver added to org" }),
+        onError: () => push({ type: "error", message: "Failed to add driver" }),
+    });
+      
+    const removeMutation = useMutation({
+        mutationFn: (userId) => removeDriverFromOrg(userId),
+        onSuccess: () => {
+            push({ type: "success", message: "Driver removed from org" });
+            queryClient.invalidateQueries(['users']);   //refresh list
+        },
+        onError: () => push({ type: "error", message: "Failed to remove driver" }),
+    });
+
     return (
         <>
             <CreateUserModal
@@ -101,10 +123,12 @@ export default function UsersPage()
                                 key={user.id}
                                 icon={UserIcon}
                                 label={`${user.firstName} ${user.lastName}`}
+                                onClick={() => navigate(`/admin/users/${user.id}`)}
+                                
                                 right={user.userType != USER_TYPE_ENUM.ADMIN &&
                                     <Button
                                         size='small'
-                                        className={clsx(styles.userItemButton)}
+                                        className={clsx(styles.compactButton)}
                                         icon={LoginIcon}
                                         text='Login-As'
                                         disabled={isImpersonatePending}
@@ -112,8 +136,12 @@ export default function UsersPage()
                                     />
                                 }
                             >
-                                <p className={styles.userEmail}>{user.email}</p>
-                                <UserTypeBadge type={user.userType} showIcon={true} />
+                                <div className={styles.userMeta}>
+                                    <p className={styles.userEmail}>{user.email}</p>
+                                    <UserTypeBadge type={user.userType} showIcon />
+                                </div>
+
+                                
                             </ListItem>
                         ))}
                         {(!users || users.items.length == 0) &&
