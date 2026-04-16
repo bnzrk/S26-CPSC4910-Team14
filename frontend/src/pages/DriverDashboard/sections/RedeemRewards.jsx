@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { formatUsd } from '@/helpers/formatting';
 import styles from './RedeemRewards.module.scss';
 import clsx from 'clsx';
 
@@ -16,9 +17,9 @@ export default function RedeemRewards({ balance = 0, catalog, catalogLoading, ca
   const items = (catalog?.items ?? []).slice(0, 6).map(item => ({
     imgUrl: item.images?.[0] ?? null,
     name: item.title,
-    cost: item.catalogPrice,
-    locked: item.catalogPrice > balance,
-    need: Math.max(0, item.catalogPrice - balance),
+    cost: item.pricePoints,
+    locked: item.pricePoints > balance,
+    need: Math.max(0, item.pricePoints - balance),
     available: item.isAvailable,
   }));
 
@@ -27,7 +28,7 @@ export default function RedeemRewards({ balance = 0, catalog, catalogLoading, ca
       <div className={styles.header}>
         <div className={styles.headerLeft}>
           <span className={styles.title}>Redeem Rewards</span>
-          <span className={styles.subtitle}>{balance.toLocaleString()} pts available</span>
+          <span className={styles.subtitle}>{balance} pts available</span>
         </div>
         <Link to="/driver/catalog" className={styles.viewAll}>Catalog →</Link>
       </div>
@@ -58,11 +59,11 @@ export default function RedeemRewards({ balance = 0, catalog, catalogLoading, ca
                 : <div className={styles.itemNoImg}><ShoppingBagIcon /></div>
               }
               <div className={styles.itemName}>{r.name}</div>
-              <div className={styles.itemCost}>{r.cost.toLocaleString()} pts</div>
+              <div className={styles.itemCost}>{r?.cost} pts</div>
               {r.locked && (
                 <div className={styles.lockOverlay}>
                   <span className={styles.lockIcon}>🔒</span>
-                  <span className={styles.lockText}>Need {r.need.toLocaleString()} more</span>
+                  <span className={styles.lockText}>Need {r?.need} more</span>
                 </div>
               )}
             </div>
@@ -70,7 +71,7 @@ export default function RedeemRewards({ balance = 0, catalog, catalogLoading, ca
         </div>
       )}
 
-      <Link to="/driver/catalog" className={styles.redeemBtn}>Redeem Points Now</Link>
+      <Link to="/shop" className={styles.redeemBtn}>Redeem Points Now</Link>
     </div>
   );
 }
