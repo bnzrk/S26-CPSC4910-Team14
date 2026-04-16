@@ -98,9 +98,9 @@ export default function FleetMonitorTable() {
                 <td>
                   <div className={styles.rankCell}>
                     <span className={styles.rankNum}>#{stats.rank}</span>
-                    {stats.delta > 0 && <span className={styles.rankUp}>↑{stats.delta}</span>}
+                    {/* {stats.delta > 0 && <span className={styles.rankUp}>↑{stats.delta}</span>}
                     {stats.delta < 0 && <span className={styles.rankDown}>↓{Math.abs(stats.delta)}</span>}
-                    {stats.delta === 0 && <span className={styles.rankFlat}>—</span>}
+                    {stats.delta === 0 && <span className={styles.rankFlat}>—</span>} */}
                   </div>
                 </td>
                 <td>

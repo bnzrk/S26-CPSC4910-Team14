@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import Avatar from '../Avatar/Avatar';
 import BudgetWidget from '../BudgetWidget/BudgetWidget';
 import NavBadge from '../NavBadge/NavBadge';
+import { DEFAULT_BUDGET_CAP } from '@/constants/budget';
+import { useMonthlySaleSummary } from '@/api/sales';
 import { useSponsorOrg } from '@/api/sponsorOrg';
 import { useCurrentUser } from '@/api/currentUser';
 import { apiFetch } from '@/api/apiFetch';
@@ -49,10 +51,13 @@ const NAV_GROUPS = [
   },
 ];
 
-async function handleLogout(navigate) {
-  try {
+async function handleLogout(navigate)
+{
+  try
+  {
     await apiFetch('/auth/logout', { method: 'POST' });
-  } catch (err) {
+  } catch (err)
+  {
     console.error('Logout failed:', err);
   }
   // Cancel queries, clear cache, set user to null;
@@ -63,11 +68,13 @@ async function handleLogout(navigate) {
   navigate("/login");
 }
 
-export default function SponsorSidebar({ className, onClose }) {
+export default function SponsorSidebar({ className, onClose })
+{
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { data: org } = useSponsorOrg();
   const { data: user } = useCurrentUser();
+  const { data: summary } = useMonthlySaleSummary();
 
   const isSponsor = user?.userType?.toLowerCase() === 'sponsor';
 
@@ -86,12 +93,17 @@ export default function SponsorSidebar({ className, onClose }) {
     staleTime: 30_000,
   });
 
-  const pendingApps = applications.filter(a => {
+  const pendingApps = applications.filter(a =>
+  {
     const s = a.status;
     return s === 0 || (typeof s === 'string' && s.toLowerCase() === 'pending');
   }).length;
 
   const navGroups = [...NAV_GROUPS];
+
+  var now = new Date();
+  var firstOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  var resetDateString = firstOfNextMonth.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
   return (
     <aside className={clsx(className, styles.sidebar)}>
@@ -118,7 +130,8 @@ export default function SponsorSidebar({ className, onClose }) {
         {navGroups.map(group => (
           <div key={group.label} className={styles.group}>
             <span className={styles.groupLabel}>{group.label}</span>
-            {group.items.map(item => {
+            {group.items.map(item =>
+            {
               const count =
                 item.badgeKey === 'pendingApps' ? pendingApps : item.badge ?? 0;
               const isActive =
@@ -141,7 +154,7 @@ export default function SponsorSidebar({ className, onClose }) {
       </nav>
 
       <div className={styles.budgetArea}>
-        <BudgetWidget used={3840} total={5000} resetLabel="resets Mar 1" />
+        <BudgetWidget used={summary?.expenses + summary?.pendingExpenses} total={DEFAULT_BUDGET_CAP} resetLabel={resetDateString} />
       </div>
     </aside>
   );

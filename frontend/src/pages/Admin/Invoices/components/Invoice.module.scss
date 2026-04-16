@@ -1,0 +1,41 @@
+@use '@/styles/globals' as *;
+
+.invoice {
+    display: flex;
+    flex-direction: column;
+    gap: $grid-3x;
+}
+
+.section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $grid-half;
+}
+
+.totalRow {
+    width: 100%;
+    display: flex;
+    gap: $grid-half;
+    justify-content: flex-end;
+}
+
+.feeTable {
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+
+    tr:first-child {
+        border-bottom: 2px solid var(--color-border);
+    }
+
+    tr:nth-child(odd):not(:first-child):not(.empty) {
+        background-color: var(--color-border);
+    }
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    gap: $grid-2x;
+    justify-content: space-between;
+}
