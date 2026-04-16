@@ -179,6 +179,7 @@ public class SaleStatisticsController : ControllerBase
                         Email = driver.User.Email,
                         FeeUsd = driver.Orders
                             .Where(o => o.Status != OrderStatus.Cancelled
+                                && o.SponsorOrgId == org.Id
                                 && !o.IsRefunded
                                 && (from == null || o.PlacedDateUtc >= from)
                                 && (to == null || o.PlacedDateUtc <= to))
@@ -189,6 +190,7 @@ public class SaleStatisticsController : ControllerBase
                 TotalFeeUsd = org.DriverUsers
                     .SelectMany(driver => driver.Orders
                         .Where(o => o.Status != OrderStatus.Cancelled
+                            && o.SponsorOrgId == org.Id
                             && !o.IsRefunded
                             && (from == null || o.PlacedDateUtc >= from)
                             && (to == null || o.PlacedDateUtc <= to))

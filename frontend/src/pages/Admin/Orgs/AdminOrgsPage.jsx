@@ -16,7 +16,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/Toast/ToastContext";
 import { assignDriverToOrg, removeDriverFromOrg } from "@/api/admin";
 
-export default function AdminOrgsPage() {
+export default function AdminOrgsPage()
+{
     const { data: orgs, isLoading: orgsLoading } = useAllSponsorOrgs();
 
     const queryClient = useQueryClient();
@@ -41,7 +42,8 @@ export default function AdminOrgsPage() {
     const assignMutation = useMutation({
         mutationFn: ({ userId, orgId }) =>
             assignDriverToOrg(userId, orgId),
-        onSuccess: () => {
+        onSuccess: () =>
+        {
             push({ type: "success", message: "Driver added to org" });
             queryClient.invalidateQueries(["sponsorOrgs"]);
         },
@@ -52,7 +54,8 @@ export default function AdminOrgsPage() {
     const removeMutation = useMutation({
         mutationFn: ({ userId, orgId }) =>
             removeDriverFromOrg(userId, orgId),
-        onSuccess: () => {
+        onSuccess: () =>
+        {
             push({ type: "success", message: "Driver removed from org" });
             queryClient.invalidateQueries(["sponsorOrgs"]);
         },
@@ -86,38 +89,41 @@ export default function AdminOrgsPage() {
                             key={org.id}
                             icon={OrgIcon}
                             label={org.sponsorName}
+                            right={
+                                <div className={styles.orgActions}>
+                                    {/* ADD DRIVER */}
+                                    <Button
+                                        text="Add Driver"
+                                        color="primary"
+                                        size="small"
+                                        icon={PlusIcon}
+                                        onClick={() =>
+                                        {
+                                            setAddOrgId(org.id);
+                                            setAddDriverId("");
+                                            setAddDriverOpen(true);
+                                        }}
+                                    />
+
+                                    {/* REMOVE DRIVER (NOW OPENS MODAL) */}
+                                    <Button
+                                        text="Remove Driver"
+                                        color="danger"
+                                        size="small"
+                                        icon={TrashIcon}
+                                        onClick={() =>
+                                        {
+                                            setRemoveOrgId(org.id);
+                                            setRemoveDriverId("");
+                                            setRemoveDriverOpen(true);
+                                        }}
+                                    />
+                                </div>
+                            }
                         >
                             <span className={styles.orgMeta}>
                                 {org.sponsorCount ?? 0} users · {org.driverCount ?? 0} drivers
                             </span>
-
-                            <div className={styles.orgActions}>
-                                {/* ADD DRIVER */}
-                                <Button
-                                    text="Add Driver"
-                                    color="primary"
-                                    size="small"
-                                    icon={PlusIcon}
-                                    onClick={() => {
-                                        setAddOrgId(org.id);
-                                        setAddDriverId("");
-                                        setAddDriverOpen(true);
-                                    }}
-                                />
-
-                                {/* REMOVE DRIVER (NOW OPENS MODAL) */}
-                                <Button
-                                    text="Remove Driver"
-                                    color="danger"
-                                    size="small"
-                                    icon={TrashIcon}
-                                    onClick={() => {
-                                        setRemoveOrgId(org.id);
-                                        setRemoveDriverId("");
-                                        setRemoveDriverOpen(true);
-                                    }}
-                                />
-                            </div>
                         </ListItem>
                     ))}
                 </Card>
@@ -160,7 +166,8 @@ export default function AdminOrgsPage() {
                             <Button
                                 text="Confirm Add"
                                 color="primary"
-                                onClick={() => {
+                                onClick={() =>
+                                {
                                     if (!addDriverId) return;
 
                                     assignMutation.mutate({
@@ -206,7 +213,8 @@ export default function AdminOrgsPage() {
                             <Button
                                 text="Confirm Remove"
                                 color="danger"
-                                onClick={() => {
+                                onClick={() =>
+                                {
                                     if (!removeDriverId) return;
 
                                     removeMutation.mutate({
