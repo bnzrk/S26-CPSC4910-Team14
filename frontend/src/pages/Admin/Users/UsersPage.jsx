@@ -123,7 +123,7 @@ export default function UsersPage()
                                 key={user.id}
                                 icon={UserIcon}
                                 label={`${user.firstName} ${user.lastName}`}
-                                onClick={() => navigate('/admin/users/${user.id}')}
+                                onClick={() => navigate(`/admin/users/${user.id}`)}
                                 
                                 right={user.userType != USER_TYPE_ENUM.ADMIN &&
                                     <Button

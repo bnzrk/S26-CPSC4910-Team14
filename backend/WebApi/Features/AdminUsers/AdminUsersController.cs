@@ -2,10 +2,12 @@ using Microsoft.AspNetCore.Mvc;
 using WebApi.Features.AdminUsers.Models;
 using Microsoft.AspNetCore.Authorization;
 using WebApi.Features.Users;
+using WebApi.Data.Enums;
 
 namespace WebApi.Features.AdminUsers;
 
 [ApiController]
+[Authorize(Policy = PolicyNames.AdminOnly)]
 [Route("/admins")]
 public class AdminUsersController : ControllerBase
 {
@@ -17,32 +19,9 @@ public class AdminUsersController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = PolicyNames.AdminOnly)]
     public async Task<ActionResult> CreateAdminUser(CreateAdminUserModel request)
     {
         var result = await _userService.CreateAdminUser(request.Email, request.Password, request.FirstName, request.LastName);
-        if (!result.Succeeded)
-        {
-            return BadRequest(new
-            {
-                Errors = result.Errors.Select(e => e.Description).ToArray() 
-            });
-        }
-
-        return Created();
-    }
-
-    // Create Admin
-    [HttpPost]
-    public async Task<ActionResult> CreateAdminUser(CreateAdminUserModel request)
-    {
-        var result = await _userService.CreateAdminUser(
-            request.Email,
-            request.Password,
-            request.FirstName,
-            request.LastName
-        );
-
         if (!result.Succeeded)
         {
             return BadRequest(new
@@ -58,22 +37,32 @@ public class AdminUsersController : ControllerBase
     [HttpPut("/admin/users/{userId}")]
     public async Task<ActionResult> UpdateUser(string userId, UpdateUserModel request)
     {
-        var result = await _userService.UpdateUserAsync(
-            userId,
-            request.Email,
-            request.FirstName,
-            request.LastName
-        );
+        try
+        {
+            var result = await _userService.UpdateUserAsync(
+                userId,
+                request.Email,
+                request.FirstName,
+                request.LastName
+            );
 
-        if (!result.Succeeded)
+            if (!result.Succeeded)
+            {
+                return BadRequest(new
+                {
+                    Errors = result.Errors.Select(e => e.Description).ToArray()
+                });
+            }
+
+            return Ok();
+        }
+        catch (Exception ex)
         {
             return BadRequest(new
             {
-                Errors = result.Errors.Select(e => e.Description).ToArray()
+                Errors = new List<string> { ex.Message }
             });
         }
-
-        return NoContent();
     }
 
     // Password change
@@ -81,19 +70,30 @@ public class AdminUsersController : ControllerBase
     [HttpPost("/admin/users/{userId}/password")]
     public async Task<ActionResult> ChangePassword(string userId, ChangePasswordModel request)
     {
-        var result = await _userService.ChangeUserPasswordAsync(
+        try
+        {
+            var result = await _userService.ChangeUserPasswordAsync(
             userId,
-            request.Password
+            request.Password,
+            PasswordChangeType.AdminReset
         );
 
-        if (!result.Succeeded)
+            if (!result.Succeeded)
+            {
+                return BadRequest(new
+                {
+                    Errors = result.Errors.Select(e => e.Description).ToArray()
+                });
+            }
+
+            return Ok();
+        }
+        catch (Exception ex)
         {
             return BadRequest(new
             {
-                Errors = result.Errors.Select(e => e.Description).ToArray()
+                Errors = new List<string> { ex.Message }
             });
         }
-
-        return NoContent();
     }
 }

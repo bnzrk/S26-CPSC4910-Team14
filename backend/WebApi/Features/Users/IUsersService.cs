@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using WebApi.Data.Entities;
+using WebApi.Data.Enums;
 
 namespace WebApi.Features.Users;
 
@@ -15,7 +16,7 @@ public interface IUsersService
     
     // Password editing
     Task<IdentityResult> UpdateUserAsync(string userId, string email, string firstName, string lastName);
-    Task<IdentityResult> ChangeUserPasswordAsync(string userId, string newPassword);
+    Task<IdentityResult> ChangeUserPasswordAsync(string userId, string newPassword, PasswordChangeType changeType);
     
     // Deactivates the specified user.
     public Task<bool> SetUserActive(User user, bool active);
