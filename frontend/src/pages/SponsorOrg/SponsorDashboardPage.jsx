@@ -55,7 +55,7 @@ export default function SponsorDashboardPage()
         </div>
         <div className={styles.rightCol}>
           <RewardBudget paidOut={summary?.expenses} pending={summary?.pendingExpenses} cap={DEFAULT_BUDGET_CAP}/>
-          <TopPerformers />
+          <TopPerformers orgId={selectedOrgId}/>
           <FleetHealth />
           <FleetAlerts />
         </div>

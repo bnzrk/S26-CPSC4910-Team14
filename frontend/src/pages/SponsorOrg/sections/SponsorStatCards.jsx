@@ -11,7 +11,7 @@ function formatNumber(num)
 
 function percentString(percent)
 {
-  return `${percent > 0 ? '+' : percent < 0 ? '-' : ''}${percent}%`;
+  return `${percent > 0 ? '+' : ''}${percent}%`;
 }
 
 function makeCard({ label, value, trend, trendUp, iconBg, iconColor, icon })

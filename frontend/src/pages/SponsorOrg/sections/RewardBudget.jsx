@@ -24,7 +24,10 @@ export default function RewardBudget({ paidOut = 0, pending = 0, cap = 5000 })
       <div className={styles.header}>
         <div>
           <h3 className={styles.title}>Reward Budget</h3>
-          <p className={styles.subtitle}>Feb 2026 · ${cap} cap</p>
+          <p className={styles.subtitle}>{new Date().toLocaleString('en-US', {
+            month: 'short',
+            year: 'numeric'
+          })} · ${cap} cap</p>
         </div>
         <button className={styles.adjustBtn}>Adjust</button>
       </div>

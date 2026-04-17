@@ -50,7 +50,7 @@ export default function DriverDashboardPage()
         new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(), []);
 
     const { data: monthlyTxns, isLoading: monthlyLoading } = usePointHistory({
-        orgId: selectedOrgId, page: 1, pageSize: 1, sign: '+', from: startOfMonth,
+        orgId: selectedOrgId, page: 1, pageSize: 1, from: startOfMonth,
     });
     const { data: orders, isLoading: ordersLoading } = useOrders({
         orgId: selectedOrgId, pageSize: 1,

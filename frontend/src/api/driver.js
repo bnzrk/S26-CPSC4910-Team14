@@ -73,7 +73,7 @@ export function useCreateDriverUser(orgId)
     return useMutation({
         mutationFn: async ({ email, username, firstName, lastName, password }) =>
         {
-            const res = await apiFetch(`/drivers${orgId ? `?${orgId}` : ''}`, {
+            const res = await apiFetch(`/drivers${orgId ? `?orgId=${orgId}` : ''}`, {
                 method: "POST",
                 body: JSON.stringify({ email, username, firstName, lastName, password }),
             });

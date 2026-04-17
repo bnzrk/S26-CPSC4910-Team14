@@ -228,6 +228,16 @@ public class SponsorOrgsController : ControllerBase
         if (!orgExists)
             return NotFound();
 
+        // Sponsors may only view the leaderboard for orgs they belong to
+        var isSponsor = User.IsInRole(UserTypeRoles.Role(UserType.Sponsor));
+        if (isSponsor)
+        {
+            var belongsToOrg = await _db.SponsorUsers
+                .AnyAsync(s => s.UserId == userId && s.SponsorOrgId == orgId);
+            if (!belongsToOrg)
+                return Forbid();
+        }
+
         // Drivers may only view the leaderboard for orgs they belong to
         var isDriver = User.IsInRole(UserTypeRoles.Role(UserType.Driver));
         if (isDriver)
@@ -247,6 +257,9 @@ public class SponsorOrgsController : ControllerBase
                 .SingleOrDefaultAsync();
         }
 
+        var now = DateTime.UtcNow;
+        var startOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+
         var raw = await _db.SponsorOrgs
             .AsNoTracking()
             .Where(s => s.Id == orgId)
@@ -259,6 +272,9 @@ public class SponsorOrgsController : ControllerBase
                 Points = d.PointTransactions
                     .Where(p => p.SponsorOrgId == orgId)
                     .Sum(p => p.BalanceChange),
+                MonthlyNetPoints = d.PointTransactions
+                    .Where(p => p.SponsorOrgId == orgId && p.BalanceChange > 0 && p.TransactionDateUtc <= now && p.TransactionDateUtc >= startOfMonth)
+                    .Sum(p => p.BalanceChange),
             })
             .OrderByDescending(d => d.Points)
             .Take(limit)
@@ -267,10 +283,12 @@ public class SponsorOrgsController : ControllerBase
         var result = raw
             .Select((d, i) => new TopDriverModel
             {
+                Id = d.Id,
                 Rank = i + 1,
                 FirstName = d.FirstName,
                 LastName = d.LastName,
                 Points = d.Points,
+                MonthlyNetPoints = d.MonthlyNetPoints,
                 IsCurrentUser = d.Id == currentDriverId,
             })
             .ToList();
