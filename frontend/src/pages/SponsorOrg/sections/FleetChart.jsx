@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import styles from './FleetChart.module.scss';
 import clsx from 'clsx';
 
-const TABS = ['Points', 'Deliveries', 'Spend'];
+const TABS = ['Points', 'Spend'];
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -97,7 +97,7 @@ export default function FleetChart({ driverCount = 0, summary, budgetUsedPercent
     <div className={styles.card}>
       <div className={styles.header}>
         <div>
-          <h3 className={styles.title}>Fleet Points &amp; Deliveries</h3>
+          <h3 className={styles.title}>Fleet Points &amp; Spending</h3>
           <p className={styles.subtitle}>Monthly activity across all {driverCount} drivers</p>
         </div>
         <div className={styles.tabs}>

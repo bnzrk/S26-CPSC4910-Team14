@@ -167,8 +167,6 @@ export default function InvoicesPage()
         setAppliedFilters({ orgId: "", from: "", to: "" });
     }
 
-    console.log(invoices);
-
     return (
         <CardHost>
             <Card

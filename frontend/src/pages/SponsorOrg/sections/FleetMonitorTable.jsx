@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Avatar from '@/components/Avatar/Avatar';
 import { useSponsorOrgDrivers } from '@/api/sponsorOrg';
+import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
+import { useSponsorTopDrivers } from '@/api/sponsorOrg';
 import styles from './FleetMonitorTable.module.scss';
 import clsx from 'clsx';
 
@@ -16,27 +18,34 @@ const MOCK_STATS = [
 
 const TABS = ['All', 'Active', 'Inactive'];
 
-function getInitials(driver) {
-  if (driver.firstName && driver.lastName) {
+function getInitials(driver)
+{
+  if (driver.firstName && driver.lastName)
+  {
     return `${driver.firstName[0]}${driver.lastName[0]}`;
   }
   return driver.username?.slice(0, 2)?.toUpperCase() ?? 'DR';
 }
 
-function getDriverId(driver) {
+function getDriverId(driver)
+{
   return `DRV-${String(driver.id ?? '').slice(-4).padStart(4, '0')}`;
 }
 
-export default function FleetMonitorTable() {
+export default function FleetMonitorTable()
+{
+  const { selectedOrgId } = useOrgContext();
+  const { data: topDrivers, isError, isLoading } = useSponsorTopDrivers(selectedOrgId, 10);
+
   const [activeTab, setActiveTab] = useState('All');
   const { data: driversPage } = useSponsorOrgDrivers();
   const drivers = driversPage?.items ?? [];
   const driverCount = driversPage?.totalCount ?? drivers.length;
 
-  const rows = drivers.slice(0, 6).map((driver, i) => ({
+  const rows = topDrivers ? topDrivers.slice(0, 6).map((driver, i) => ({
     driver,
-    stats: MOCK_STATS[i] ?? MOCK_STATS[MOCK_STATS.length - 1],
-  }));
+    stats: { pts: driver.monthlyNetPoints, rank: driver.rank, delta: 0, status: 'Active' },
+  })) : [];
 
   const filtered = activeTab === 'All'
     ? rows
@@ -65,59 +74,66 @@ export default function FleetMonitorTable() {
         </div>
       </div>
 
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Driver</th>
-              <th>Pts This Month</th>
-              <th>Deliveries</th>
-              <th>On-Time</th>
-              <th>Rank</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map(({ driver, stats }) => (
-              <tr key={driver.id ?? driver.username}>
-                <td>
-                  <div className={styles.driverCell}>
-                    <Avatar initials={getInitials(driver)} size={34} />
-                    <div className={styles.driverInfo}>
-                      <span className={styles.driverName}>
-                        {driver.firstName} {driver.lastName}
-                      </span>
-                      <span className={styles.driverId}>{getDriverId(driver)}</span>
+      {drivers && drivers.length > 0 &&
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Driver</th>
+                <th>Pts This Month</th>
+                {/* <th>Deliveries</th>
+              <th>On-Time</th> */}
+                <th>Rank</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(({ driver, stats }) => (
+                <tr key={driver.id ?? driver.username}>
+                  <td>
+                    <div className={styles.driverCell}>
+                      <Avatar initials={getInitials(driver)} size={34} />
+                      <div className={styles.driverInfo}>
+                        <span className={styles.driverName}>
+                          {driver.firstName} {driver.lastName}
+                        </span>
+                        <span className={styles.driverId}>{getDriverId(driver)}</span>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td className={styles.pts}>{stats.pts}</td>
-                <td>{stats.deliveries}</td>
-                <td>{stats.onTime}</td>
-                <td>
-                  <div className={styles.rankCell}>
-                    <span className={styles.rankNum}>#{stats.rank}</span>
-                    {/* {stats.delta > 0 && <span className={styles.rankUp}>↑{stats.delta}</span>}
+                  </td>
+                  <td className={styles.pts}>{stats.pts}</td>
+                  {/* <td>{stats.deliveries}</td>
+                  <td>{stats.onTime}</td> */}
+                  <td>
+                    <div className={styles.rankCell}>
+                      <span className={styles.rankNum}>#{stats.rank}</span>
+                      {/* {stats.delta > 0 && <span className={styles.rankUp}>↑{stats.delta}</span>}
                     {stats.delta < 0 && <span className={styles.rankDown}>↓{Math.abs(stats.delta)}</span>}
                     {stats.delta === 0 && <span className={styles.rankFlat}>—</span>} */}
-                  </div>
-                </td>
-                <td>
-                  <span className={clsx(styles.statusBadge, stats.status === 'Active' ? styles.active : styles.inactive)}>
-                    {stats.status}
-                  </span>
-                </td>
-                <td>
-                  <Link to={`/org/drivers/${driver.id}`} className={styles.manageLink}>
-                    Manage →
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span className={clsx(styles.statusBadge, stats.status === 'Active' ? styles.active : styles.inactive)}>
+                      {stats.status}
+                    </span>
+                  </td>
+                  <td>
+                    <Link to={`/org/drivers/${driver.id}`} className={styles.manageLink}>
+                      Manage →
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      }
+      {(!drivers || drivers.length == 0) &&
+        <div className={styles.empty}>
+          No drivers yet.
+        </div>
+      }
 
       <div className={styles.footer}>
         <span className={styles.showing}>Showing {filtered.length} of {driverCount} drivers</span>
