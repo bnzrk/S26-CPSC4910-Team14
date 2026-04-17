@@ -276,7 +276,7 @@ public class SponsorOrgsController : ControllerBase
                     .Where(p => p.SponsorOrgId == orgId && p.BalanceChange > 0 && p.TransactionDateUtc <= now && p.TransactionDateUtc >= startOfMonth)
                     .Sum(p => p.BalanceChange),
             })
-            .OrderByDescending(d => d.Points)
+            .OrderByDescending(d => d.MonthlyNetPoints)
             .Take(limit)
             .ToListAsync();
 
