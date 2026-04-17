@@ -15,11 +15,17 @@
   margin-bottom: $grid-3x;
 }
 
+.subtitle {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
 .title {
   font-size: 0.9375rem;
   font-weight: 700;
   color: var(--color-text);
-  margin: 0;
+  margin: 0 0 4px;
 }
 
 .period {
@@ -62,7 +68,7 @@
 }
 
 .pointsText {
-  font-size: 0.85rem; 
-  color: var(--color-text-tertiary, #888); 
-  font-style: italic;  
+  font-size: 0.85rem;
+  color: var(--color-text-tertiary, #888);
+  font-style: italic;
 }

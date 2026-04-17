@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Avatar from '@/components/Avatar/Avatar';
 import { useSponsorOrgDrivers } from '@/api/sponsorOrg';
+import { useOrgContext } from '@/contexts/OrgContext/OrgContext';
+import { useSponsorTopDrivers } from '@/api/sponsorOrg';
 import styles from './FleetMonitorTable.module.scss';
 import clsx from 'clsx';
 
@@ -16,27 +18,34 @@ const MOCK_STATS = [
 
 const TABS = ['All', 'Active', 'Inactive'];
 
-function getInitials(driver) {
-  if (driver.firstName && driver.lastName) {
+function getInitials(driver)
+{
+  if (driver.firstName && driver.lastName)
+  {
     return `${driver.firstName[0]}${driver.lastName[0]}`;
   }
   return driver.username?.slice(0, 2)?.toUpperCase() ?? 'DR';
 }
 
-function getDriverId(driver) {
+function getDriverId(driver)
+{
   return `DRV-${String(driver.id ?? '').slice(-4).padStart(4, '0')}`;
 }
 
-export default function FleetMonitorTable() {
+export default function FleetMonitorTable()
+{
+  const { selectedOrgId } = useOrgContext();
+  const { data: topDrivers, isError, isLoading } = useSponsorTopDrivers(selectedOrgId, 10);
+
   const [activeTab, setActiveTab] = useState('All');
   const { data: driversPage } = useSponsorOrgDrivers();
   const drivers = driversPage?.items ?? [];
   const driverCount = driversPage?.totalCount ?? drivers.length;
 
-  const rows = drivers.slice(0, 6).map((driver, i) => ({
+  const rows = topDrivers ? topDrivers.slice(0, 6).map((driver, i) => ({
     driver,
-    stats: MOCK_STATS[i] ?? MOCK_STATS[MOCK_STATS.length - 1],
-  }));
+    stats: { pts: driver.monthlyNetPoints, rank: driver.rank, delta: 0, status: 'Active' },
+  })) : [];
 
   const filtered = activeTab === 'All'
     ? rows
@@ -71,8 +80,8 @@ export default function FleetMonitorTable() {
             <tr>
               <th>Driver</th>
               <th>Pts This Month</th>
-              <th>Deliveries</th>
-              <th>On-Time</th>
+              {/* <th>Deliveries</th>
+              <th>On-Time</th> */}
               <th>Rank</th>
               <th>Status</th>
               <th>Actions</th>
@@ -93,8 +102,8 @@ export default function FleetMonitorTable() {
                   </div>
                 </td>
                 <td className={styles.pts}>{stats.pts}</td>
-                <td>{stats.deliveries}</td>
-                <td>{stats.onTime}</td>
+                  {/* <td>{stats.deliveries}</td>
+                  <td>{stats.onTime}</td> */}
                 <td>
                   <div className={styles.rankCell}>
                     <span className={styles.rankNum}>#{stats.rank}</span>

@@ -77,7 +77,7 @@ export default function FleetLeaderboard({ board, boardLoading, boardError, orgN
               </div>
               <ProgressBar value={entry.points / maxPts} variant="green" />
             </div>
-            <span className={styles.pts}>{entry.points.toLocaleString()}</span>
+            <span className={styles.pts}>+{entry.monthlyNetPoints}</span>
           </div>
         ))}
       </div>
