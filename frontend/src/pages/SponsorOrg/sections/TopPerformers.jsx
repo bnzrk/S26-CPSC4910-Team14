@@ -17,7 +17,7 @@ export default function TopPerformers({ orgId, limit = 5 })
           <h3 className={styles.title}>Top Performers</h3>
           <p className={styles.subtitle}>
             {new Date().toLocaleString('en-US', {
-              month: 'long',
+              month: 'short',
               year: 'numeric'
             })}
           </p>
