@@ -13,7 +13,7 @@ function PointChangeAlertBody({ alert })
     const isPositive = alert.metadata.balanceChange > 0;
     return (
         <span className={styles.pointChange}>
-            {metadata.sponsorName} {isPositive > 0 ? 'awared you' : 'deducted'} <span className={clsx(styles.inlinePoints, isPositive ? styles.positive : styles.negative)}>{metadata.balanceChange}<StarIcon /></span> points{isPositive ? '!' : '.'}
+            {metadata.sponsorName} {isPositive > 0 ? 'awarded you' : 'deducted'} <span className={clsx(styles.inlinePoints, isPositive ? styles.positive : styles.negative)}>{metadata.balanceChange}<StarIcon /></span> points{isPositive ? '!' : '.'}
         </span>
     );
 }
