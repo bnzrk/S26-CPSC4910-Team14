@@ -27,17 +27,18 @@ Backend
 Other
 - Docker for local database setup
 
-## Project Structure
-root/
-  frontend/           React frontend application
-  backend/WebApi/     ASP.NET backend API
-  local_db/           Local database setup
-  docs/               Design and planning documents
-  README.md
+## Project Structure  
+```
+root/  
+  frontend/          React frontend application  
+  backend/WebApi/    ASP.NET backend API  
+  local_db/          Local database setup  
+  docs/              Design and planning documents  
+  README.md  
+```
+The frontend uses a component-based architecture, context API for global state, layouts based on roles, and modular SCSS styling.  
 
-The frontend uses a component-based architecture, context API for global state, layouts based on roles, and modular SCSS styling.
-
-The backend features RESTful API design, multiple DbContexts, and Entity Framework Migrations.
+The backend features RESTful API design, multiple DbContexts, and Entity Framework Migrations.  
 
 ## Features
 Drivers
@@ -62,25 +63,29 @@ Admin
 ## Installation and Setup
 Necessary Prerequisites
 - Node.js
-- .NET SDK
+- .NET SDK 10.0
 - Docker (for database)
 
 Steps
-1. Clone repository through GitHub or "git clone <github url>" then "cd <repository>"
-2. Setup backend
-     cd backend/WebApi
-     dotnet restore
-     dotnet build
-     dotnet ef database update
-     dotnet run
-3. Setup frontend
-     cd frontend
-     npm install
-     npm run dev
+1. Clone repository through GitHub or `git clone <github url>` then `cd <repository>`
+2. Setup local database  
+     `cd local_db/my_sql`  
+     `docker compose up -d`  
+4. Setup backend  
+     `cd backend/WebApi`  
+     `dotnet restore`  
+     `dotnet ef database update --context AuditDbContext`  
+     `dotnet ef database update --context AppDbContext`  
+     `dotnet run`
+     * Note: If you have not already, run `dotnet tool install --global dotnet-ef` to be able to run `dotnet ef` commands
+5. Setup frontend  
+     `cd frontend`  
+     `npm install`  
+     `npm run dev` 
 
 ## Development Notes
 - Multiple DbContexts are used, specify when running migrations if needed
-- API calls are centralized in /frontend/src/api
+- API calls are centralized in `/frontend/src/api`
 
 ## Security & Permissions
 - Role-based route protection
@@ -89,7 +94,7 @@ Steps
 
 ## Deployment
 Frontend
-- Build using "npm run build" and deploy via static hosting
+- Build using `npm run build` and deploy via static hosting
 
 Backend
 - Deploy ASP.NET API to Azure App Service, AWS, Docker container
