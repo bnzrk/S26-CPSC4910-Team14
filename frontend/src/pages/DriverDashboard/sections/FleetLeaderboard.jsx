@@ -17,7 +17,7 @@ function initials(firstName, lastName) {
 const currentMonthYear = new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 
 export default function FleetLeaderboard({ board, boardLoading, boardError, orgName }) {
-  const maxPts = board?.[0]?.points ?? 1;
+  const maxPts = board?.[0]?.monthlyNetPoints ?? 1;
 
   const me = board?.find(e => e.isCurrentUser) ?? null;
   let footer = null;
@@ -26,7 +26,7 @@ export default function FleetLeaderboard({ board, boardLoading, boardError, orgN
       footer = "You're #1 — keep it up!";
     } else {
       const above = board.find(e => e.rank === me.rank - 1);
-      const gap = above ? above.points - me.points : null;
+      const gap = above ? above.monthlyNetPoints - me.monthlyNetPoints : null;
       if (gap !== null) {
         footer = `${gap.toLocaleString()} pts separates you from #${me.rank - 1} — keep pushing!`;
       }
@@ -75,7 +75,7 @@ export default function FleetLeaderboard({ board, boardLoading, boardError, orgN
                 {entry.firstName} {entry.lastName}
                 {entry.isCurrentUser && <span className={styles.youBadge}>You</span>}
               </div>
-              <ProgressBar value={entry.points / maxPts} variant="green" />
+              <ProgressBar value={entry.monthlyNetPoints / maxPts} variant="green" />
             </div>
             <span className={styles.pts}>+{entry.monthlyNetPoints}</span>
           </div>
