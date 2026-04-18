@@ -132,8 +132,8 @@ jobs:
             sudo chmod +x "./$APP_DIR/audit-migration"
 
             echo "== Run migrations with env loaded =="
-            bash -lc "set -a; source '$ENV_FILE'; set +a; './$APP_DIR/app-migration'"
             bash -lc "set -a; source '$ENV_FILE'; set +a; './$APP_DIR/audit-migration'"
+            bash -lc "set -a; source '$ENV_FILE'; set +a; './$APP_DIR/app-migration'"
 
             echo "== Start service =="
             sudo systemctl start "$SERVICE"
