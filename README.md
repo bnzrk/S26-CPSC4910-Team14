@@ -83,9 +83,18 @@ Steps
      `npm install`  
      `npm run dev` 
 
+Admin Account
+* A default admin is created if credentials are set using environment variables or .NET user secrets. These can be set by running the following commands with your desired credentials:  
+    `cd backend/WebApi`  
+    `dotnet user-secrets set "DefaultAdmin:FirstName" "<first name here>"`  
+    `dotnet user-secrets set "DefaultAdmin:LastName" "<last name here>"`  
+    `dotnet user-secrets set "DefaultAdmin:Email" "<email here>"`  
+    `dotnet user-secrets set "DefaultAdmin:Password" "<password here>"`  
+
 ## Development Notes
+- Frontend API calls are centralized in `/frontend/src/api`
 - Multiple DbContexts are used, specify when running migrations if needed
-- API calls are centralized in `/frontend/src/api`
+    
 
 ## Security & Permissions
 - Role-based route protection
